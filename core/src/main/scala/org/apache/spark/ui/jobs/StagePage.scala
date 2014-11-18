@@ -194,6 +194,10 @@ private[ui] class StagePage(parent: StagesTab) extends WebUIPage("stage") {
                   <span class="additional-metric-title"><em>(De)select All</em></span>
               </li>
               <li>
+                  <input type="checkbox" id="select-all-metrics"/>
+                  <span class="additional-metric-title"><em>(De)select All</em></span>
+              </li>
+              <li>
                 <span data-toggle="tooltip"
                       title={ToolTips.SCHEDULER_DELAY} data-placement="right">
                   <input type="checkbox" name={TaskDetailsClassNames.SCHEDULER_DELAY}/>
