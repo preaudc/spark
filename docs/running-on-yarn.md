@@ -164,6 +164,13 @@ Most of the configs are the same for Spark on YARN as for other deployment modes
   </td>
 </tr>
 <tr>
+  <td><code>spark.yarn.queue</code></td>
+  <td>default</td>
+  <td>
+    The name of the YARN queue to which the application is submitted.
+  </td>
+</tr>
+<tr>
   <td><code>spark.yarn.jar</code></td>
   <td>(none)</td>
   <td>
