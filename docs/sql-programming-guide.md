@@ -1670,6 +1670,10 @@ Note that the file that is offered as _jsonFile_ is not a typical JSON file. Eac
 line must contain a separate, self-contained valid JSON object. As a consequence,
 a regular multi-line JSON file will most often fail.
 
+Note that the file that is offered as _jsonFile_ is not a typical JSON file. Each
+line must contain a separate, self-contained valid JSON object. As a consequence,
+a regular multi-line JSON file will most often fail.
+
 {% highlight scala %}
 // sc is an existing SparkContext.
 val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -1715,6 +1719,10 @@ or a JSON file.
 >>>>>>> upstream/master
 
 Note that the file that is offered as _a json file_ is not a typical JSON file. Each
+line must contain a separate, self-contained valid JSON object. As a consequence,
+a regular multi-line JSON file will most often fail.
+
+Note that the file that is offered as _jsonFile_ is not a typical JSON file. Each
 line must contain a separate, self-contained valid JSON object. As a consequence,
 a regular multi-line JSON file will most often fail.
 
@@ -1770,6 +1778,10 @@ This conversion can be done using `SQLContext.read.json` on a JSON file.
 >>>>>>> upstream/master
 
 Note that the file that is offered as _a json file_ is not a typical JSON file. Each
+line must contain a separate, self-contained valid JSON object. As a consequence,
+a regular multi-line JSON file will most often fail.
+
+Note that the file that is offered as _jsonFile_ is not a typical JSON file. Each
 line must contain a separate, self-contained valid JSON object. As a consequence,
 a regular multi-line JSON file will most often fail.
 
