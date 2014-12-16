@@ -40,6 +40,18 @@ private[spark] trait Configurable extends HConfigurable {
   def getConf: Configuration = conf
 }
 
+
+/**
+ * A trait to implement [[org.apache.hadoop.conf.Configurable Configurable]] interface.
+ */
+private[spark] trait Configurable extends HConfigurable {
+  private var conf: Configuration = _
+  def setConf(c: Configuration) {
+    conf = c
+  }
+  def getConf: Configuration = conf
+}
+
 /**
  * A [[org.apache.hadoop.mapreduce.RecordReader RecordReader]] for reading a single whole text file
  * out in a key-value pair, where the key is the file path and the value is the entire content of
