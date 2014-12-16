@@ -258,6 +258,10 @@ def parse_args():
              "Only possible on EBS-backed AMIs. " +
              "EBS volumes are only attached if --ebs-vol-size > 0." +
              "Only support up to 8 EBS volumes.")
+    parser.add_option("--placement-group", type="string", default=None,
+                      help="Which placement group to try and launch " +
+                      "instances into. Assumes placement group is already " +
+                      "created.")
     parser.add_option(
         "--placement-group", type="string", default=None,
         help="Which placement group to try and launch " +
