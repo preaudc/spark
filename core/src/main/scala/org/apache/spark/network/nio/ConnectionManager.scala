@@ -101,6 +101,18 @@ private[nio] class ConnectionManager(
   private val ioThreadCount = conf.getInt("spark.core.connection.io.threads.min", 4)
   private val connectThreadCount = conf.getInt("spark.core.connection.connect.threads.min", 1)
 
+  // Get the thread counts from the Spark Configuration.
+  // 
+  // Even though the ThreadPoolExecutor constructor takes both a minimum and maximum value,
+  // we only query for the minimum value because we are using LinkedBlockingDeque.
+  // 
+  // The JavaDoc for ThreadPoolExecutor points out that when using a LinkedBlockingDeque (which is 
+  // an unbounded queue) no more than corePoolSize threads will ever be created, so only the "min"
+  // parameter is necessary.
+  private val handlerThreadCount = conf.getInt("spark.core.connection.handler.threads.min", 20)
+  private val ioThreadCount = conf.getInt("spark.core.connection.io.threads.min", 4)
+  private val connectThreadCount = conf.getInt("spark.core.connection.connect.threads.min", 1)
+
   private val handleMessageExecutor = new ThreadPoolExecutor(
     handlerThreadCount,
     handlerThreadCount,
