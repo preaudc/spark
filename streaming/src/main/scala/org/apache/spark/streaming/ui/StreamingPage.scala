@@ -190,6 +190,12 @@ private[ui] class StreamingPage(parent: StreamingTab)
       <li>
         <strong>Processed events: </strong>{listener.numTotalProcessedRecords}
       </li>
+      <li>
+        <strong>Received records: </strong>{listener.numTotalReceivedRecords}
+      </li>
+      <li>
+        <strong>Processed records: </strong>{listener.numTotalProcessedRecords}
+      </li>
     </ul>
     // scalastyle:on
   }
