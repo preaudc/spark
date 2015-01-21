@@ -151,6 +151,10 @@ private[spark] class ClientArguments(args: Array[String], sparkConf: SparkConf) 
       throw new SparkException("Executor cores must not be less than " +
         "spark.task.cpus.")
     }
+    if (executorCores < sparkConf.getInt("spark.task.cpus", 1)) {
+      throw new SparkException("Executor cores must not be less than " +
+        "spark.task.cpus.")
+    }
     if (isClusterMode) {
       for (key <- Seq(amMemKey, amMemOverheadKey, amCoresKey)) {
         if (sparkConf.contains(key)) {
