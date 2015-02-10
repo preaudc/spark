@@ -21,6 +21,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 import org.apache.commons.logging.LogFactory
+import org.apache.hadoop.hive.common.LogUtils
 import org.apache.hadoop.hive.conf.HiveConf
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars
 import org.apache.hive.service.cli.thrift.{ThriftBinaryCLIService, ThriftHttpCLIService}
@@ -77,6 +78,8 @@ object HiveThriftServer2 extends Logging {
     if (!optionsProcessor.process(args)) {
       System.exit(-1)
     }
+
+    LogUtils.initHiveLog4j()
 
     logInfo("Starting SparkContext")
     SparkSQLEnv.init()
