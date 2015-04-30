@@ -356,7 +356,7 @@ class SparkSubmitSuite
     runSparkSubmit(args)
   }
 
-  test("includes jars passed in through --packages") {
+  ignore("includes jars passed in through --packages") {
     val unusedJar = TestUtils.createJarWithClasses(Seq.empty)
     val packagesString = "com.databricks:spark-csv_2.10:0.1,com.databricks:spark-avro_2.10:0.1"
     val args = Seq(
