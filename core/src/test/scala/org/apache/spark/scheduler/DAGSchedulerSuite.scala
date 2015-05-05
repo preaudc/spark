@@ -192,6 +192,10 @@ class DAGSchedulerSuite
 >>>>>>> upstream/master
   }
 
+  after {
+    scheduler.stop()
+  }
+
   override def afterAll() {
     super.afterAll()
   }
