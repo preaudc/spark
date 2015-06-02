@@ -19,6 +19,7 @@ package org.apache.spark.ml
 
 import org.mockito.Matchers.{any, eq => meq}
 import org.mockito.Mockito.when
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 import org.scalatest.mock.MockitoSugar.mock
 
@@ -26,6 +27,15 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.DataFrame
 
 class PipelineSuite extends FunSuite {
+=======
+import org.scalatest.mock.MockitoSugar.mock
+
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.DataFrame
+
+class PipelineSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   abstract class MyModel extends Model[MyModel]
 
@@ -42,6 +52,7 @@ class PipelineSuite extends FunSuite {
     val dataset3 = mock[DataFrame]
     val dataset4 = mock[DataFrame]
 
+<<<<<<< HEAD
     when(estimator0.fit(meq(dataset0), any[ParamMap]())).thenReturn(model0)
     when(model0.transform(meq(dataset0), any[ParamMap]())).thenReturn(dataset1)
     when(model0.parent).thenReturn(estimator0)
@@ -50,22 +61,46 @@ class PipelineSuite extends FunSuite {
     when(model2.transform(meq(dataset2), any[ParamMap]())).thenReturn(dataset3)
     when(model2.parent).thenReturn(estimator2)
     when(transformer3.transform(meq(dataset3), any[ParamMap]())).thenReturn(dataset4)
+=======
+    when(estimator0.copy(any[ParamMap])).thenReturn(estimator0)
+    when(model0.copy(any[ParamMap])).thenReturn(model0)
+    when(transformer1.copy(any[ParamMap])).thenReturn(transformer1)
+    when(estimator2.copy(any[ParamMap])).thenReturn(estimator2)
+    when(model2.copy(any[ParamMap])).thenReturn(model2)
+    when(transformer3.copy(any[ParamMap])).thenReturn(transformer3)
+
+    when(estimator0.fit(meq(dataset0))).thenReturn(model0)
+    when(model0.transform(meq(dataset0))).thenReturn(dataset1)
+    when(model0.parent).thenReturn(estimator0)
+    when(transformer1.transform(meq(dataset1))).thenReturn(dataset2)
+    when(estimator2.fit(meq(dataset2))).thenReturn(model2)
+    when(model2.transform(meq(dataset2))).thenReturn(dataset3)
+    when(model2.parent).thenReturn(estimator2)
+    when(transformer3.transform(meq(dataset3))).thenReturn(dataset4)
+>>>>>>> upstream/master
 
     val pipeline = new Pipeline()
       .setStages(Array(estimator0, transformer1, estimator2, transformer3))
     val pipelineModel = pipeline.fit(dataset0)
 
+<<<<<<< HEAD
     assert(pipelineModel.stages.size === 4)
+=======
+    assert(pipelineModel.stages.length === 4)
+>>>>>>> upstream/master
     assert(pipelineModel.stages(0).eq(model0))
     assert(pipelineModel.stages(1).eq(transformer1))
     assert(pipelineModel.stages(2).eq(model2))
     assert(pipelineModel.stages(3).eq(transformer3))
 
+<<<<<<< HEAD
     assert(pipelineModel.getModel(estimator0).eq(model0))
     assert(pipelineModel.getModel(estimator2).eq(model2))
     intercept[NoSuchElementException] {
       pipelineModel.getModel(mock[Estimator[MyModel]])
     }
+=======
+>>>>>>> upstream/master
     val output = pipelineModel.transform(dataset0)
     assert(output.eq(dataset4))
   }

@@ -19,20 +19,29 @@ package org.apache.spark.mllib.regression
 
 import scala.util.Random
 
-import org.scalatest.FunSuite
-
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.util.{LocalClusterSparkContext, LinearDataGenerator,
   MLlibTestSparkContext}
 import org.apache.spark.util.Utils
+<<<<<<< HEAD
 
 private object LinearRegressionSuite {
 
+=======
+
+private object LinearRegressionSuite {
+
+>>>>>>> upstream/master
   /** 3 features */
   val model = new LinearRegressionModel(weights = Vectors.dense(0.1, 0.2, 0.3), intercept = 0.5)
 }
 
+<<<<<<< HEAD
 class LinearRegressionSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class LinearRegressionSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   def validatePrediction(predictions: Seq[Double], input: Seq[LabeledPoint]) {
     val numOffPredictions = predictions.zip(input).count { case (prediction, expected) =>
@@ -150,7 +159,7 @@ class LinearRegressionSuite extends FunSuite with MLlibTestSparkContext {
   }
 }
 
-class LinearRegressionClusterSuite extends FunSuite with LocalClusterSparkContext {
+class LinearRegressionClusterSuite extends SparkFunSuite with LocalClusterSparkContext {
 
   test("task size should be small in both training and prediction") {
     val m = 4

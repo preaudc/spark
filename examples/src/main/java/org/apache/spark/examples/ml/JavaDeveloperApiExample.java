@@ -28,8 +28,12 @@ import org.apache.spark.ml.classification.Classifier;
 import org.apache.spark.ml.classification.ClassificationModel;
 import org.apache.spark.ml.param.IntParam;
 import org.apache.spark.ml.param.ParamMap;
+<<<<<<< HEAD
 import org.apache.spark.ml.param.Params;
 import org.apache.spark.ml.param.Params$;
+=======
+import org.apache.spark.ml.util.Identifiable$;
+>>>>>>> upstream/master
 import org.apache.spark.mllib.linalg.BLAS;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -100,11 +104,36 @@ public class JavaDeveloperApiExample {
 /**
  * Example of defining a type of {@link Classifier}.
  *
+<<<<<<< HEAD
  * NOTE: This is private since it is an example.  In practice, you may not want it to be private.
  */
 class MyJavaLogisticRegression
     extends Classifier<Vector, MyJavaLogisticRegression, MyJavaLogisticRegressionModel>
     implements Params {
+=======
+ * Note: Some IDEs (e.g., IntelliJ) will complain that this will not compile due to
+ *       {@link org.apache.spark.ml.param.Params#set} using incompatible return types.
+ *       However, this should still compile and run successfully.
+ */
+class MyJavaLogisticRegression
+  extends Classifier<Vector, MyJavaLogisticRegression, MyJavaLogisticRegressionModel> {
+
+  public MyJavaLogisticRegression() {
+    init();
+  }
+
+  public MyJavaLogisticRegression(String uid) {
+    this.uid_ = uid;
+    init();
+  }
+
+  private String uid_ = Identifiable$.MODULE$.randomUID("myJavaLogReg");
+
+  @Override
+  public String uid() {
+    return uid_;
+  }
+>>>>>>> upstream/master
 
   /**
    * Param for max number of iterations
@@ -118,7 +147,11 @@ class MyJavaLogisticRegression
 
   int getMaxIter() { return (Integer) getOrDefault(maxIter); }
 
+<<<<<<< HEAD
   public MyJavaLogisticRegression() {
+=======
+  private void init() {
+>>>>>>> upstream/master
     setMaxIter(100);
   }
 
@@ -129,22 +162,33 @@ class MyJavaLogisticRegression
 
   // This method is used by fit().
   // In Java, we have to make it public since Java does not understand Scala's protected modifier.
+<<<<<<< HEAD
   public MyJavaLogisticRegressionModel train(DataFrame dataset, ParamMap paramMap) {
     // Extract columns from data using helper method.
     JavaRDD<LabeledPoint> oldDataset = extractLabeledPoints(dataset, paramMap).toJavaRDD();
+=======
+  public MyJavaLogisticRegressionModel train(DataFrame dataset) {
+    // Extract columns from data using helper method.
+    JavaRDD<LabeledPoint> oldDataset = extractLabeledPoints(dataset).toJavaRDD();
+>>>>>>> upstream/master
 
     // Do learning to estimate the weight vector.
     int numFeatures = oldDataset.take(1).get(0).features().size();
     Vector weights = Vectors.zeros(numFeatures); // Learning would happen here.
 
     // Create a model, and return it.
+<<<<<<< HEAD
     return new MyJavaLogisticRegressionModel(this, paramMap, weights);
+=======
+    return new MyJavaLogisticRegressionModel(uid(), weights).setParent(this);
+>>>>>>> upstream/master
   }
 }
 
 /**
  * Example of defining a type of {@link ClassificationModel}.
  *
+<<<<<<< HEAD
  * NOTE: This is private since it is an example.  In practice, you may not want it to be private.
  */
 class MyJavaLogisticRegressionModel
@@ -155,10 +199,19 @@ class MyJavaLogisticRegressionModel
 
   private ParamMap fittingParamMap_;
   public ParamMap fittingParamMap() { return fittingParamMap_; }
+=======
+ * Note: Some IDEs (e.g., IntelliJ) will complain that this will not compile due to
+ *       {@link org.apache.spark.ml.param.Params#set} using incompatible return types.
+ *       However, this should still compile and run successfully.
+ */
+class MyJavaLogisticRegressionModel
+  extends ClassificationModel<Vector, MyJavaLogisticRegressionModel> {
+>>>>>>> upstream/master
 
   private Vector weights_;
   public Vector weights() { return weights_; }
 
+<<<<<<< HEAD
   public MyJavaLogisticRegressionModel(
       MyJavaLogisticRegression parent_,
       ParamMap fittingParamMap_,
@@ -166,6 +219,18 @@ class MyJavaLogisticRegressionModel
     this.parent_ = parent_;
     this.fittingParamMap_ = fittingParamMap_;
     this.weights_ = weights_;
+=======
+  public MyJavaLogisticRegressionModel(String uid, Vector weights) {
+    this.uid_ = uid;
+    this.weights_ = weights;
+  }
+
+  private String uid_ = Identifiable$.MODULE$.randomUID("myJavaLogReg");
+
+  @Override
+  public String uid() {
+    return uid_;
+>>>>>>> upstream/master
   }
 
   // This uses the default implementation of transform(), which reads column "features" and outputs
@@ -208,10 +273,16 @@ class MyJavaLogisticRegressionModel
    * In Java, we have to make this method public since Java does not understand Scala's protected
    * modifier.
    */
+<<<<<<< HEAD
   public MyJavaLogisticRegressionModel copy() {
     MyJavaLogisticRegressionModel m =
         new MyJavaLogisticRegressionModel(parent_, fittingParamMap_, weights_);
     Params$.MODULE$.inheritValues(this.extractParamMap(), this, m);
     return m;
+=======
+  @Override
+  public MyJavaLogisticRegressionModel copy(ParamMap extra) {
+    return copyValues(new MyJavaLogisticRegressionModel(uid(), weights_), extra);
+>>>>>>> upstream/master
   }
 }

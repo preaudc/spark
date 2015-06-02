@@ -27,7 +27,11 @@ import org.apache.spark.ui.{WebUIPage, UIUtils}
 /** Page showing list of all ongoing and recently finished stages and pools */
 private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
   private val sc = parent.sc
+<<<<<<< HEAD
   private val listener = parent.listener
+=======
+  private val listener = parent.progressListener
+>>>>>>> upstream/master
   private def isFairScheduler = parent.isFairScheduler
 
   def render(request: HttpServletRequest): Seq[Node] = {
@@ -42,6 +46,7 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
 
       val activeStagesTable =
         new StageTableBase(activeStages.sortBy(_.submissionTime).reverse,
+<<<<<<< HEAD
           parent.basePath, parent.listener, isFairScheduler = parent.isFairScheduler,
           killEnabled = parent.killEnabled)
       val pendingStagesTable =
@@ -54,6 +59,20 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
       val failedStagesTable =
         new FailedStageTable(failedStages.sortBy(_.submissionTime).reverse, parent.basePath,
           parent.listener, isFairScheduler = parent.isFairScheduler)
+=======
+          parent.basePath, parent.progressListener, isFairScheduler = parent.isFairScheduler,
+          killEnabled = parent.killEnabled)
+      val pendingStagesTable =
+        new StageTableBase(pendingStages.sortBy(_.submissionTime).reverse,
+          parent.basePath, parent.progressListener, isFairScheduler = parent.isFairScheduler,
+          killEnabled = false)
+      val completedStagesTable =
+        new StageTableBase(completedStages.sortBy(_.submissionTime).reverse, parent.basePath,
+          parent.progressListener, isFairScheduler = parent.isFairScheduler, killEnabled = false)
+      val failedStagesTable =
+        new FailedStageTable(failedStages.sortBy(_.submissionTime).reverse, parent.basePath,
+          parent.progressListener, isFairScheduler = parent.isFairScheduler)
+>>>>>>> upstream/master
 
       // For now, pool information is only accessible in live UIs
       val pools = sc.map(_.getAllPools).getOrElse(Seq.empty[Schedulable])
@@ -64,10 +83,20 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
       val shouldShowCompletedStages = completedStages.nonEmpty
       val shouldShowFailedStages = failedStages.nonEmpty
 
+<<<<<<< HEAD
+=======
+      val completedStageNumStr = if (numCompletedStages == completedStages.size) {
+        s"$numCompletedStages"
+      } else {
+        s"$numCompletedStages, only showing ${completedStages.size}"
+      }
+
+>>>>>>> upstream/master
       val summary: NodeSeq =
         <div>
           <ul class="unstyled">
             {
+<<<<<<< HEAD
               if (sc.isDefined) {
                 // Total duration is not meaningful unless the UI is live
                 <li>
@@ -81,6 +110,8 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
               {listener.schedulingMode.map(_.toString).getOrElse("Unknown")}
             </li>
             {
+=======
+>>>>>>> upstream/master
               if (shouldShowActiveStages) {
                 <li>
                   <a href="#active"><strong>Active Stages:</strong></a>
@@ -98,9 +129,15 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
             }
             {
               if (shouldShowCompletedStages) {
+<<<<<<< HEAD
                 <li>
                   <a href="#completed"><strong>Completed Stages:</strong></a>
                   {numCompletedStages}
+=======
+                <li id="completed-summary">
+                  <a href="#completed"><strong>Completed Stages:</strong></a>
+                  {completedStageNumStr}
+>>>>>>> upstream/master
                 </li>
               }
             }
@@ -132,14 +169,22 @@ private[ui] class AllStagesPage(parent: StagesTab) extends WebUIPage("") {
         pendingStagesTable.toNodeSeq
       }
       if (shouldShowCompletedStages) {
+<<<<<<< HEAD
         content ++= <h4 id="completed">Completed Stages ({numCompletedStages})</h4> ++
+=======
+        content ++= <h4 id="completed">Completed Stages ({completedStageNumStr})</h4> ++
+>>>>>>> upstream/master
         completedStagesTable.toNodeSeq
       }
       if (shouldShowFailedStages) {
         content ++= <h4 id ="failed">Failed Stages ({numFailedStages})</h4> ++
         failedStagesTable.toNodeSeq
       }
+<<<<<<< HEAD
       UIUtils.headerSparkPage("Spark Stages (for all jobs)", content, parent)
+=======
+      UIUtils.headerSparkPage("Stages for All Jobs", content, parent)
+>>>>>>> upstream/master
     }
   }
 }

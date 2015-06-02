@@ -21,7 +21,11 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.model.TreeEnsembleModel
 import org.apache.spark.mllib.util.MLUtils
+<<<<<<< HEAD
 import org.apache.spark.rdd.RDD
+=======
+
+>>>>>>> upstream/master
 
 /**
  * :: DeveloperApi ::
@@ -47,7 +51,11 @@ object LogLoss extends Loss {
     - 4.0 * label / (1.0 + math.exp(2.0 * label * prediction))
   }
 
+<<<<<<< HEAD
   override def computeError(prediction: Double, label: Double): Double = {
+=======
+  override private[mllib] def computeError(prediction: Double, label: Double): Double = {
+>>>>>>> upstream/master
     val margin = 2.0 * label * prediction
     // The following is equivalent to 2.0 * log(1 + exp(-margin)) but more numerically stable.
     2.0 * MLUtils.log1pExp(-margin)

@@ -19,7 +19,17 @@ package org.apache.spark.sql.hive.thriftserver
 
 import java.sql.{Date, Timestamp}
 import java.util.concurrent.Executors
+<<<<<<< HEAD
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
+=======
+import java.util.{ArrayList => JArrayList, List => JList, Map => JMap, UUID}
+
+import org.apache.commons.logging.Log
+import org.apache.hadoop.hive.conf.HiveConf
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars
+import org.apache.hive.service.cli.thrift.TProtocolVersion
+import org.apache.spark.sql.hive.thriftserver.server.SparkSQLOperationManager
+>>>>>>> upstream/master
 
 import org.apache.commons.logging.Log
 import org.apache.hadoop.hive.conf.HiveConf
@@ -36,7 +46,11 @@ import org.apache.hive.service.cli._
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation
 import org.apache.hive.service.cli.session.{SessionManager, HiveSession}
 
+<<<<<<< HEAD
 import org.apache.spark.Logging
+=======
+import org.apache.spark.{SparkContext, Logging}
+>>>>>>> upstream/master
 import org.apache.spark.sql.{DataFrame, Row => SparkRow, SQLConf}
 import org.apache.spark.sql.execution.SetCommand
 import org.apache.spark.sql.hive.thriftserver.ReflectionUtils._
@@ -161,9 +175,22 @@ private[hive] class SparkExecuteStatementOperation(
   }
 
   def run(): Unit = {
+<<<<<<< HEAD
     logInfo(s"Running query '$statement'")
     setState(OperationState.RUNNING)
     hiveContext.sparkContext.setJobDescription(statement)
+=======
+    val statementId = UUID.randomUUID().toString
+    logInfo(s"Running query '$statement'")
+    setState(OperationState.RUNNING)
+    HiveThriftServer2.listener.onStatementStart(
+      statementId,
+      parentSession.getSessionHandle.getSessionId.toString,
+      statement,
+      statementId,
+      parentSession.getUsername)
+    hiveContext.sparkContext.setJobGroup(statementId, statement)
+>>>>>>> upstream/master
     sessionToActivePool.get(parentSession.getSessionHandle).foreach { pool =>
       hiveContext.sparkContext.setLocalProperty("spark.scheduler.pool", pool)
     }
@@ -176,6 +203,10 @@ private[hive] class SparkExecuteStatementOperation(
           logInfo(s"Setting spark.scheduler.pool=$value for future statements in this session.")
         case _ =>
       }
+<<<<<<< HEAD
+=======
+      HiveThriftServer2.listener.onStatementParsed(statementId, result.queryExecution.toString())
+>>>>>>> upstream/master
       iter = {
         val useIncrementalCollect =
           hiveContext.getConf("spark.sql.thriftServer.incrementalCollect", "false").toBoolean
@@ -192,10 +223,19 @@ private[hive] class SparkExecuteStatementOperation(
       // HiveServer will silently swallow them.
       case e: Throwable =>
         setState(OperationState.ERROR)
+<<<<<<< HEAD
+=======
+        HiveThriftServer2.listener.onStatementError(
+          statementId, e.getMessage, e.getStackTraceString)
+>>>>>>> upstream/master
         logError("Error executing query:", e)
         throw new HiveSQLException(e.toString)
     }
     setState(OperationState.FINISHED)
+<<<<<<< HEAD
+=======
+    HiveThriftServer2.listener.onStatementFinish(statementId)
+>>>>>>> upstream/master
   }
 }
 
@@ -227,11 +267,24 @@ private[hive] class SparkSQLSessionManager(hiveContext: HiveContext)
       withImpersonation: Boolean,
       delegationToken: String): SessionHandle = {
     hiveContext.openSession()
+<<<<<<< HEAD
 
     super.openSession(protocol, username, passwd, sessionConf, withImpersonation, delegationToken)
   }
 
   override def closeSession(sessionHandle: SessionHandle) {
+=======
+    val sessionHandle = super.openSession(
+      protocol, username, passwd, sessionConf, withImpersonation, delegationToken)
+    val session = super.getSession(sessionHandle)
+    HiveThriftServer2.listener.onSessionCreated(
+      session.getIpAddress, sessionHandle.getSessionId.toString, session.getUsername)
+    sessionHandle
+  }
+
+  override def closeSession(sessionHandle: SessionHandle) {
+    HiveThriftServer2.listener.onSessionClosed(sessionHandle.getSessionId.toString)
+>>>>>>> upstream/master
     super.closeSession(sessionHandle)
     sparkSqlOperationManager.sessionToActivePool -= sessionHandle
 

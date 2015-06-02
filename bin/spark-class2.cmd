@@ -61,7 +61,16 @@ if not "x%JAVA_HOME%"=="x" set RUNNER=%JAVA_HOME%\bin\java
 
 rem The launcher library prints the command to be executed in a single line suitable for being
 rem executed by the batch interpreter. So read all the output of the launcher into a variable.
+<<<<<<< HEAD
 for /f "tokens=*" %%i in ('cmd /C ""%RUNNER%" -cp %LAUNCH_CLASSPATH% org.apache.spark.launcher.Main %*"') do (
   set SPARK_CMD=%%i
 )
+=======
+set LAUNCHER_OUTPUT=%temp%\spark-class-launcher-output-%RANDOM%.txt
+"%RUNNER%" -cp %LAUNCH_CLASSPATH% org.apache.spark.launcher.Main %* > %LAUNCHER_OUTPUT%
+for /f "tokens=*" %%i in (%LAUNCHER_OUTPUT%) do (
+  set SPARK_CMD=%%i
+)
+del %LAUNCHER_OUTPUT%
+>>>>>>> upstream/master
 %SPARK_CMD%

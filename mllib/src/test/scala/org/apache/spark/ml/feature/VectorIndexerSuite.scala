@@ -19,6 +19,7 @@ package org.apache.spark.ml.feature
 
 import scala.beans.{BeanInfo, BeanProperty}
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.SparkException
@@ -36,6 +37,19 @@ class VectorIndexerSuite extends FunSuite with MLlibTestSparkContext {
 
   @transient var sqlContext: SQLContext = _
 
+=======
+import org.apache.spark.{SparkException, SparkFunSuite}
+import org.apache.spark.ml.attribute._
+import org.apache.spark.mllib.linalg.{SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.util.MLlibTestSparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
+
+class VectorIndexerSuite extends SparkFunSuite with MLlibTestSparkContext {
+
+  import VectorIndexerSuite.FeatureData
+
+>>>>>>> upstream/master
   // identical, of length 3
   @transient var densePoints1: DataFrame = _
   @transient var sparsePoints1: DataFrame = _
@@ -87,7 +101,10 @@ class VectorIndexerSuite extends FunSuite with MLlibTestSparkContext {
     checkPair(densePoints1Seq, sparsePoints1Seq)
     checkPair(densePoints2Seq, sparsePoints2Seq)
 
+<<<<<<< HEAD
     sqlContext = new SQLContext(sc)
+=======
+>>>>>>> upstream/master
     densePoints1 = sqlContext.createDataFrame(sc.parallelize(densePoints1Seq, 2).map(FeatureData))
     sparsePoints1 = sqlContext.createDataFrame(sc.parallelize(sparsePoints1Seq, 2).map(FeatureData))
     densePoints2 = sqlContext.createDataFrame(sc.parallelize(densePoints2Seq, 2).map(FeatureData))
@@ -111,8 +128,13 @@ class VectorIndexerSuite extends FunSuite with MLlibTestSparkContext {
     val model = vectorIndexer.fit(densePoints1) // vectors of length 3
     model.transform(densePoints1) // should work
     model.transform(sparsePoints1) // should work
+<<<<<<< HEAD
     intercept[IllegalArgumentException] {
       model.transform(densePoints2)
+=======
+    intercept[SparkException] {
+      model.transform(densePoints2).collect()
+>>>>>>> upstream/master
       println("Did not throw error when fit, transform were called on vectors of different lengths")
     }
     intercept[SparkException] {
@@ -228,7 +250,11 @@ class VectorIndexerSuite extends FunSuite with MLlibTestSparkContext {
     }
     val attrGroup = new AttributeGroup("features", featureAttributes)
     val densePoints1WithMeta =
+<<<<<<< HEAD
       densePoints1.select(densePoints1("features").as("features", attrGroup.toMetadata))
+=======
+      densePoints1.select(densePoints1("features").as("features", attrGroup.toMetadata()))
+>>>>>>> upstream/master
     val vectorIndexer = getIndexer.setMaxCategories(2)
     val model = vectorIndexer.fit(densePoints1WithMeta)
     // Check that ML metadata are preserved.
@@ -245,8 +271,11 @@ class VectorIndexerSuite extends FunSuite with MLlibTestSparkContext {
           // TODO: Once input features marked as categorical are handled correctly, check that here.
       }
     }
+<<<<<<< HEAD
     // Check that non-ML metadata are preserved.
     TestingUtils.testPreserveMetadata(densePoints1WithMeta, model, "features", "indexed")
+=======
+>>>>>>> upstream/master
   }
 }
 

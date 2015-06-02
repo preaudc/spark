@@ -41,7 +41,11 @@ private[spark] class ReplayListenerBus extends SparkListenerBus with Logging {
    *
    * @param logData Stream containing event log data.
    * @param sourceName Filename (or other source identifier) from whence @logData is being read
+<<<<<<< HEAD
    * @param maybeTruncated Indicate whether log file might be truncated (some abnormal situations 
+=======
+   * @param maybeTruncated Indicate whether log file might be truncated (some abnormal situations
+>>>>>>> upstream/master
    *        encountered, log file might not finished writing) or not
    */
   def replay(
@@ -62,7 +66,11 @@ private[spark] class ReplayListenerBus extends SparkListenerBus with Logging {
             if (!maybeTruncated || lines.hasNext) {
               throw jpe
             } else {
+<<<<<<< HEAD
               logWarning(s"Got JsonParseException from log file $sourceName" + 
+=======
+              logWarning(s"Got JsonParseException from log file $sourceName" +
+>>>>>>> upstream/master
                 s" at line $lineNumber, the file might not have finished writing cleanly.")
             }
         }

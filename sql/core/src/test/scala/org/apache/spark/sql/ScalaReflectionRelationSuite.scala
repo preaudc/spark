@@ -19,8 +19,12 @@ package org.apache.spark.sql
 
 import java.sql.{Date, Timestamp}
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
+=======
+import org.apache.spark.SparkFunSuite
+>>>>>>> upstream/master
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.test.TestSQLContext._
 
@@ -74,20 +78,32 @@ case class ComplexReflectData(
     mapFieldContainsNull: Map[Int, Option[Long]],
     dataField: Data)
 
+<<<<<<< HEAD
 class ScalaReflectionRelationSuite extends FunSuite {
+=======
+class ScalaReflectionRelationSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   import org.apache.spark.sql.test.TestSQLContext.implicits._
 
   test("query case class RDD") {
     val data = ReflectData("a", 1, 1L, 1.toFloat, 1.toDouble, 1.toShort, 1.toByte, true,
+<<<<<<< HEAD
       new java.math.BigDecimal(1), new Date(12345), new Timestamp(12345), Seq(1,2,3))
+=======
+      new java.math.BigDecimal(1), new Date(12345), new Timestamp(12345), Seq(1, 2, 3))
+>>>>>>> upstream/master
     val rdd = sparkContext.parallelize(data :: Nil)
     rdd.toDF().registerTempTable("reflectData")
 
     assert(sql("SELECT * FROM reflectData").collect().head ===
       Row("a", 1, 1L, 1.toFloat, 1.toDouble, 1.toShort, 1.toByte, true,
         new java.math.BigDecimal(1), Date.valueOf("1970-01-01"),
+<<<<<<< HEAD
         new Timestamp(12345), Seq(1,2,3)))
+=======
+        new Timestamp(12345), Seq(1, 2, 3)))
+>>>>>>> upstream/master
   }
 
   test("query case class RDD with nulls") {

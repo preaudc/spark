@@ -58,7 +58,11 @@ public class JavaLDAExample {
     corpus.cache();
 
     // Cluster the documents into three topics using LDA
+<<<<<<< HEAD
     DistributedLDAModel ldaModel = new LDA().setK(3).run(corpus);
+=======
+    DistributedLDAModel ldaModel = (DistributedLDAModel)new LDA().setK(3).run(corpus);
+>>>>>>> upstream/master
 
     // Output topics. Each is a distribution over words (matching word count vectors)
     System.out.println("Learned topics (as distributions over vocab of " + ldaModel.vocabSize()

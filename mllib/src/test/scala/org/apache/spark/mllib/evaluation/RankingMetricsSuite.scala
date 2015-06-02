@@ -17,12 +17,15 @@
 
 package org.apache.spark.mllib.evaluation
 
-import org.scalatest.FunSuite
-
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 
+<<<<<<< HEAD
 class RankingMetricsSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class RankingMetricsSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
   test("Ranking metrics: map, ndcg") {
     val predictionAndLabels = sc.parallelize(
       Seq(

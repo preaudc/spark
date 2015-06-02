@@ -121,7 +121,14 @@ abstract class AbstractCommandBuilder {
    * set it.
    */
   void addPermGenSizeOpt(List<String> cmd) {
+<<<<<<< HEAD
     // Don't set MaxPermSize for Java 8 and later.
+=======
+    // Don't set MaxPermSize for IBM Java, or Oracle Java 8 and later.
+    if (getJavaVendor() == JavaVendor.IBM) {
+      return;
+    }
+>>>>>>> upstream/master
     String[] version = System.getProperty("java.version").split("\\.");
     if (Integer.parseInt(version[0]) > 1 || Integer.parseInt(version[1]) > 7) {
       return;
@@ -293,6 +300,12 @@ abstract class AbstractCommandBuilder {
       try {
         fd = new FileInputStream(propsFile);
         props.load(new InputStreamReader(fd, "UTF-8"));
+<<<<<<< HEAD
+=======
+        for (Map.Entry<Object, Object> e : props.entrySet()) {
+          e.setValue(e.getValue().toString().trim());
+        }
+>>>>>>> upstream/master
       } finally {
         if (fd != null) {
           try {

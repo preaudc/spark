@@ -255,7 +255,7 @@ class BasicOperationsSuite extends TestSuiteBase {
       Seq(  )
     )
     val operation = (s1: DStream[String], s2: DStream[String]) => {
-      s1.map(x => (x,1)).cogroup(s2.map(x => (x, "x"))).mapValues(x => (x._1.toSeq, x._2.toSeq))
+      s1.map(x => (x, 1)).cogroup(s2.map(x => (x, "x"))).mapValues(x => (x._1.toSeq, x._2.toSeq))
     }
     testOperation(inputData1, inputData2, operation, outputData, true)
   }
@@ -427,9 +427,9 @@ class BasicOperationsSuite extends TestSuiteBase {
   test("updateStateByKey - object lifecycle") {
     val inputData =
       Seq(
-        Seq("a","b"),
+        Seq("a", "b"),
         null,
-        Seq("a","c","a"),
+        Seq("a", "c", "a"),
         Seq("c"),
         null,
         null
@@ -557,6 +557,12 @@ class BasicOperationsSuite extends TestSuiteBase {
     withTestServer(new TestServer()) { testServer =>
       withStreamingContext(new StreamingContext(conf, batchDuration)) { ssc =>
         testServer.start()
+<<<<<<< HEAD
+=======
+
+        val batchCounter = new BatchCounter(ssc)
+
+>>>>>>> upstream/master
         // Set up the streaming context and input streams
         val networkStream =
           ssc.socketTextStream("localhost", testServer.port, StorageLevel.MEMORY_AND_DISK)
@@ -566,6 +572,7 @@ class BasicOperationsSuite extends TestSuiteBase {
 
         outputStream.register()
         ssc.start()
+<<<<<<< HEAD
 
         // Feed data to the server to send to the network receiver
         val clock = ssc.scheduler.clock.asInstanceOf[ManualClock]
@@ -591,6 +598,37 @@ class BasicOperationsSuite extends TestSuiteBase {
           collectRddInfo()
         }
 
+=======
+
+        // Feed data to the server to send to the network receiver
+        val clock = ssc.scheduler.clock.asInstanceOf[ManualClock]
+        val input = Seq(1, 2, 3, 4, 5, 6)
+
+        val blockRdds = new mutable.HashMap[Time, BlockRDD[_]]
+        val persistentRddIds = new mutable.HashMap[Time, Int]
+
+        def collectRddInfo() { // get all RDD info required for verification
+          networkStream.generatedRDDs.foreach { case (time, rdd) =>
+            blockRdds(time) = rdd.asInstanceOf[BlockRDD[_]]
+          }
+          mappedStream.generatedRDDs.foreach { case (time, rdd) =>
+            persistentRddIds(time) = rdd.id
+          }
+        }
+
+        Thread.sleep(200)
+        for (i <- 0 until input.size) {
+          testServer.send(input(i).toString + "\n")
+          Thread.sleep(200)
+          val numCompletedBatches = batchCounter.getNumCompletedBatches
+          clock.advance(batchDuration.milliseconds)
+          if (!batchCounter.waitUntilBatchesCompleted(numCompletedBatches + 1, 5000)) {
+            fail("Batch took more than 5 seconds to complete")
+          }
+          collectRddInfo()
+        }
+
+>>>>>>> upstream/master
         Thread.sleep(200)
         collectRddInfo()
         logInfo("Stopping server")

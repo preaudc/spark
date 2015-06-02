@@ -20,9 +20,12 @@ package org.apache.spark.sql.catalyst
 import java.sql.{Date, Timestamp}
 
 import scala.language.implicitConversions
-import scala.reflect.runtime.universe.{TypeTag, typeTag}
 
+<<<<<<< HEAD
 import org.apache.spark.sql.catalyst.analysis.{EliminateSubQueries, UnresolvedGetField, UnresolvedAttribute}
+=======
+import org.apache.spark.sql.catalyst.analysis.{EliminateSubQueries, UnresolvedExtractValue, UnresolvedAttribute}
+>>>>>>> upstream/master
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.plans.{Inner, JoinType}
@@ -61,7 +64,11 @@ package object dsl {
   trait ImplicitOperators {
     def expr: Expression
 
+<<<<<<< HEAD
     def unary_- : Expression= UnaryMinus(expr)
+=======
+    def unary_- : Expression = UnaryMinus(expr)
+>>>>>>> upstream/master
     def unary_! : Predicate = Not(expr)
     def unary_~ : Expression = BitwiseNot(expr)
 
@@ -100,8 +107,14 @@ package object dsl {
     def isNull: Predicate = IsNull(expr)
     def isNotNull: Predicate = IsNotNull(expr)
 
+<<<<<<< HEAD
     def getItem(ordinal: Expression): Expression = GetItem(expr, ordinal)
     def getField(fieldName: String): UnresolvedGetField = UnresolvedGetField(expr, fieldName)
+=======
+    def getItem(ordinal: Expression): UnresolvedExtractValue = UnresolvedExtractValue(expr, ordinal)
+    def getField(fieldName: String): UnresolvedExtractValue =
+      UnresolvedExtractValue(expr, Literal(fieldName))
+>>>>>>> upstream/master
 
     def cast(to: DataType): Expression = Cast(expr, to)
 
@@ -140,7 +153,11 @@ package object dsl {
       // Note that if we make ExpressionConversions an object rather than a trait, we can
       // then make this a value class to avoid the small penalty of runtime instantiation.
       def $(args: Any*): analysis.UnresolvedAttribute = {
+<<<<<<< HEAD
         analysis.UnresolvedAttribute(sc.s(args :_*))
+=======
+        analysis.UnresolvedAttribute(sc.s(args : _*))
+>>>>>>> upstream/master
       }
     }
 
@@ -233,17 +250,20 @@ package object dsl {
     implicit class DslAttribute(a: AttributeReference) {
       def notNull: AttributeReference = a.withNullability(false)
       def nullable: AttributeReference = a.withNullability(true)
+<<<<<<< HEAD
 
       // Protobuf terminology
       def required: AttributeReference = a.withNullability(false)
 
+=======
+>>>>>>> upstream/master
       def at(ordinal: Int): BoundReference = BoundReference(ordinal, a.dataType, a.nullable)
     }
   }
 
-
   object expressions extends ExpressionConversions  // scalastyle:ignore
 
+<<<<<<< HEAD
   abstract class LogicalPlanFunctions {
     def logicalPlan: LogicalPlan
 
@@ -252,11 +272,21 @@ package object dsl {
     def where(condition: Expression): LogicalPlan = Filter(condition, logicalPlan)
 
     def limit(limitExpr: Expression): LogicalPlan = Limit(limitExpr, logicalPlan)
+=======
+  object plans {  // scalastyle:ignore
+    implicit class DslLogicalPlan(val logicalPlan: LogicalPlan) {
+      def select(exprs: NamedExpression*): LogicalPlan = Project(exprs, logicalPlan)
 
-    def join(
+      def where(condition: Expression): LogicalPlan = Filter(condition, logicalPlan)
+
+      def limit(limitExpr: Expression): LogicalPlan = Limit(limitExpr, logicalPlan)
+>>>>>>> upstream/master
+
+      def join(
         otherPlan: LogicalPlan,
         joinType: JoinType = Inner,
         condition: Option[Expression] = None): LogicalPlan =
+<<<<<<< HEAD
       Join(logicalPlan, otherPlan, joinType, condition)
 
     def orderBy(sortExprs: SortOrder*): LogicalPlan = Sort(sortExprs, true, logicalPlan)
@@ -283,12 +313,37 @@ package object dsl {
         withReplacement: Boolean = true,
         seed: Int = (math.random * 1000).toInt): LogicalPlan =
       Sample(fraction, withReplacement, seed, logicalPlan)
+=======
+        Join(logicalPlan, otherPlan, joinType, condition)
 
-    def generate(
+      def orderBy(sortExprs: SortOrder*): LogicalPlan = Sort(sortExprs, true, logicalPlan)
+
+      def sortBy(sortExprs: SortOrder*): LogicalPlan = Sort(sortExprs, false, logicalPlan)
+
+      def groupBy(groupingExprs: Expression*)(aggregateExprs: Expression*): LogicalPlan = {
+        val aliasedExprs = aggregateExprs.map {
+          case ne: NamedExpression => ne
+          case e => Alias(e, e.toString)()
+        }
+        Aggregate(groupingExprs, aliasedExprs, logicalPlan)
+      }
+
+      def subquery(alias: Symbol): LogicalPlan = Subquery(alias.name, logicalPlan)
+
+      def except(otherPlan: LogicalPlan): LogicalPlan = Except(logicalPlan, otherPlan)
+
+      def intersect(otherPlan: LogicalPlan): LogicalPlan = Intersect(logicalPlan, otherPlan)
+
+      def unionAll(otherPlan: LogicalPlan): LogicalPlan = Union(logicalPlan, otherPlan)
+>>>>>>> upstream/master
+
+      // TODO specify the output column names
+      def generate(
         generator: Generator,
         join: Boolean = false,
         outer: Boolean = false,
         alias: Option[String] = None): LogicalPlan =
+<<<<<<< HEAD
       Generate(generator, join, outer, None, logicalPlan)
 
     def insertInto(tableName: String, overwrite: Boolean = false): LogicalPlan =
@@ -363,4 +418,15 @@ package object dsl {
 
   implicit def functionToUdfBuilder[T: TypeTag](func: Function22[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, T]): ScalaUdfBuilder[T] = ScalaUdfBuilder(func)
   // scalastyle:on
+=======
+        Generate(generator, join = join, outer = outer, alias, Nil, logicalPlan)
+
+      def insertInto(tableName: String, overwrite: Boolean = false): LogicalPlan =
+        InsertIntoTable(
+          analysis.UnresolvedRelation(Seq(tableName)), Map.empty, logicalPlan, overwrite, false)
+
+      def analyze: LogicalPlan = EliminateSubQueries(analysis.SimpleAnalyzer.execute(logicalPlan))
+    }
+  }
+>>>>>>> upstream/master
 }

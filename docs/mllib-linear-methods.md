@@ -377,7 +377,11 @@ references.
 Here is an
 [detailed mathematical derivation](http://www.slideshare.net/dbtsai/2014-0620-mlor-36132297).
 
+<<<<<<< HEAD
 For multiclass classification problems, the algorithm will outputs a multinomial logistic regression
+=======
+For multiclass classification problems, the algorithm will output a multinomial logistic regression
+>>>>>>> upstream/master
 model, which contains $K - 1$ binary logistic regression models regressed against the first class.
 Given a new data points, $K - 1$ models will be run, and the class with largest probability will be
 chosen as the predicted class.
@@ -785,8 +789,12 @@ gradient descent (`stepSize`, `numIterations`, `miniBatchFraction`).  For each o
 all three possible regularizations (none, L1 or L2).
 
 For Logistic Regression, [L-BFGS](api/scala/index.html#org.apache.spark.mllib.optimization.LBFGS)
+<<<<<<< HEAD
 version is implemented under [LogisticRegressionWithLBFGS]
 (api/scala/index.html#org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS), and this
+=======
+version is implemented under [LogisticRegressionWithLBFGS](api/scala/index.html#org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS), and this
+>>>>>>> upstream/master
 version supports both binary and multinomial Logistic Regression while SGD version only supports
 binary Logistic Regression. However, L-BFGS version doesn't support L1 regularization but SGD one
 supports L1 regularization. When L1 regularization is not required, L-BFGS version is strongly

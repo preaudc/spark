@@ -22,9 +22,12 @@ from pyspark.ml.util import keyword_only
 from pyspark.mllib.common import inherit_doc
 
 
+<<<<<<< HEAD
 __all__ = ['Estimator', 'Transformer', 'Pipeline', 'PipelineModel']
 
 
+=======
+>>>>>>> upstream/master
 @inherit_doc
 class Estimator(Params):
     """
@@ -34,6 +37,7 @@ class Estimator(Params):
     __metaclass__ = ABCMeta
 
     @abstractmethod
+<<<<<<< HEAD
     def fit(self, dataset, params={}):
         """
         Fits a model to the input dataset with optional parameters.
@@ -42,10 +46,45 @@ class Estimator(Params):
                         :py:class:`pyspark.sql.DataFrame`
         :param params: an optional param map that overwrites embedded
                        params
+=======
+    def _fit(self, dataset):
+        """
+        Fits a model to the input dataset. This is called by the
+        default implementation of fit.
+
+        :param dataset: input dataset, which is an instance of
+                        :py:class:`pyspark.sql.DataFrame`
+>>>>>>> upstream/master
         :returns: fitted model
         """
         raise NotImplementedError()
 
+<<<<<<< HEAD
+=======
+    def fit(self, dataset, params={}):
+        """
+        Fits a model to the input dataset with optional parameters.
+
+        :param dataset: input dataset, which is an instance of
+                        :py:class:`pyspark.sql.DataFrame`
+        :param params: an optional param map that overrides embedded
+                       params. If a list/tuple of param maps is given,
+                       this calls fit on each param map and returns a
+                       list of models.
+        :returns: fitted model(s)
+        """
+        if isinstance(params, (list, tuple)):
+            return [self.fit(dataset, paramMap) for paramMap in params]
+        elif isinstance(params, dict):
+            if params:
+                return self.copy(params)._fit(dataset)
+            else:
+                return self._fit(dataset)
+        else:
+            raise ValueError("Params must be either a param map or a list/tuple of param maps, "
+                             "but got %s." % type(params))
+
+>>>>>>> upstream/master
 
 @inherit_doc
 class Transformer(Params):
@@ -57,18 +96,55 @@ class Transformer(Params):
     __metaclass__ = ABCMeta
 
     @abstractmethod
+<<<<<<< HEAD
+    def transform(self, dataset, params={}):
+=======
+    def _transform(self, dataset):
+>>>>>>> upstream/master
+        """
+        Transforms the input dataset with optional parameters.
+
+        :param dataset: input dataset, which is an instance of
+                        :py:class:`pyspark.sql.DataFrame`
+<<<<<<< HEAD
+        :param params: an optional param map that overwrites embedded
+                       params
+=======
+>>>>>>> upstream/master
+        :returns: transformed dataset
+        """
+        raise NotImplementedError()
+
+<<<<<<< HEAD
+=======
     def transform(self, dataset, params={}):
         """
         Transforms the input dataset with optional parameters.
 
         :param dataset: input dataset, which is an instance of
                         :py:class:`pyspark.sql.DataFrame`
-        :param params: an optional param map that overwrites embedded
-                       params
+        :param params: an optional param map that overrides embedded
+                       params.
         :returns: transformed dataset
         """
-        raise NotImplementedError()
+        if isinstance(params, dict):
+            if params:
+                return self.copy(params,)._transform(dataset)
+            else:
+                return self._transform(dataset)
+        else:
+            raise ValueError("Params must be either a param map but got %s." % type(params))
 
+
+@inherit_doc
+class Model(Transformer):
+    """
+    Abstract class for models that are fitted by estimators.
+    """
+
+    __metaclass__ = ABCMeta
+
+>>>>>>> upstream/master
 
 @inherit_doc
 class Pipeline(Estimator):
@@ -107,15 +183,24 @@ class Pipeline(Estimator):
         :param value: a list of transformers or estimators
         :return: the pipeline instance
         """
+<<<<<<< HEAD
         self.paramMap[self.stages] = value
+=======
+        self._paramMap[self.stages] = value
+>>>>>>> upstream/master
         return self
 
     def getStages(self):
         """
         Get pipeline stages.
         """
+<<<<<<< HEAD
         if self.stages in self.paramMap:
             return self.paramMap[self.stages]
+=======
+        if self.stages in self._paramMap:
+            return self._paramMap[self.stages]
+>>>>>>> upstream/master
 
     @keyword_only
     def setParams(self, stages=[]):
@@ -126,6 +211,7 @@ class Pipeline(Estimator):
         kwargs = self.setParams._input_kwargs
         return self._set(**kwargs)
 
+<<<<<<< HEAD
     def fit(self, dataset, params={}):
         paramMap = self.extractParamMap(params)
         stages = paramMap[self.stages]
@@ -133,6 +219,14 @@ class Pipeline(Estimator):
             if not (isinstance(stage, Estimator) or isinstance(stage, Transformer)):
                 raise ValueError(
                     "Cannot recognize a pipeline stage of type %s." % type(stage).__name__)
+=======
+    def _fit(self, dataset):
+        stages = self.getStages()
+        for stage in stages:
+            if not (isinstance(stage, Estimator) or isinstance(stage, Transformer)):
+                raise TypeError(
+                    "Cannot recognize a pipeline stage of type %s." % type(stage))
+>>>>>>> upstream/master
         indexOfLastEstimator = -1
         for i, stage in enumerate(stages):
             if isinstance(stage, Estimator):
@@ -142,23 +236,44 @@ class Pipeline(Estimator):
             if i <= indexOfLastEstimator:
                 if isinstance(stage, Transformer):
                     transformers.append(stage)
+<<<<<<< HEAD
                     dataset = stage.transform(dataset, paramMap)
                 else:  # must be an Estimator
                     model = stage.fit(dataset, paramMap)
                     transformers.append(model)
                     if i < indexOfLastEstimator:
                         dataset = model.transform(dataset, paramMap)
+=======
+                    dataset = stage.transform(dataset)
+                else:  # must be an Estimator
+                    model = stage.fit(dataset)
+                    transformers.append(model)
+                    if i < indexOfLastEstimator:
+                        dataset = model.transform(dataset)
+>>>>>>> upstream/master
             else:
                 transformers.append(stage)
         return PipelineModel(transformers)
 
+<<<<<<< HEAD
 
 @inherit_doc
 class PipelineModel(Transformer):
+=======
+    def copy(self, extra={}):
+        that = Params.copy(self, extra)
+        stages = [stage.copy(extra) for stage in that.getStages()]
+        return that.setStages(stages)
+
+
+@inherit_doc
+class PipelineModel(Model):
+>>>>>>> upstream/master
     """
     Represents a compiled pipeline with transformers and fitted models.
     """
 
+<<<<<<< HEAD
     def __init__(self, transformers):
         super(PipelineModel, self).__init__()
         self.transformers = transformers
@@ -168,3 +283,17 @@ class PipelineModel(Transformer):
         for t in self.transformers:
             dataset = t.transform(dataset, paramMap)
         return dataset
+=======
+    def __init__(self, stages):
+        super(PipelineModel, self).__init__()
+        self.stages = stages
+
+    def _transform(self, dataset):
+        for t in self.stages:
+            dataset = t.transform(dataset)
+        return dataset
+
+    def copy(self, extra={}):
+        stages = [stage.copy(extra) for stage in self.stages]
+        return PipelineModel(stages)
+>>>>>>> upstream/master

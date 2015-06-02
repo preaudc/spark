@@ -175,7 +175,11 @@ class ALS private (
   /**
    * :: DeveloperApi ::
    * Sets storage level for final RDDs (user/product used in MatrixFactorizationModel). The default
+<<<<<<< HEAD
    * value is `MEMORY_AND_DISK`. Users can change it to a serialized storage, e.g. 
+=======
+   * value is `MEMORY_AND_DISK`. Users can change it to a serialized storage, e.g.
+>>>>>>> upstream/master
    * `MEMORY_AND_DISK_SER` and set `spark.rdd.compress` to `true` to reduce the space requirement,
    * at the cost of speed.
    */

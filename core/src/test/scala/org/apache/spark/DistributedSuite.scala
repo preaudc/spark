@@ -17,7 +17,10 @@
 
 package org.apache.spark
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
+=======
+>>>>>>> upstream/master
 import org.scalatest.concurrent.Timeouts._
 import org.scalatest.Matchers
 import org.scalatest.time.{Millis, Span}
@@ -28,7 +31,11 @@ class NotSerializableClass
 class NotSerializableExn(val notSer: NotSerializableClass) extends Throwable() {}
 
 
+<<<<<<< HEAD
 class DistributedSuite extends FunSuite with Matchers with LocalSparkContext {
+=======
+class DistributedSuite extends SparkFunSuite with Matchers with LocalSparkContext {
+>>>>>>> upstream/master
 
   val clusterUrl = "local-cluster[2,1,512]"
 
@@ -77,7 +84,11 @@ class DistributedSuite extends FunSuite with Matchers with LocalSparkContext {
   }
 
   test("groupByKey where map output sizes exceed maxMbInFlight") {
+<<<<<<< HEAD
     val conf = new SparkConf().set("spark.reducer.maxMbInFlight", "1")
+=======
+    val conf = new SparkConf().set("spark.reducer.maxSizeInFlight", "1m")
+>>>>>>> upstream/master
     sc = new SparkContext(clusterUrl, "test", conf)
     // This data should be around 20 MB, so even with 4 mappers and 2 reducers, each map output
     // file should be about 2.5 MB

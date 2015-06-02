@@ -28,7 +28,11 @@ class ListTablesSuite extends QueryTest with BeforeAndAfter {
   import org.apache.spark.sql.test.TestSQLContext.implicits._
 
   val df =
+<<<<<<< HEAD
     sparkContext.parallelize((1 to 10).map(i => (i,s"str$i"))).toDF("key", "value")
+=======
+    sparkContext.parallelize((1 to 10).map(i => (i, s"str$i"))).toDF("key", "value")
+>>>>>>> upstream/master
 
   before {
     df.registerTempTable("ListTablesSuiteTable")

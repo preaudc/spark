@@ -18,12 +18,20 @@
 package org.apache.spark.sql.hive
 
 import org.apache.hadoop.hive.common.`type`.{HiveDecimal, HiveVarchar}
+<<<<<<< HEAD
 import org.apache.hadoop.hive.serde2.objectinspector._
+=======
+>>>>>>> upstream/master
 import org.apache.hadoop.hive.serde2.objectinspector.primitive._
+import org.apache.hadoop.hive.serde2.objectinspector.{StructField => HiveStructField, _}
 import org.apache.hadoop.hive.serde2.{io => hiveIo}
 import org.apache.hadoop.{io => hadoopIo}
 
 import org.apache.spark.sql.catalyst.expressions._
+<<<<<<< HEAD
+=======
+import org.apache.spark.sql.catalyst.util.DateUtils
+>>>>>>> upstream/master
 import org.apache.spark.sql.types
 import org.apache.spark.sql.types._
 
@@ -121,7 +129,11 @@ import scala.collection.JavaConversions._
  *                                 even a normal java object (POJO)
  *   UnionObjectInspector: (tag: Int, object data) (TODO: not supported by SparkSQL yet)
  *
+<<<<<<< HEAD
  * 3) ConstantObjectInspector: 
+=======
+ * 3) ConstantObjectInspector:
+>>>>>>> upstream/master
  * Constant object inspector can be either primitive type or Complex type, and it bundles a
  * constant value as its property, usually the value is created when the constant object inspector
  * constructed.
@@ -132,7 +144,11 @@ import scala.collection.JavaConversions._
     }
   }}}
  * Hive provides 3 built-in constant object inspectors:
+<<<<<<< HEAD
  * Primitive Object Inspectors: 
+=======
+ * Primitive Object Inspectors:
+>>>>>>> upstream/master
  *     WritableConstantStringObjectInspector
  *     WritableConstantHiveVarcharObjectInspector
  *     WritableConstantHiveDecimalObjectInspector
@@ -146,9 +162,15 @@ import scala.collection.JavaConversions._
  *     WritableConstantByteObjectInspector
  *     WritableConstantBinaryObjectInspector
  *     WritableConstantDateObjectInspector
+<<<<<<< HEAD
  * Map Object Inspector: 
  *     StandardConstantMapObjectInspector
  * List Object Inspector: 
+=======
+ * Map Object Inspector:
+ *     StandardConstantMapObjectInspector
+ * List Object Inspector:
+>>>>>>> upstream/master
  *     StandardConstantListObjectInspector]]
  * Struct Object Inspector: Hive doesn't provide the built-in constant object inspector for Struct
  * Union Object Inspector: Hive doesn't provide the built-in constant object inspector for Union
@@ -249,9 +271,15 @@ private[hive] trait HiveInspectors {
         poi.getWritableConstantValue.getHiveDecimal)
     case poi: WritableConstantTimestampObjectInspector =>
       poi.getWritableConstantValue.getTimestamp.clone()
+<<<<<<< HEAD
     case poi: WritableConstantIntObjectInspector => 
       poi.getWritableConstantValue.get()
     case poi: WritableConstantDoubleObjectInspector => 
+=======
+    case poi: WritableConstantIntObjectInspector =>
+      poi.getWritableConstantValue.get()
+    case poi: WritableConstantDoubleObjectInspector =>
+>>>>>>> upstream/master
       poi.getWritableConstantValue.get()
     case poi: WritableConstantBooleanObjectInspector =>
       poi.getWritableConstantValue.get()
@@ -305,7 +333,11 @@ private[hive] trait HiveInspectors {
         // In order to keep backward-compatible, we have to copy the
         // bytes with old apis
         val bw = x.getPrimitiveWritableObject(data)
+<<<<<<< HEAD
         val result = new Array[Byte](bw.getLength()) 
+=======
+        val result = new Array[Byte](bw.getLength())
+>>>>>>> upstream/master
         System.arraycopy(bw.getBytes(), 0, result, 0, bw.getLength())
         result
       case x: DateObjectInspector if x.preferWritable() =>
@@ -334,7 +366,7 @@ private[hive] trait HiveInspectors {
       val allRefs = si.getAllStructFieldRefs
       new GenericRow(
         allRefs.map(r =>
-          unwrap(si.getStructFieldData(data,r), r.getFieldObjectInspector)).toArray)
+          unwrap(si.getStructFieldData(data, r), r.getFieldObjectInspector)).toArray)
   }
 
 
@@ -392,6 +424,30 @@ private[hive] trait HiveInspectors {
     case _ =>
       identity[Any]
   }
+
+  /**
+   * Builds specific unwrappers ahead of time according to object inspector
+   * types to avoid pattern matching and branching costs per row.
+   */
+  def unwrapperFor(field: HiveStructField): (Any, MutableRow, Int) => Unit =
+    field.getFieldObjectInspector match {
+      case oi: BooleanObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setBoolean(ordinal, oi.get(value))
+      case oi: ByteObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setByte(ordinal, oi.get(value))
+      case oi: ShortObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setShort(ordinal, oi.get(value))
+      case oi: IntObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setInt(ordinal, oi.get(value))
+      case oi: LongObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setLong(ordinal, oi.get(value))
+      case oi: FloatObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setFloat(ordinal, oi.get(value))
+      case oi: DoubleObjectInspector =>
+        (value: Any, row: MutableRow, ordinal: Int) => row.setDouble(ordinal, oi.get(value))
+      case oi =>
+        (value: Any, row: MutableRow, ordinal: Int) => row(ordinal) = unwrap(value, oi)
+    }
 
   /**
    * Converts native catalyst types to the types expected by Hive
@@ -536,8 +592,13 @@ private[hive] trait HiveInspectors {
     case DecimalType() => PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector
     case StructType(fields) =>
       ObjectInspectorFactory.getStandardStructObjectInspector(
+<<<<<<< HEAD
         java.util.Arrays.asList(fields.map(f => f.name) :_*),
         java.util.Arrays.asList(fields.map(f => toInspector(f.dataType)) :_*))
+=======
+        java.util.Arrays.asList(fields.map(f => f.name) : _*),
+        java.util.Arrays.asList(fields.map(f => toInspector(f.dataType)) : _*))
+>>>>>>> upstream/master
   }
 
   /**
@@ -652,8 +713,13 @@ private[hive] trait HiveInspectors {
         getListTypeInfo(elemType.toTypeInfo)
       case StructType(fields) =>
         getStructTypeInfo(
+<<<<<<< HEAD
           java.util.Arrays.asList(fields.map(_.name) :_*),
           java.util.Arrays.asList(fields.map(_.dataType.toTypeInfo) :_*))
+=======
+          java.util.Arrays.asList(fields.map(_.name) : _*),
+          java.util.Arrays.asList(fields.map(_.dataType.toTypeInfo) : _*))
+>>>>>>> upstream/master
       case MapType(keyType, valueType, _) =>
         getMapTypeInfo(keyType.toTypeInfo, valueType.toTypeInfo)
       case BinaryType => binaryTypeInfo

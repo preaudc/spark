@@ -31,8 +31,12 @@ import org.apache.spark.util.Utils
 private[spark] class DiskStore(blockManager: BlockManager, diskManager: DiskBlockManager)
   extends BlockStore(blockManager) with Logging {
 
+<<<<<<< HEAD
   val minMemoryMapBytes = blockManager.conf.getLong(
     "spark.storage.memoryMapThreshold", 2 * 1024L * 1024L)
+=======
+  val minMemoryMapBytes = blockManager.conf.getSizeAsBytes("spark.storage.memoryMapThreshold", "2m")
+>>>>>>> upstream/master
 
   override def getSize(blockId: BlockId): Long = {
     diskManager.getFile(blockId.name).length

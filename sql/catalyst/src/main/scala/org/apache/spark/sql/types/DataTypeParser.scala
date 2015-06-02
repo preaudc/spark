@@ -108,7 +108,11 @@ private[sql] object DataTypeParser {
     override val lexical = new SqlLexical
   }
 
+<<<<<<< HEAD
   def apply(dataTypeString: String): DataType = dataTypeParser.toDataType(dataTypeString)
+=======
+  def parse(dataTypeString: String): DataType = dataTypeParser.toDataType(dataTypeString)
+>>>>>>> upstream/master
 }
 
 /** The exception thrown from the [[DataTypeParser]]. */

@@ -60,12 +60,21 @@ class GradientBoostedTrees(private val boostingStrategy: BoostingStrategy)
   def run(input: RDD[LabeledPoint]): GradientBoostedTreesModel = {
     val algo = boostingStrategy.treeStrategy.algo
     algo match {
+<<<<<<< HEAD
       case Regression => GradientBoostedTrees.boost(input, input, boostingStrategy, validate=false)
       case Classification =>
         // Map labels to -1, +1 so binary classification can be treated as regression.
         val remappedInput = input.map(x => new LabeledPoint((x.label * 2) - 1, x.features))
         GradientBoostedTrees.boost(remappedInput,
           remappedInput, boostingStrategy, validate=false)
+=======
+      case Regression =>
+        GradientBoostedTrees.boost(input, input, boostingStrategy, validate = false)
+      case Classification =>
+        // Map labels to -1, +1 so binary classification can be treated as regression.
+        val remappedInput = input.map(x => new LabeledPoint((x.label * 2) - 1, x.features))
+        GradientBoostedTrees.boost(remappedInput, remappedInput, boostingStrategy, validate = false)
+>>>>>>> upstream/master
       case _ =>
         throw new IllegalArgumentException(s"$algo is not supported by the gradient boosting.")
     }
@@ -81,11 +90,19 @@ class GradientBoostedTrees(private val boostingStrategy: BoostingStrategy)
   /**
    * Method to validate a gradient boosting model
    * @param input Training dataset: RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
+<<<<<<< HEAD
    * @param validationInput Validation dataset:
                           RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
                           Should be different from and follow the same distribution as input.
                           e.g., these two datasets could be created from an original dataset
                           by using [[org.apache.spark.rdd.RDD.randomSplit()]]
+=======
+   * @param validationInput Validation dataset.
+   *                        This dataset should be different from the training dataset,
+   *                        but it should follow the same distribution.
+   *                        E.g., these two datasets could be created from an original dataset
+   *                        by using [[org.apache.spark.rdd.RDD.randomSplit()]]
+>>>>>>> upstream/master
    * @return a gradient boosted trees model that can be used for prediction
    */
   def runWithValidation(
@@ -93,8 +110,13 @@ class GradientBoostedTrees(private val boostingStrategy: BoostingStrategy)
       validationInput: RDD[LabeledPoint]): GradientBoostedTreesModel = {
     val algo = boostingStrategy.treeStrategy.algo
     algo match {
+<<<<<<< HEAD
       case Regression => GradientBoostedTrees.boost(
         input, validationInput, boostingStrategy, validate=true)
+=======
+      case Regression =>
+        GradientBoostedTrees.boost(input, validationInput, boostingStrategy, validate = true)
+>>>>>>> upstream/master
       case Classification =>
         // Map labels to -1, +1 so binary classification can be treated as regression.
         val remappedInput = input.map(
@@ -102,7 +124,11 @@ class GradientBoostedTrees(private val boostingStrategy: BoostingStrategy)
         val remappedValidationInput = validationInput.map(
           x => new LabeledPoint((x.label * 2) - 1, x.features))
         GradientBoostedTrees.boost(remappedInput, remappedValidationInput, boostingStrategy,
+<<<<<<< HEAD
           validate=true)
+=======
+          validate = true)
+>>>>>>> upstream/master
       case _ =>
         throw new IllegalArgumentException(s"$algo is not supported by the gradient boosting.")
     }
@@ -177,8 +203,16 @@ object GradientBoostedTrees extends Logging {
     treeStrategy.assertValid()
 
     // Cache input
+<<<<<<< HEAD
     if (input.getStorageLevel == StorageLevel.NONE) {
       input.persist(StorageLevel.MEMORY_AND_DISK)
+=======
+    val persistedInput = if (input.getStorageLevel == StorageLevel.NONE) {
+      input.persist(StorageLevel.MEMORY_AND_DISK)
+      true
+    } else {
+      false
+>>>>>>> upstream/master
     }
 
     timer.stop("init")
@@ -194,8 +228,11 @@ object GradientBoostedTrees extends Logging {
     val firstTreeWeight = 1.0
     baseLearners(0) = firstTreeModel
     baseLearnerWeights(0) = firstTreeWeight
+<<<<<<< HEAD
     val startingModel = new GradientBoostedTreesModel(
       Regression, Array(firstTreeModel), baseLearnerWeights.slice(0, 1))
+=======
+>>>>>>> upstream/master
 
     var predError: RDD[(Double, Double)] = GradientBoostedTreesModel.
       computeInitialPredictionAndError(input, firstTreeWeight, firstTreeModel, loss)
@@ -267,6 +304,12 @@ object GradientBoostedTrees extends Logging {
 
     logInfo("Internal timing for DecisionTree:")
     logInfo(s"$timer")
+<<<<<<< HEAD
+=======
+
+    if (persistedInput) input.unpersist()
+
+>>>>>>> upstream/master
     if (validate) {
       new GradientBoostedTreesModel(
         boostingStrategy.treeStrategy.algo,

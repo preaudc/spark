@@ -44,10 +44,16 @@ private[spark] class CacheManager(blockManager: BlockManager) extends Logging {
     blockManager.get(key) match {
       case Some(blockResult) =>
         // Partition is already materialized, so just return its values
+<<<<<<< HEAD
         val inputMetrics = blockResult.inputMetrics
         val existingMetrics = context.taskMetrics
           .getInputMetricsForReadMethod(inputMetrics.readMethod)
         existingMetrics.incBytesRead(inputMetrics.bytesRead)
+=======
+        val existingMetrics = context.taskMetrics
+          .getInputMetricsForReadMethod(blockResult.readMethod)
+        existingMetrics.incBytesRead(blockResult.bytes)
+>>>>>>> upstream/master
 
         val iter = blockResult.data.asInstanceOf[Iterator[T]]
         new InterruptibleIterator[T](context, iter) {

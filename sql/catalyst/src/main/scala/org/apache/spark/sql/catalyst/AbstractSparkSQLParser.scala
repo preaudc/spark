@@ -32,7 +32,11 @@ private[sql] object KeywordNormalizer {
 private[sql] abstract class AbstractSparkSQLParser
   extends StandardTokenParsers with PackratParsers {
 
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
   def apply(input: String): LogicalPlan = {
+=======
+  def parse(input: String): LogicalPlan = {
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
     // Initialize the Keywords.
     lexical.initialize(reservedWords)
     phrase(start)(new lexical.Scanner(input)) match {
@@ -42,7 +46,11 @@ private[sql] abstract class AbstractSparkSQLParser
   }
 
   protected case class Keyword(str: String) {
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
     def normalize: String = KeywordNormalizer(str)
+=======
+    def normalize: String = lexical.normalizeKeyword(str)
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
     def parser: Parser[String] = normalize
   }
 
@@ -82,6 +90,15 @@ private[sql] abstract class AbstractSparkSQLParser
 class SqlLexical extends StdLexical {
   case class FloatLit(chars: String) extends Token {
     override def toString: String = chars
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
+  }
+
+  /* This is a work around to support the lazy setting */
+  def initialize(keywords: Seq[String]): Unit = {
+    reserved.clear()
+    reserved ++= keywords
+  }
+=======
   }
 
   /* This is a work around to support the lazy setting */
@@ -90,13 +107,21 @@ class SqlLexical extends StdLexical {
     reserved ++= keywords
   }
 
+  /* Normal the keyword string */
+  def normalizeKeyword(str: String): String = str.toLowerCase
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
+
   delimiters += (
     "@", "*", "+", "-", "<", "=", "<>", "!=", "<=", ">=", ">", "/", "(", ")",
     ",", ";", "%", "{", "}", ":", "[", "]", ".", "&", "|", "^", "~", "<=>"
   )
 
   protected override def processIdent(name: String) = {
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
     val token = KeywordNormalizer(name)
+=======
+    val token = normalizeKeyword(name)
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/AbstractSparkSQLParser.scala
     if (reserved contains token) Keyword(token) else Identifier(name)
   }
 
@@ -104,7 +129,7 @@ class SqlLexical extends StdLexical {
     ( identChar ~ (identChar | digit).* ^^
       { case first ~ rest => processIdent((first :: rest).mkString) }
     | rep1(digit) ~ ('.' ~> digit.*).? ^^ {
-        case i ~ None    => NumericLit(i.mkString)
+        case i ~ None => NumericLit(i.mkString)
         case i ~ Some(d) => FloatLit(i.mkString + "." + d.mkString)
       }
     | '\'' ~> chrExcept('\'', '\n', EofCh).* <~ '\'' ^^

@@ -22,6 +22,7 @@ from pyspark.ml.param import Param, Params
 
 class HasMaxIter(Params):
     """
+<<<<<<< HEAD
     Mixin for param maxIter: max number of iterations.
     """
 
@@ -34,12 +35,28 @@ class HasMaxIter(Params):
         self.maxIter = Param(self, "maxIter", "max number of iterations")
         if None is not None:
             self._setDefault(maxIter=None)
+=======
+    Mixin for param maxIter: max number of iterations (>= 0).
+    """
+
+    # a placeholder to make it appear in the generated doc
+    maxIter = Param(Params._dummy(), "maxIter", "max number of iterations (>= 0)")
+
+    def __init__(self):
+        super(HasMaxIter, self).__init__()
+        #: param for max number of iterations (>= 0)
+        self.maxIter = Param(self, "maxIter", "max number of iterations (>= 0)")
+>>>>>>> upstream/master
 
     def setMaxIter(self, value):
         """
         Sets the value of :py:attr:`maxIter`.
         """
+<<<<<<< HEAD
         self.paramMap[self.maxIter] = value
+=======
+        self._paramMap[self.maxIter] = value
+>>>>>>> upstream/master
         return self
 
     def getMaxIter(self):
@@ -51,6 +68,7 @@ class HasMaxIter(Params):
 
 class HasRegParam(Params):
     """
+<<<<<<< HEAD
     Mixin for param regParam: regularization constant.
     """
 
@@ -63,12 +81,28 @@ class HasRegParam(Params):
         self.regParam = Param(self, "regParam", "regularization constant")
         if None is not None:
             self._setDefault(regParam=None)
+=======
+    Mixin for param regParam: regularization parameter (>= 0).
+    """
+
+    # a placeholder to make it appear in the generated doc
+    regParam = Param(Params._dummy(), "regParam", "regularization parameter (>= 0)")
+
+    def __init__(self):
+        super(HasRegParam, self).__init__()
+        #: param for regularization parameter (>= 0)
+        self.regParam = Param(self, "regParam", "regularization parameter (>= 0)")
+>>>>>>> upstream/master
 
     def setRegParam(self, value):
         """
         Sets the value of :py:attr:`regParam`.
         """
+<<<<<<< HEAD
         self.paramMap[self.regParam] = value
+=======
+        self._paramMap[self.regParam] = value
+>>>>>>> upstream/master
         return self
 
     def getRegParam(self):
@@ -90,14 +124,22 @@ class HasFeaturesCol(Params):
         super(HasFeaturesCol, self).__init__()
         #: param for features column name
         self.featuresCol = Param(self, "featuresCol", "features column name")
+<<<<<<< HEAD
         if 'features' is not None:
             self._setDefault(featuresCol='features')
+=======
+        self._setDefault(featuresCol='features')
+>>>>>>> upstream/master
 
     def setFeaturesCol(self, value):
         """
         Sets the value of :py:attr:`featuresCol`.
         """
+<<<<<<< HEAD
         self.paramMap[self.featuresCol] = value
+=======
+        self._paramMap[self.featuresCol] = value
+>>>>>>> upstream/master
         return self
 
     def getFeaturesCol(self):
@@ -119,14 +161,22 @@ class HasLabelCol(Params):
         super(HasLabelCol, self).__init__()
         #: param for label column name
         self.labelCol = Param(self, "labelCol", "label column name")
+<<<<<<< HEAD
         if 'label' is not None:
             self._setDefault(labelCol='label')
+=======
+        self._setDefault(labelCol='label')
+>>>>>>> upstream/master
 
     def setLabelCol(self, value):
         """
         Sets the value of :py:attr:`labelCol`.
         """
+<<<<<<< HEAD
         self.paramMap[self.labelCol] = value
+=======
+        self._paramMap[self.labelCol] = value
+>>>>>>> upstream/master
         return self
 
     def getLabelCol(self):
@@ -148,14 +198,22 @@ class HasPredictionCol(Params):
         super(HasPredictionCol, self).__init__()
         #: param for prediction column name
         self.predictionCol = Param(self, "predictionCol", "prediction column name")
+<<<<<<< HEAD
         if 'prediction' is not None:
             self._setDefault(predictionCol='prediction')
+=======
+        self._setDefault(predictionCol='prediction')
+>>>>>>> upstream/master
 
     def setPredictionCol(self, value):
         """
         Sets the value of :py:attr:`predictionCol`.
         """
+<<<<<<< HEAD
         self.paramMap[self.predictionCol] = value
+=======
+        self._paramMap[self.predictionCol] = value
+>>>>>>> upstream/master
         return self
 
     def getPredictionCol(self):
@@ -165,6 +223,65 @@ class HasPredictionCol(Params):
         return self.getOrDefault(self.predictionCol)
 
 
+<<<<<<< HEAD
+=======
+class HasProbabilityCol(Params):
+    """
+    Mixin for param probabilityCol: Column name for predicted class conditional probabilities. Note: Not all models output well-calibrated probability estimates! These probabilities should be treated as confidences, not precise probabilities..
+    """
+
+    # a placeholder to make it appear in the generated doc
+    probabilityCol = Param(Params._dummy(), "probabilityCol", "Column name for predicted class conditional probabilities. Note: Not all models output well-calibrated probability estimates! These probabilities should be treated as confidences, not precise probabilities.")
+
+    def __init__(self):
+        super(HasProbabilityCol, self).__init__()
+        #: param for Column name for predicted class conditional probabilities. Note: Not all models output well-calibrated probability estimates! These probabilities should be treated as confidences, not precise probabilities.
+        self.probabilityCol = Param(self, "probabilityCol", "Column name for predicted class conditional probabilities. Note: Not all models output well-calibrated probability estimates! These probabilities should be treated as confidences, not precise probabilities.")
+        self._setDefault(probabilityCol='probability')
+
+    def setProbabilityCol(self, value):
+        """
+        Sets the value of :py:attr:`probabilityCol`.
+        """
+        self._paramMap[self.probabilityCol] = value
+        return self
+
+    def getProbabilityCol(self):
+        """
+        Gets the value of probabilityCol or its default value.
+        """
+        return self.getOrDefault(self.probabilityCol)
+
+
+class HasRawPredictionCol(Params):
+    """
+    Mixin for param rawPredictionCol: raw prediction (a.k.a. confidence) column name.
+    """
+
+    # a placeholder to make it appear in the generated doc
+    rawPredictionCol = Param(Params._dummy(), "rawPredictionCol", "raw prediction (a.k.a. confidence) column name")
+
+    def __init__(self):
+        super(HasRawPredictionCol, self).__init__()
+        #: param for raw prediction (a.k.a. confidence) column name
+        self.rawPredictionCol = Param(self, "rawPredictionCol", "raw prediction (a.k.a. confidence) column name")
+        self._setDefault(rawPredictionCol='rawPrediction')
+
+    def setRawPredictionCol(self, value):
+        """
+        Sets the value of :py:attr:`rawPredictionCol`.
+        """
+        self._paramMap[self.rawPredictionCol] = value
+        return self
+
+    def getRawPredictionCol(self):
+        """
+        Gets the value of rawPredictionCol or its default value.
+        """
+        return self.getOrDefault(self.rawPredictionCol)
+
+
+>>>>>>> upstream/master
 class HasInputCol(Params):
     """
     Mixin for param inputCol: input column name.
@@ -177,14 +294,21 @@ class HasInputCol(Params):
         super(HasInputCol, self).__init__()
         #: param for input column name
         self.inputCol = Param(self, "inputCol", "input column name")
+<<<<<<< HEAD
         if None is not None:
             self._setDefault(inputCol=None)
+=======
+>>>>>>> upstream/master
 
     def setInputCol(self, value):
         """
         Sets the value of :py:attr:`inputCol`.
         """
+<<<<<<< HEAD
         self.paramMap[self.inputCol] = value
+=======
+        self._paramMap[self.inputCol] = value
+>>>>>>> upstream/master
         return self
 
     def getInputCol(self):
@@ -194,6 +318,36 @@ class HasInputCol(Params):
         return self.getOrDefault(self.inputCol)
 
 
+<<<<<<< HEAD
+=======
+class HasInputCols(Params):
+    """
+    Mixin for param inputCols: input column names.
+    """
+
+    # a placeholder to make it appear in the generated doc
+    inputCols = Param(Params._dummy(), "inputCols", "input column names")
+
+    def __init__(self):
+        super(HasInputCols, self).__init__()
+        #: param for input column names
+        self.inputCols = Param(self, "inputCols", "input column names")
+
+    def setInputCols(self, value):
+        """
+        Sets the value of :py:attr:`inputCols`.
+        """
+        self._paramMap[self.inputCols] = value
+        return self
+
+    def getInputCols(self):
+        """
+        Gets the value of inputCols or its default value.
+        """
+        return self.getOrDefault(self.inputCols)
+
+
+>>>>>>> upstream/master
 class HasOutputCol(Params):
     """
     Mixin for param outputCol: output column name.
@@ -206,14 +360,22 @@ class HasOutputCol(Params):
         super(HasOutputCol, self).__init__()
         #: param for output column name
         self.outputCol = Param(self, "outputCol", "output column name")
+<<<<<<< HEAD
         if None is not None:
             self._setDefault(outputCol=None)
+=======
+        self._setDefault(outputCol=self.uid + '__output')
+>>>>>>> upstream/master
 
     def setOutputCol(self, value):
         """
         Sets the value of :py:attr:`outputCol`.
         """
+<<<<<<< HEAD
         self.paramMap[self.outputCol] = value
+=======
+        self._paramMap[self.outputCol] = value
+>>>>>>> upstream/master
         return self
 
     def getOutputCol(self):
@@ -235,14 +397,21 @@ class HasNumFeatures(Params):
         super(HasNumFeatures, self).__init__()
         #: param for number of features
         self.numFeatures = Param(self, "numFeatures", "number of features")
+<<<<<<< HEAD
         if None is not None:
             self._setDefault(numFeatures=None)
+=======
+>>>>>>> upstream/master
 
     def setNumFeatures(self, value):
         """
         Sets the value of :py:attr:`numFeatures`.
         """
+<<<<<<< HEAD
         self.paramMap[self.numFeatures] = value
+=======
+        self._paramMap[self.numFeatures] = value
+>>>>>>> upstream/master
         return self
 
     def getNumFeatures(self):
@@ -250,3 +419,224 @@ class HasNumFeatures(Params):
         Gets the value of numFeatures or its default value.
         """
         return self.getOrDefault(self.numFeatures)
+<<<<<<< HEAD
+=======
+
+
+class HasCheckpointInterval(Params):
+    """
+    Mixin for param checkpointInterval: checkpoint interval (>= 1).
+    """
+
+    # a placeholder to make it appear in the generated doc
+    checkpointInterval = Param(Params._dummy(), "checkpointInterval", "checkpoint interval (>= 1)")
+
+    def __init__(self):
+        super(HasCheckpointInterval, self).__init__()
+        #: param for checkpoint interval (>= 1)
+        self.checkpointInterval = Param(self, "checkpointInterval", "checkpoint interval (>= 1)")
+
+    def setCheckpointInterval(self, value):
+        """
+        Sets the value of :py:attr:`checkpointInterval`.
+        """
+        self._paramMap[self.checkpointInterval] = value
+        return self
+
+    def getCheckpointInterval(self):
+        """
+        Gets the value of checkpointInterval or its default value.
+        """
+        return self.getOrDefault(self.checkpointInterval)
+
+
+class HasSeed(Params):
+    """
+    Mixin for param seed: random seed.
+    """
+
+    # a placeholder to make it appear in the generated doc
+    seed = Param(Params._dummy(), "seed", "random seed")
+
+    def __init__(self):
+        super(HasSeed, self).__init__()
+        #: param for random seed
+        self.seed = Param(self, "seed", "random seed")
+        self._setDefault(seed=hash(type(self).__name__))
+
+    def setSeed(self, value):
+        """
+        Sets the value of :py:attr:`seed`.
+        """
+        self._paramMap[self.seed] = value
+        return self
+
+    def getSeed(self):
+        """
+        Gets the value of seed or its default value.
+        """
+        return self.getOrDefault(self.seed)
+
+
+class HasTol(Params):
+    """
+    Mixin for param tol: the convergence tolerance for iterative algorithms.
+    """
+
+    # a placeholder to make it appear in the generated doc
+    tol = Param(Params._dummy(), "tol", "the convergence tolerance for iterative algorithms")
+
+    def __init__(self):
+        super(HasTol, self).__init__()
+        #: param for the convergence tolerance for iterative algorithms
+        self.tol = Param(self, "tol", "the convergence tolerance for iterative algorithms")
+
+    def setTol(self, value):
+        """
+        Sets the value of :py:attr:`tol`.
+        """
+        self._paramMap[self.tol] = value
+        return self
+
+    def getTol(self):
+        """
+        Gets the value of tol or its default value.
+        """
+        return self.getOrDefault(self.tol)
+
+
+class HasStepSize(Params):
+    """
+    Mixin for param stepSize: Step size to be used for each iteration of optimization..
+    """
+
+    # a placeholder to make it appear in the generated doc
+    stepSize = Param(Params._dummy(), "stepSize", "Step size to be used for each iteration of optimization.")
+
+    def __init__(self):
+        super(HasStepSize, self).__init__()
+        #: param for Step size to be used for each iteration of optimization.
+        self.stepSize = Param(self, "stepSize", "Step size to be used for each iteration of optimization.")
+
+    def setStepSize(self, value):
+        """
+        Sets the value of :py:attr:`stepSize`.
+        """
+        self._paramMap[self.stepSize] = value
+        return self
+
+    def getStepSize(self):
+        """
+        Gets the value of stepSize or its default value.
+        """
+        return self.getOrDefault(self.stepSize)
+
+
+class DecisionTreeParams(Params):
+    """
+    Mixin for Decision Tree parameters.
+    """
+
+    # a placeholder to make it appear in the generated doc
+    maxDepth = Param(Params._dummy(), "maxDepth", "Maximum depth of the tree. (>= 0) E.g., depth 0 means 1 leaf node; depth 1 means 1 internal node + 2 leaf nodes.")
+    maxBins = Param(Params._dummy(), "maxBins", "Max number of bins for discretizing continuous features.  Must be >=2 and >= number of categories for any categorical feature.")
+    minInstancesPerNode = Param(Params._dummy(), "minInstancesPerNode", "Minimum number of instances each child must have after split. If a split causes the left or right child to have fewer than minInstancesPerNode, the split will be discarded as invalid. Should be >= 1.")
+    minInfoGain = Param(Params._dummy(), "minInfoGain", "Minimum information gain for a split to be considered at a tree node.")
+    maxMemoryInMB = Param(Params._dummy(), "maxMemoryInMB", "Maximum memory in MB allocated to histogram aggregation.")
+    cacheNodeIds = Param(Params._dummy(), "cacheNodeIds", "If false, the algorithm will pass trees to executors to match instances with nodes. If true, the algorithm will cache node IDs for each instance. Caching can speed up training of deeper trees.")
+    
+
+    def __init__(self):
+        super(DecisionTreeParams, self).__init__()
+        #: param for Maximum depth of the tree. (>= 0) E.g., depth 0 means 1 leaf node; depth 1 means 1 internal node + 2 leaf nodes.
+        self.maxDepth = Param(self, "maxDepth", "Maximum depth of the tree. (>= 0) E.g., depth 0 means 1 leaf node; depth 1 means 1 internal node + 2 leaf nodes.")
+        #: param for Max number of bins for discretizing continuous features.  Must be >=2 and >= number of categories for any categorical feature.
+        self.maxBins = Param(self, "maxBins", "Max number of bins for discretizing continuous features.  Must be >=2 and >= number of categories for any categorical feature.")
+        #: param for Minimum number of instances each child must have after split. If a split causes the left or right child to have fewer than minInstancesPerNode, the split will be discarded as invalid. Should be >= 1.
+        self.minInstancesPerNode = Param(self, "minInstancesPerNode", "Minimum number of instances each child must have after split. If a split causes the left or right child to have fewer than minInstancesPerNode, the split will be discarded as invalid. Should be >= 1.")
+        #: param for Minimum information gain for a split to be considered at a tree node.
+        self.minInfoGain = Param(self, "minInfoGain", "Minimum information gain for a split to be considered at a tree node.")
+        #: param for Maximum memory in MB allocated to histogram aggregation.
+        self.maxMemoryInMB = Param(self, "maxMemoryInMB", "Maximum memory in MB allocated to histogram aggregation.")
+        #: param for If false, the algorithm will pass trees to executors to match instances with nodes. If true, the algorithm will cache node IDs for each instance. Caching can speed up training of deeper trees.
+        self.cacheNodeIds = Param(self, "cacheNodeIds", "If false, the algorithm will pass trees to executors to match instances with nodes. If true, the algorithm will cache node IDs for each instance. Caching can speed up training of deeper trees.")
+        
+    def setMaxDepth(self, value):
+        """
+        Sets the value of :py:attr:`maxDepth`.
+        """
+        self._paramMap[self.maxDepth] = value
+        return self
+
+    def getMaxDepth(self):
+        """
+        Gets the value of maxDepth or its default value.
+        """
+        return self.getOrDefault(self.maxDepth)
+
+    def setMaxBins(self, value):
+        """
+        Sets the value of :py:attr:`maxBins`.
+        """
+        self._paramMap[self.maxBins] = value
+        return self
+
+    def getMaxBins(self):
+        """
+        Gets the value of maxBins or its default value.
+        """
+        return self.getOrDefault(self.maxBins)
+
+    def setMinInstancesPerNode(self, value):
+        """
+        Sets the value of :py:attr:`minInstancesPerNode`.
+        """
+        self._paramMap[self.minInstancesPerNode] = value
+        return self
+
+    def getMinInstancesPerNode(self):
+        """
+        Gets the value of minInstancesPerNode or its default value.
+        """
+        return self.getOrDefault(self.minInstancesPerNode)
+
+    def setMinInfoGain(self, value):
+        """
+        Sets the value of :py:attr:`minInfoGain`.
+        """
+        self._paramMap[self.minInfoGain] = value
+        return self
+
+    def getMinInfoGain(self):
+        """
+        Gets the value of minInfoGain or its default value.
+        """
+        return self.getOrDefault(self.minInfoGain)
+
+    def setMaxMemoryInMB(self, value):
+        """
+        Sets the value of :py:attr:`maxMemoryInMB`.
+        """
+        self._paramMap[self.maxMemoryInMB] = value
+        return self
+
+    def getMaxMemoryInMB(self):
+        """
+        Gets the value of maxMemoryInMB or its default value.
+        """
+        return self.getOrDefault(self.maxMemoryInMB)
+
+    def setCacheNodeIds(self, value):
+        """
+        Sets the value of :py:attr:`cacheNodeIds`.
+        """
+        self._paramMap[self.cacheNodeIds] = value
+        return self
+
+    def getCacheNodeIds(self):
+        """
+        Gets the value of cacheNodeIds or its default value.
+        """
+        return self.getOrDefault(self.cacheNodeIds)
+
+>>>>>>> upstream/master

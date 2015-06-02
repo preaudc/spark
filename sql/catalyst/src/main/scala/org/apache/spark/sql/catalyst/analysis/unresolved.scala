@@ -67,7 +67,7 @@ case class UnresolvedAttribute(nameParts: Seq[String])
   override def withName(newName: String): UnresolvedAttribute = UnresolvedAttribute.quoted(newName)
 
   // Unresolved attributes are transient at compile time and don't get evaluated during execution.
-  override def eval(input: Row = null): EvaluatedType =
+  override def eval(input: Row = null): Any =
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 
   override def toString: String = s"'$name"
@@ -85,10 +85,11 @@ case class UnresolvedFunction(name: String, children: Seq[Expression]) extends E
   override lazy val resolved = false
 
   // Unresolved functions are transient at compile time and don't get evaluated during execution.
-  override def eval(input: Row = null): EvaluatedType =
+  override def eval(input: Row = null): Any =
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 
   override def toString: String = s"'$name(${children.mkString(",")})"
+<<<<<<< HEAD
 }
 
 /**
@@ -112,6 +113,31 @@ trait Star extends Attribute with trees.LeafNode[Expression] {
 
   // Star gets expanded at runtime so we never evaluate a Star.
   override def eval(input: Row = null): EvaluatedType =
+    throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
+
+  def expand(input: Seq[Attribute], resolver: Resolver): Seq[NamedExpression]
+=======
+>>>>>>> upstream/master
+}
+
+
+/**
+ * Represents all of the input attributes to a given relational operator, for example in
+ * "SELECT * FROM ...". A [[Star]] gets automatically expanded during analysis.
+ */
+trait Star extends NamedExpression with trees.LeafNode[Expression] {
+  self: Product =>
+
+  override def name: String = throw new UnresolvedException(this, "name")
+  override def exprId: ExprId = throw new UnresolvedException(this, "exprId")
+  override def dataType: DataType = throw new UnresolvedException(this, "dataType")
+  override def nullable: Boolean = throw new UnresolvedException(this, "nullable")
+  override def qualifiers: Seq[String] = throw new UnresolvedException(this, "qualifiers")
+  override def toAttribute: Attribute = throw new UnresolvedException(this, "toAttribute")
+  override lazy val resolved = false
+
+  // Star gets expanded at runtime so we never evaluate a Star.
+  override def eval(input: Row = null): Any =
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 
   def expand(input: Seq[Attribute], resolver: Resolver): Seq[NamedExpression]
@@ -154,7 +180,11 @@ case class UnresolvedStar(table: Option[String]) extends Star {
  * @param names the names to be associated with each output of computing [[child]].
  */
 case class MultiAlias(child: Expression, names: Seq[String])
+<<<<<<< HEAD
   extends Attribute with trees.UnaryNode[Expression] {
+=======
+  extends NamedExpression with trees.UnaryNode[Expression] {
+>>>>>>> upstream/master
 
   override def name: String = throw new UnresolvedException(this, "name")
 
@@ -166,6 +196,7 @@ case class MultiAlias(child: Expression, names: Seq[String])
 
   override def qualifiers: Seq[String] = throw new UnresolvedException(this, "qualifiers")
 
+<<<<<<< HEAD
   override lazy val resolved = false
 
   override def newInstance(): MultiAlias = this
@@ -177,6 +208,13 @@ case class MultiAlias(child: Expression, names: Seq[String])
   override def withName(newName: String): MultiAlias = this
 
   override def eval(input: Row = null): EvaluatedType =
+=======
+  override def toAttribute: Attribute = throw new UnresolvedException(this, "toAttribute")
+
+  override lazy val resolved = false
+
+  override def eval(input: Row = null): Any =
+>>>>>>> upstream/master
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 
   override def toString: String = s"$child AS $names"
@@ -194,14 +232,35 @@ case class ResolvedStar(expressions: Seq[NamedExpression]) extends Star {
   override def toString: String = expressions.mkString("ResolvedStar(", ", ", ")")
 }
 
+<<<<<<< HEAD
 case class UnresolvedGetField(child: Expression, fieldName: String) extends UnaryExpression {
+=======
+/**
+ * Extracts a value or values from an Expression
+ *
+ * @param child The expression to extract value from,
+ *              can be Map, Array, Struct or array of Structs.
+ * @param extraction The expression to describe the extraction,
+ *                   can be key of Map, index of Array, field name of Struct.
+ */
+case class UnresolvedExtractValue(child: Expression, extraction: Expression)
+  extends UnaryExpression {
+
+>>>>>>> upstream/master
   override def dataType: DataType = throw new UnresolvedException(this, "dataType")
   override def foldable: Boolean = throw new UnresolvedException(this, "foldable")
   override def nullable: Boolean = throw new UnresolvedException(this, "nullable")
   override lazy val resolved = false
 
+<<<<<<< HEAD
   override def eval(input: Row = null): EvaluatedType =
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 
   override def toString: String = s"$child.$fieldName"
+=======
+  override def eval(input: Row = null): Any =
+    throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
+
+  override def toString: String = s"$child[$extraction]"
+>>>>>>> upstream/master
 }

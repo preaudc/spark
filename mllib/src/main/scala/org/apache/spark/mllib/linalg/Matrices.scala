@@ -77,8 +77,13 @@ sealed trait Matrix extends Serializable {
     C
   }
 
-  /** Convenience method for `Matrix`-`DenseVector` multiplication. */
+  /** Convenience method for `Matrix`-`DenseVector` multiplication. For binary compatibility. */
   def multiply(y: DenseVector): DenseVector = {
+    multiply(y.asInstanceOf[Vector])
+  }
+
+  /** Convenience method for `Matrix`-`Vector` multiplication. */
+  def multiply(y: Vector): DenseVector = {
     val output = new DenseVector(new Array[Double](numRows))
     BLAS.gemv(1.0, this, y, 0.0, output)
     output
@@ -273,7 +278,12 @@ class DenseMatrix(
 
   override def copy: DenseMatrix = new DenseMatrix(numRows, numCols, values.clone())
 
+<<<<<<< HEAD
   private[mllib] def map(f: Double => Double) = new DenseMatrix(numRows, numCols, values.map(f))
+=======
+  private[mllib] def map(f: Double => Double) = new DenseMatrix(numRows, numCols, values.map(f),
+    isTransposed)
+>>>>>>> upstream/master
 
   private[mllib] def update(f: Double => Double): DenseMatrix = {
     val len = values.length
@@ -535,7 +545,11 @@ class SparseMatrix(
   }
 
   private[mllib] def map(f: Double => Double) =
+<<<<<<< HEAD
     new SparseMatrix(numRows, numCols, colPtrs, rowIndices, values.map(f))
+=======
+    new SparseMatrix(numRows, numCols, colPtrs, rowIndices, values.map(f), isTransposed)
+>>>>>>> upstream/master
 
   private[mllib] def update(f: Double => Double): SparseMatrix = {
     val len = values.length
@@ -574,6 +588,8 @@ class SparseMatrix(
         }
         i += 1
       }
+<<<<<<< HEAD
+=======
     }
   }
 
@@ -704,10 +720,144 @@ object SparseMatrix {
         j += 1
       }
       new SparseMatrix(numRows, numCols, colPtrs, rowIndices, new Array[Double](nnz))
+>>>>>>> upstream/master
     }
   }
 
   /**
+<<<<<<< HEAD
+   * Generate a `DenseMatrix` from the given `SparseMatrix`. The new matrix will have isTransposed
+   * set to false.
+   */
+  def toDense: DenseMatrix = {
+    new DenseMatrix(numRows, numCols, toArray)
+  }
+}
+
+/**
+ * Factory methods for [[org.apache.spark.mllib.linalg.SparseMatrix]].
+ */
+object SparseMatrix {
+
+  /**
+   * Generate a `SparseMatrix` from Coordinate List (COO) format. Input must be an array of
+   * (i, j, value) tuples. Entries that have duplicate values of i and j are
+   * added together. Tuples where value is equal to zero will be omitted.
+   * @param numRows number of rows of the matrix
+   * @param numCols number of columns of the matrix
+   * @param entries Array of (i, j, value) tuples
+   * @return The corresponding `SparseMatrix`
+   */
+  def fromCOO(numRows: Int, numCols: Int, entries: Iterable[(Int, Int, Double)]): SparseMatrix = {
+    val sortedEntries = entries.toSeq.sortBy(v => (v._2, v._1))
+    val numEntries = sortedEntries.size
+    if (sortedEntries.nonEmpty) {
+      // Since the entries are sorted by column index, we only need to check the first and the last.
+      for (col <- Seq(sortedEntries.head._2, sortedEntries.last._2)) {
+        require(col >= 0 && col < numCols, s"Column index out of range [0, $numCols): $col.")
+      }
+    }
+    val colPtrs = new Array[Int](numCols + 1)
+    val rowIndices = MArrayBuilder.make[Int]
+    rowIndices.sizeHint(numEntries)
+    val values = MArrayBuilder.make[Double]
+    values.sizeHint(numEntries)
+    var nnz = 0
+    var prevCol = 0
+    var prevRow = -1
+    var prevVal = 0.0
+    // Append a dummy entry to include the last one at the end of the loop.
+    (sortedEntries.view :+ (numRows, numCols, 1.0)).foreach { case (i, j, v) =>
+      if (v != 0) {
+        if (i == prevRow && j == prevCol) {
+          prevVal += v
+        } else {
+          if (prevVal != 0) {
+            require(prevRow >= 0 && prevRow < numRows,
+              s"Row index out of range [0, $numRows): $prevRow.")
+            nnz += 1
+            rowIndices += prevRow
+            values += prevVal
+          }
+          prevRow = i
+          prevVal = v
+          while (prevCol < j) {
+            colPtrs(prevCol + 1) = nnz
+            prevCol += 1
+          }
+        }
+      }
+    }
+    new SparseMatrix(numRows, numCols, colPtrs, rowIndices.result(), values.result())
+  }
+
+  /**
+   * Generate an Identity Matrix in `SparseMatrix` format.
+   * @param n number of rows and columns of the matrix
+   * @return `SparseMatrix` with size `n` x `n` and values of ones on the diagonal
+   */
+  def speye(n: Int): SparseMatrix = {
+    new SparseMatrix(n, n, (0 to n).toArray, (0 until n).toArray, Array.fill(n)(1.0))
+  }
+
+  /**
+   * Generates the skeleton of a random `SparseMatrix` with a given random number generator.
+   * The values of the matrix returned are undefined.
+   */
+  private def genRandMatrix(
+      numRows: Int,
+      numCols: Int,
+      density: Double,
+      rng: Random): SparseMatrix = {
+    require(numRows > 0, s"numRows must be greater than 0 but got $numRows")
+    require(numCols > 0, s"numCols must be greater than 0 but got $numCols")
+    require(density >= 0.0 && density <= 1.0,
+      s"density must be a double in the range 0.0 <= d <= 1.0. Currently, density: $density")
+    val size = numRows.toLong * numCols
+    val expected = size * density
+    assert(expected < Int.MaxValue,
+      "The expected number of nonzeros cannot be greater than Int.MaxValue.")
+    val nnz = math.ceil(expected).toInt
+    if (density == 0.0) {
+      new SparseMatrix(numRows, numCols, new Array[Int](numCols + 1), Array[Int](), Array[Double]())
+    } else if (density == 1.0) {
+      val colPtrs = Array.tabulate(numCols + 1)(j => j * numRows)
+      val rowIndices = Array.tabulate(size.toInt)(idx => idx % numRows)
+      new SparseMatrix(numRows, numCols, colPtrs, rowIndices, new Array[Double](numRows * numCols))
+    } else if (density < 0.34) {
+      // draw-by-draw, expected number of iterations is less than 1.5 * nnz
+      val entries = MHashSet[(Int, Int)]()
+      while (entries.size < nnz) {
+        entries += ((rng.nextInt(numRows), rng.nextInt(numCols)))
+      }
+      SparseMatrix.fromCOO(numRows, numCols, entries.map(v => (v._1, v._2, 1.0)))
+    } else {
+      // selection-rejection method
+      var idx = 0L
+      var numSelected = 0
+      var j = 0
+      val colPtrs = new Array[Int](numCols + 1)
+      val rowIndices = new Array[Int](nnz)
+      while (j < numCols && numSelected < nnz) {
+        var i = 0
+        while (i < numRows && numSelected < nnz) {
+          if (rng.nextDouble() < 1.0 * (nnz - numSelected) / (size - idx)) {
+            rowIndices(numSelected) = i
+            numSelected += 1
+          }
+          i += 1
+          idx += 1
+        }
+        colPtrs(j + 1) = numSelected
+        j += 1
+      }
+      new SparseMatrix(numRows, numCols, colPtrs, rowIndices, new Array[Double](nnz))
+    }
+  }
+
+  /**
+=======
+>>>>>>> upstream/master
    * Generate a `SparseMatrix` consisting of `i.i.d`. uniform random numbers. The number of non-zero
    * elements equal the ceiling of `numRows` x `numCols` x `density`
    *
@@ -828,6 +978,7 @@ object Matrices {
    * @return `Matrix` with size `n` x `n` and values of ones on the diagonal
    */
   def eye(n: Int): Matrix = DenseMatrix.eye(n)
+<<<<<<< HEAD
 
   /**
    * Generate a sparse Identity Matrix in `Matrix` format.
@@ -837,6 +988,17 @@ object Matrices {
   def speye(n: Int): Matrix = SparseMatrix.speye(n)
 
   /**
+=======
+
+  /**
+   * Generate a sparse Identity Matrix in `Matrix` format.
+   * @param n number of rows and columns of the matrix
+   * @return `Matrix` with size `n` x `n` and values of ones on the diagonal
+   */
+  def speye(n: Int): Matrix = SparseMatrix.speye(n)
+
+  /**
+>>>>>>> upstream/master
    * Generate a `DenseMatrix` consisting of `i.i.d.` uniform random numbers.
    * @param numRows number of rows of the matrix
    * @param numCols number of columns of the matrix

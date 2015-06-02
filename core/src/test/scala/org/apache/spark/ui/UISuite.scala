@@ -23,14 +23,17 @@ import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 import org.eclipse.jetty.servlet.ServletContextHandler
-import org.scalatest.FunSuite
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.time.SpanSugar._
 
 import org.apache.spark.LocalSparkContext._
+<<<<<<< HEAD
 import org.apache.spark.{SparkConf, SparkContext}
+=======
+import org.apache.spark.{SparkConf, SparkContext, SparkFunSuite}
+>>>>>>> upstream/master
 
-class UISuite extends FunSuite {
+class UISuite extends SparkFunSuite {
 
   /**
    * Create a test SparkContext with the SparkUI enabled.

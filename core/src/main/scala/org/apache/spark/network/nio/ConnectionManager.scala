@@ -36,7 +36,7 @@ import io.netty.util.{Timeout, TimerTask, HashedWheelTimer}
 
 import org.apache.spark._
 import org.apache.spark.network.sasl.{SparkSaslClient, SparkSaslServer}
-import org.apache.spark.util.Utils
+import org.apache.spark.util.{ThreadUtils, Utils}
 
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -79,7 +79,11 @@ private[nio] class ConnectionManager(
 
   private val selector = SelectorProvider.provider.openSelector()
   private val ackTimeoutMonitor =
+<<<<<<< HEAD
     new HashedWheelTimer(Utils.namedThreadFactory("AckTimeoutMonitor"))
+=======
+    new HashedWheelTimer(ThreadUtils.namedThreadFactory("AckTimeoutMonitor"))
+>>>>>>> upstream/master
 
   private val ackTimeout =
     conf.getTimeAsSeconds("spark.core.connection.ack.wait.timeout",
@@ -102,7 +106,7 @@ private[nio] class ConnectionManager(
     handlerThreadCount,
     conf.getInt("spark.core.connection.handler.threads.keepalive", 60), TimeUnit.SECONDS,
     new LinkedBlockingDeque[Runnable](),
-    Utils.namedThreadFactory("handle-message-executor")) {
+    ThreadUtils.namedThreadFactory("handle-message-executor")) {
 
     override def afterExecute(r: Runnable, t: Throwable): Unit = {
       super.afterExecute(r, t)
@@ -117,7 +121,7 @@ private[nio] class ConnectionManager(
     ioThreadCount,
     conf.getInt("spark.core.connection.io.threads.keepalive", 60), TimeUnit.SECONDS,
     new LinkedBlockingDeque[Runnable](),
-    Utils.namedThreadFactory("handle-read-write-executor")) {
+    ThreadUtils.namedThreadFactory("handle-read-write-executor")) {
 
     override def afterExecute(r: Runnable, t: Throwable): Unit = {
       super.afterExecute(r, t)
@@ -134,7 +138,7 @@ private[nio] class ConnectionManager(
     connectThreadCount,
     conf.getInt("spark.core.connection.connect.threads.keepalive", 60), TimeUnit.SECONDS,
     new LinkedBlockingDeque[Runnable](),
-    Utils.namedThreadFactory("handle-connect-executor")) {
+    ThreadUtils.namedThreadFactory("handle-connect-executor")) {
 
     override def afterExecute(r: Runnable, t: Throwable): Unit = {
       super.afterExecute(r, t)
@@ -160,7 +164,7 @@ private[nio] class ConnectionManager(
   private val registerRequests = new SynchronizedQueue[SendingConnection]
 
   implicit val futureExecContext = ExecutionContext.fromExecutor(
-    Utils.newDaemonCachedThreadPool("Connection manager future execution context"))
+    ThreadUtils.newDaemonCachedThreadPool("Connection manager future execution context"))
 
   @volatile
   private var onReceiveCallback: (BufferMessage, ConnectionManagerId) => Option[Message] = null
@@ -188,6 +192,10 @@ private[nio] class ConnectionManager(
   private val writeRunnableStarted: HashSet[SelectionKey] = new HashSet[SelectionKey]()
   private val readRunnableStarted: HashSet[SelectionKey] = new HashSet[SelectionKey]()
 
+<<<<<<< HEAD
+=======
+  @volatile private var isActive = true
+>>>>>>> upstream/master
   private val selectorThread = new Thread("connection-manager-thread") {
     override def run(): Unit = ConnectionManager.this.run()
   }
@@ -342,7 +350,7 @@ private[nio] class ConnectionManager(
 
   def run() {
     try {
-      while(!selectorThread.isInterrupted) {
+      while (isActive) {
         while (!registerRequests.isEmpty) {
           val conn: SendingConnection = registerRequests.dequeue()
           addListeners(conn)
@@ -398,7 +406,7 @@ private[nio] class ConnectionManager(
           } catch {
             // Explicitly only dealing with CancelledKeyException here since other exceptions
             // should be dealt with differently.
-            case e: CancelledKeyException => {
+            case e: CancelledKeyException =>
               // Some keys within the selectors list are invalid/closed. clear them.
               val allKeys = selector.keys().iterator()
 
@@ -420,8 +428,11 @@ private[nio] class ConnectionManager(
                   }
                 }
               }
-            }
-            0
+              0
+
+            case e: ClosedSelectorException =>
+              logDebug("Failed select() as selector is closed.", e)
+              return
           }
 
         if (selectedKeysCount == 0) {
@@ -631,12 +642,11 @@ private[nio] class ConnectionManager(
         val message = securityMsgResp.toBufferMessage
         if (message == null) throw new IOException("Error creating security message")
         sendSecurityMessage(waitingConn.getRemoteConnectionManagerId(), message)
-      } catch  {
-        case e: Exception => {
+      } catch {
+        case e: Exception =>
           logError("Error handling sasl client authentication", e)
           waitingConn.close()
           throw new IOException("Error evaluating sasl response: ", e)
-        }
       }
     }
   }
@@ -652,7 +662,7 @@ private[nio] class ConnectionManager(
         connection.synchronized {
           if (connection.sparkSaslServer == null) {
             logDebug("Creating sasl Server")
-            connection.sparkSaslServer = new SparkSaslServer(conf.getAppId, securityManager)
+            connection.sparkSaslServer = new SparkSaslServer(conf.getAppId, securityManager, false)
           }
         }
         replyToken = connection.sparkSaslServer.response(securityMsg.getToken)
@@ -796,7 +806,7 @@ private[nio] class ConnectionManager(
     if (!conn.isSaslComplete()) {
       conn.synchronized {
         if (conn.sparkSaslClient == null) {
-          conn.sparkSaslClient = new SparkSaslClient(conf.getAppId, securityManager)
+          conn.sparkSaslClient = new SparkSaslClient(conf.getAppId, securityManager, false)
           var firstResponse: Array[Byte] = null
           try {
             firstResponse = conn.sparkSaslClient.firstToken()
@@ -988,11 +998,16 @@ private[nio] class ConnectionManager(
   }
 
   def stop() {
+<<<<<<< HEAD
     ackTimeoutMonitor.stop()
     selector.wakeup()
+=======
+    isActive = false
+    ackTimeoutMonitor.stop()
+    selector.close()
+>>>>>>> upstream/master
     selectorThread.interrupt()
     selectorThread.join()
-    selector.close()
     val connections = connectionsByKey.values
     connections.foreach(_.close())
     if (connectionsByKey.size != 0) {

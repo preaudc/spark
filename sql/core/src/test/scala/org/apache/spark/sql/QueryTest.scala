@@ -55,6 +55,7 @@ class QueryTest extends PlanTest {
    * Runs the plan and makes sure the answer matches the expected result.
    * @param df the [[DataFrame]] to be executed
    * @param expectedAnswer the expected result in a [[Seq]] of [[Row]]s.
+<<<<<<< HEAD
    */
   protected def checkAnswer(df: DataFrame, expectedAnswer: Seq[Row]): Unit = {
     QueryTest.checkAnswer(df, expectedAnswer) match {
@@ -80,8 +81,17 @@ class QueryTest extends PlanTest {
     val planWithCaching = query.queryExecution.withCachedData
     val cachedData = planWithCaching collect {
       case cached: InMemoryRelation => cached
+=======
+   */
+  protected def checkAnswer(df: DataFrame, expectedAnswer: Seq[Row]): Unit = {
+    QueryTest.checkAnswer(df, expectedAnswer) match {
+      case Some(errorMessage) => fail(errorMessage)
+      case None =>
+>>>>>>> upstream/master
     }
+  }
 
+<<<<<<< HEAD
     assert(
       cachedData.size == numCachedTables,
       s"Expected query to contain $numCachedTables, but it actually had ${cachedData.size}\n" +
@@ -154,6 +164,97 @@ object QueryTest {
     checkAnswer(df, expectedAnswer.toSeq) match {
       case Some(errorMessage) => errorMessage
       case None => null
+=======
+  protected def checkAnswer(df: DataFrame, expectedAnswer: Row): Unit = {
+    checkAnswer(df, Seq(expectedAnswer))
+  }
+
+  protected def checkAnswer(df: DataFrame, expectedAnswer: DataFrame): Unit = {
+    checkAnswer(df, expectedAnswer.collect())
+  }
+
+  def sqlTest(sqlString: String, expectedAnswer: Seq[Row])(implicit sqlContext: SQLContext) {
+    test(sqlString) {
+      checkAnswer(sqlContext.sql(sqlString), expectedAnswer)
     }
   }
+
+  /**
+   * Asserts that a given [[DataFrame]] will be executed using the given number of cached results.
+   */
+  def assertCached(query: DataFrame, numCachedTables: Int = 1): Unit = {
+    val planWithCaching = query.queryExecution.withCachedData
+    val cachedData = planWithCaching collect {
+      case cached: InMemoryRelation => cached
+>>>>>>> upstream/master
+    }
+  }
+<<<<<<< HEAD
+=======
+}
+
+object QueryTest {
+  /**
+   * Runs the plan and makes sure the answer matches the expected result.
+   * If there was exception during the execution or the contents of the DataFrame does not
+   * match the expected result, an error message will be returned. Otherwise, a [[None]] will
+   * be returned.
+   * @param df the [[DataFrame]] to be executed
+   * @param expectedAnswer the expected result in a [[Seq]] of [[Row]]s.
+   */
+  def checkAnswer(df: DataFrame, expectedAnswer: Seq[Row]): Option[String] = {
+    val isSorted = df.logicalPlan.collect { case s: logical.Sort => s }.nonEmpty
+    def prepareAnswer(answer: Seq[Row]): Seq[Row] = {
+      // Converts data to types that we can do equality comparison using Scala collections.
+      // For BigDecimal type, the Scala type has a better definition of equality test (similar to
+      // Java's java.math.BigDecimal.compareTo).
+      // For binary arrays, we convert it to Seq to avoid of calling java.util.Arrays.equals for
+      // equality test.
+      val converted: Seq[Row] = answer.map { s =>
+        Row.fromSeq(s.toSeq.map {
+          case d: java.math.BigDecimal => BigDecimal(d)
+          case b: Array[Byte] => b.toSeq
+          case o => o
+        })
+      }
+      if (!isSorted) converted.sortBy(_.toString()) else converted
+    }
+    val sparkAnswer = try df.collect().toSeq catch {
+      case e: Exception =>
+        val errorMessage =
+          s"""
+            |Exception thrown while executing query:
+            |${df.queryExecution}
+            |== Exception ==
+            |$e
+            |${org.apache.spark.sql.catalyst.util.stackTraceToString(e)}
+          """.stripMargin
+        return Some(errorMessage)
+    }
+
+    if (prepareAnswer(expectedAnswer) != prepareAnswer(sparkAnswer)) {
+      val errorMessage =
+        s"""
+        |Results do not match for query:
+        |${df.queryExecution}
+        |== Results ==
+        |${sideBySide(
+          s"== Correct Answer - ${expectedAnswer.size} ==" +:
+            prepareAnswer(expectedAnswer).map(_.toString()),
+          s"== Spark Answer - ${sparkAnswer.size} ==" +:
+            prepareAnswer(sparkAnswer).map(_.toString())).mkString("\n")}
+      """.stripMargin
+      return Some(errorMessage)
+    }
+
+    return None
+  }
+
+  def checkAnswer(df: DataFrame, expectedAnswer: java.util.List[Row]): String = {
+    checkAnswer(df, expectedAnswer.toSeq) match {
+      case Some(errorMessage) => errorMessage
+      case None => null
+    }
+  }
+>>>>>>> upstream/master
 }

@@ -206,7 +206,8 @@ class SparkILoop(
         // e.g. file:/C:/my/path.jar -> C:/my/path.jar
         SparkILoop.getAddedJars.map { jar => new URI(jar).getPath.stripPrefix("/") }
       } else {
-        SparkILoop.getAddedJars
+        // We need new URI(jar).getPath here for the case that `jar` includes encoded white space (%20).
+        SparkILoop.getAddedJars.map { jar => new URI(jar).getPath }
       }
     // work around for Scala bug
     val totalClassPath = addedJars.foldLeft(
@@ -1028,7 +1029,11 @@ class SparkILoop(
       logInfo("Created sql context (with Hive support)..")
     }
     catch {
+<<<<<<< HEAD:repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkILoop.scala
       case cnf: java.lang.ClassNotFoundException =>
+=======
+      case _: java.lang.ClassNotFoundException | _: java.lang.NoClassDefFoundError =>
+>>>>>>> upstream/master:repl/scala-2.10/src/main/scala/org/apache/spark/repl/SparkILoop.scala
         sqlContext = new SQLContext(sparkContext)
         logInfo("Created sql context..")
     }
@@ -1109,7 +1114,7 @@ object SparkILoop extends Logging {
         if (settings.classpath.isDefault)
           settings.classpath.value = sys.props("java.class.path")
 
-        getAddedJars.foreach(settings.classpath.append(_))
+        getAddedJars.map(jar => new URI(jar).getPath).foreach(settings.classpath.append(_))
 
         repl process settings
       }

@@ -19,20 +19,29 @@ package org.apache.spark.sql.execution
 
 import java.util.{List => JList, Map => JMap}
 
+<<<<<<< HEAD
 import org.apache.spark.rdd.RDD
 
+=======
+>>>>>>> upstream/master
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 import net.razorvine.pickle.{Pickler, Unpickler}
+
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.api.python.{PythonBroadcast, PythonRDD}
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.rules.Rule
+<<<<<<< HEAD
+=======
+import org.apache.spark.sql.catalyst.util.DateUtils
+>>>>>>> upstream/master
 import org.apache.spark.sql.types._
 import org.apache.spark.{Accumulator, Logging => SparkLogging}
 
@@ -45,6 +54,10 @@ private[spark] case class PythonUDF(
     envVars: JMap[String, String],
     pythonIncludes: JList[String],
     pythonExec: String,
+<<<<<<< HEAD
+=======
+    pythonVer: String,
+>>>>>>> upstream/master
     broadcastVars: JList[Broadcast[PythonBroadcast]],
     accumulator: Accumulator[JList[Array[Byte]]],
     dataType: DataType,
@@ -54,7 +67,11 @@ private[spark] case class PythonUDF(
 
   def nullable: Boolean = true
 
+<<<<<<< HEAD
   override def eval(input: Row): PythonUDF.this.EvaluatedType = {
+=======
+  override def eval(input: Row): Any = {
+>>>>>>> upstream/master
     sys.error("PythonUDFs can not be directly evaluated.")
   }
 }
@@ -219,8 +236,8 @@ case class EvaluatePython(
 
 /**
  * :: DeveloperApi ::
- * Uses PythonRDD to evaluate a [[PythonUDF]], one partition of tuples at a time.  The input
- * data is cached and zipped with the result of the udf evaluation.
+ * Uses PythonRDD to evaluate a [[PythonUDF]], one partition of tuples at a time.
+ * The input data is zipped with the result of the udf evaluation.
  */
 @DeveloperApi
 case class BatchPythonEvaluation(udf: PythonUDF, output: Seq[Attribute], child: SparkPlan)
@@ -228,9 +245,14 @@ case class BatchPythonEvaluation(udf: PythonUDF, output: Seq[Attribute], child: 
 
   def children: Seq[SparkPlan] = child :: Nil
 
+<<<<<<< HEAD
   def execute(): RDD[Row] = {
     // TODO: Clean up after ourselves?
     val childResults = child.execute().map(_.copy()).cache()
+=======
+  protected override def doExecute(): RDD[Row] = {
+    val childResults = child.execute().map(_.copy())
+>>>>>>> upstream/master
 
     val parent = childResults.mapPartitions { iter =>
       val pickle = new Pickler
@@ -251,6 +273,7 @@ case class BatchPythonEvaluation(udf: PythonUDF, output: Seq[Attribute], child: 
       udf.pythonIncludes,
       false,
       udf.pythonExec,
+      udf.pythonVer,
       udf.broadcastVars,
       udf.accumulator
     ).mapPartitions { iter =>

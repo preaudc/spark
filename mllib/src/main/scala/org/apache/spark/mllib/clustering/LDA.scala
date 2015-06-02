@@ -17,6 +17,7 @@
 
 package org.apache.spark.mllib.clustering
 
+<<<<<<< HEAD
 import java.util.Random
 
 import breeze.linalg.{DenseVector => BDV, normalize}
@@ -27,6 +28,14 @@ import org.apache.spark.api.java.JavaPairRDD
 import org.apache.spark.graphx._
 import org.apache.spark.graphx.impl.GraphImpl
 import org.apache.spark.mllib.impl.PeriodicGraphCheckpointer
+=======
+import breeze.linalg.{DenseVector => BDV}
+
+import org.apache.spark.Logging
+import org.apache.spark.annotation.{DeveloperApi, Experimental}
+import org.apache.spark.api.java.JavaPairRDD
+import org.apache.spark.graphx._
+>>>>>>> upstream/master
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.Utils
@@ -42,6 +51,7 @@ import org.apache.spark.util.Utils
  *  - "token": instance of a term appearing in a document
  *  - "topic": multinomial distribution over words representing some concept
  *
+<<<<<<< HEAD
  * Currently, the underlying implementation uses Expectation-Maximization (EM), implemented
  * according to the Asuncion et al. (2009) paper referenced below.
  *
@@ -52,6 +62,11 @@ import org.apache.spark.util.Utils
  *  - Paper which clearly explains several algorithms, including EM:
  *    Asuncion, Welling, Smyth, and Teh.
  *    "On Smoothing and Inference for Topic Models."  UAI, 2009.
+=======
+ * References:
+ *  - Original LDA paper (journal version):
+ *    Blei, Ng, and Jordan.  "Latent Dirichlet Allocation."  JMLR, 2003.
+>>>>>>> upstream/master
  *
  * @see [[http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation Latent Dirichlet allocation
  *       (Wikipedia)]]
@@ -63,10 +78,18 @@ class LDA private (
     private var docConcentration: Double,
     private var topicConcentration: Double,
     private var seed: Long,
+<<<<<<< HEAD
     private var checkpointInterval: Int) extends Logging {
 
   def this() = this(k = 10, maxIterations = 20, docConcentration = -1, topicConcentration = -1,
     seed = Utils.random.nextLong(), checkpointInterval = 10)
+=======
+    private var checkpointInterval: Int,
+    private var ldaOptimizer: LDAOptimizer) extends Logging {
+
+  def this() = this(k = 10, maxIterations = 20, docConcentration = -1, topicConcentration = -1,
+    seed = Utils.random.nextLong(), checkpointInterval = 10, ldaOptimizer = new EMLDAOptimizer)
+>>>>>>> upstream/master
 
   /**
    * Number of topics to infer.  I.e., the number of soft cluster centers.
@@ -89,6 +112,7 @@ class LDA private (
    *
    * This is the parameter to a symmetric Dirichlet distribution.
    */
+<<<<<<< HEAD
   def getDocConcentration: Double = {
     if (this.docConcentration == -1) {
       (50.0 / k) + 1.0
@@ -96,11 +120,15 @@ class LDA private (
       this.docConcentration
     }
   }
+=======
+  def getDocConcentration: Double = this.docConcentration
+>>>>>>> upstream/master
 
   /**
    * Concentration parameter (commonly named "alpha") for the prior placed on documents'
    * distributions over topics ("theta").
    *
+<<<<<<< HEAD
    * This is the parameter to a symmetric Dirichlet distribution.
    *
    * This value should be > 1.0, where larger values mean more smoothing (more regularization).
@@ -118,6 +146,25 @@ class LDA private (
   def setDocConcentration(docConcentration: Double): this.type = {
     require(docConcentration > 1.0 || docConcentration == -1.0,
       s"LDA docConcentration must be > 1.0 (or -1 for auto), but was set to $docConcentration")
+=======
+   * This is the parameter to a symmetric Dirichlet distribution, where larger values
+   * mean more smoothing (more regularization).
+   *
+   * If set to -1, then docConcentration is set automatically.
+   *  (default = -1 = automatic)
+   *
+   * Optimizer-specific parameter settings:
+   *  - EM
+   *     - Value should be > 1.0
+   *     - default = (50 / k) + 1, where 50/k is common in LDA libraries and +1 follows
+   *       Asuncion et al. (2009), who recommend a +1 adjustment for EM.
+   *  - Online
+   *     - Value should be >= 0
+   *     - default = (1.0 / k), following the implementation from
+   *       [[https://github.com/Blei-Lab/onlineldavb]].
+   */
+  def setDocConcentration(docConcentration: Double): this.type = {
+>>>>>>> upstream/master
     this.docConcentration = docConcentration
     this
   }
@@ -137,6 +184,7 @@ class LDA private (
    * Note: The topics' distributions over terms are called "beta" in the original LDA paper
    * by Blei et al., but are called "phi" in many later papers such as Asuncion et al., 2009.
    */
+<<<<<<< HEAD
   def getTopicConcentration: Double = {
     if (this.topicConcentration == -1) {
       1.1
@@ -144,6 +192,9 @@ class LDA private (
       this.topicConcentration
     }
   }
+=======
+  def getTopicConcentration: Double = this.topicConcentration
+>>>>>>> upstream/master
 
   /**
    * Concentration parameter (commonly named "beta" or "eta") for the prior placed on topics'
@@ -154,6 +205,7 @@ class LDA private (
    * Note: The topics' distributions over terms are called "beta" in the original LDA paper
    * by Blei et al., but are called "phi" in many later papers such as Asuncion et al., 2009.
    *
+<<<<<<< HEAD
    * This value should be > 0.0.
    * If set to -1, then topicConcentration is set automatically.
    *  (default = -1 = automatic)
@@ -169,6 +221,22 @@ class LDA private (
   def setTopicConcentration(topicConcentration: Double): this.type = {
     require(topicConcentration > 1.0 || topicConcentration == -1.0,
       s"LDA topicConcentration must be > 1.0 (or -1 for auto), but was set to $topicConcentration")
+=======
+   * If set to -1, then topicConcentration is set automatically.
+   *  (default = -1 = automatic)
+   *
+   * Optimizer-specific parameter settings:
+   *  - EM
+   *     - Value should be > 1.0
+   *     - default = 0.1 + 1, where 0.1 gives a small amount of smoothing and +1 follows
+   *       Asuncion et al. (2009), who recommend a +1 adjustment for EM.
+   *  - Online
+   *     - Value should be >= 0
+   *     - default = (1.0 / k), following the implementation from
+   *       [[https://github.com/Blei-Lab/onlineldavb]].
+   */
+  def setTopicConcentration(topicConcentration: Double): this.type = {
+>>>>>>> upstream/master
     this.topicConcentration = topicConcentration
     this
   }
@@ -177,7 +245,11 @@ class LDA private (
   def getBeta: Double = getTopicConcentration
 
   /** Alias for [[setTopicConcentration()]] */
+<<<<<<< HEAD
   def setBeta(beta: Double): this.type = setBeta(beta)
+=======
+  def setBeta(beta: Double): this.type = setTopicConcentration(beta)
+>>>>>>> upstream/master
 
   /**
    * Maximum number of iterations for learning.
@@ -220,6 +292,44 @@ class LDA private (
     this
   }
 
+<<<<<<< HEAD
+=======
+
+  /**
+   * :: DeveloperApi ::
+   *
+   * LDAOptimizer used to perform the actual calculation
+   */
+  @DeveloperApi
+  def getOptimizer: LDAOptimizer = ldaOptimizer
+
+  /**
+   * :: DeveloperApi ::
+   *
+   * LDAOptimizer used to perform the actual calculation (default = EMLDAOptimizer)
+   */
+  @DeveloperApi
+  def setOptimizer(optimizer: LDAOptimizer): this.type = {
+    this.ldaOptimizer = optimizer
+    this
+  }
+
+  /**
+   * Set the LDAOptimizer used to perform the actual calculation by algorithm name.
+   * Currently "em", "online" are supported.
+   */
+  def setOptimizer(optimizerName: String): this.type = {
+    this.ldaOptimizer =
+      optimizerName.toLowerCase match {
+        case "em" => new EMLDAOptimizer
+        case "online" => new OnlineLDAOptimizer
+        case other =>
+          throw new IllegalArgumentException(s"Only em, online are supported but got $other.")
+      }
+    this
+  }
+
+>>>>>>> upstream/master
   /**
    * Learn an LDA model using the given dataset.
    *
@@ -229,9 +339,14 @@ class LDA private (
    *                   Document IDs must be unique and >= 0.
    * @return  Inferred LDA model
    */
+<<<<<<< HEAD
   def run(documents: RDD[(Long, Vector)]): DistributedLDAModel = {
     val state = LDA.initialState(documents, k, getDocConcentration, getTopicConcentration, seed,
       checkpointInterval)
+=======
+  def run(documents: RDD[(Long, Vector)]): LDAModel = {
+    val state = ldaOptimizer.initialize(documents, this)
+>>>>>>> upstream/master
     var iter = 0
     val iterationTimes = Array.fill[Double](maxIterations)(0)
     while (iter < maxIterations) {
@@ -241,12 +356,20 @@ class LDA private (
       iterationTimes(iter) = elapsedSeconds
       iter += 1
     }
+<<<<<<< HEAD
     state.graphCheckpointer.deleteAllCheckpoints()
     new DistributedLDAModel(state, iterationTimes)
   }
 
   /** Java-friendly version of [[run()]] */
   def run(documents: JavaPairRDD[java.lang.Long, Vector]): DistributedLDAModel = {
+=======
+    state.getLDAModel(iterationTimes)
+  }
+
+  /** Java-friendly version of [[run()]] */
+  def run(documents: JavaPairRDD[java.lang.Long, Vector]): LDAModel = {
+>>>>>>> upstream/master
     run(documents.rdd.asInstanceOf[RDD[(Long, Vector)]])
   }
 }
@@ -321,6 +444,7 @@ private[clustering] object LDA {
   private[clustering] def isTermVertex(v: (VertexId, _)): Boolean = v._1 < 0
 
   /**
+<<<<<<< HEAD
    * Optimizer for EM algorithm which stores data + parameter graph, plus algorithm parameters.
    *
    * @param graph  EM graph, storing current parameter estimates in vertex descriptors and
@@ -402,6 +526,11 @@ private[clustering] object LDA {
    * Compute gamma_{wjk}, a distribution over topics k.
    */
   private def computePTopic(
+=======
+   * Compute gamma_{wjk}, a distribution over topics k.
+   */
+  private[clustering] def computePTopic(
+>>>>>>> upstream/master
       docTopicCounts: TopicCounts,
       termTopicCounts: TopicCounts,
       totalTopicCounts: TopicCounts,
@@ -427,6 +556,7 @@ private[clustering] object LDA {
     // normalize
     BDV(gamma_wj) /= sum
   }
+<<<<<<< HEAD
 
   /**
    * Compute bipartite term/doc graph.
@@ -472,4 +602,6 @@ private[clustering] object LDA {
     new EMOptimizer(graph, k, vocabSize, docConcentration, topicConcentration, checkpointInterval)
   }
 
+=======
+>>>>>>> upstream/master
 }

@@ -101,7 +101,11 @@ class HiveUdfSuite extends QueryTest {
     sql("DROP TEMPORARY FUNCTION IF EXISTS test_avg")
     TestHive.reset()
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   test("SPARK-2693 udaf aggregates test") {
     checkAnswer(sql("SELECT percentile(key, 1) FROM src LIMIT 1"),
       sql("SELECT max(key) FROM src").collect().toSeq)

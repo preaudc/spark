@@ -26,12 +26,21 @@ import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectIns
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory
 import org.apache.hadoop.io.LongWritable
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.sql.catalyst.expressions.{Literal, Row}
 import org.apache.spark.sql.types._
 
 class HiveInspectorSuite extends FunSuite with HiveInspectors {
+=======
+
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.catalyst.expressions.{Literal, Row}
+import org.apache.spark.sql.types._
+
+class HiveInspectorSuite extends SparkFunSuite with HiveInspectors {
+>>>>>>> upstream/master
   test("Test wrap SettableStructObjectInspector") {
     val udaf = new UDAFPercentile.PercentileLongEvaluator()
     udaf.init()
@@ -78,10 +87,17 @@ class HiveInspectorSuite extends FunSuite with HiveInspectors {
     Literal(java.sql.Date.valueOf("2014-09-23")) ::
     Literal(Decimal(BigDecimal(123.123))) ::
     Literal(new java.sql.Timestamp(123123)) ::
+<<<<<<< HEAD
     Literal(Array[Byte](1,2,3)) ::
     Literal.create(Seq[Int](1,2,3), ArrayType(IntegerType)) ::
     Literal.create(Map[Int, Int](1->2, 2->1), MapType(IntegerType, IntegerType)) ::
     Literal.create(Row(1,2.0d,3.0f),
+=======
+    Literal(Array[Byte](1, 2, 3)) ::
+    Literal.create(Seq[Int](1, 2, 3), ArrayType(IntegerType)) ::
+    Literal.create(Map[Int, Int](1 -> 2, 2 -> 1), MapType(IntegerType, IntegerType)) ::
+    Literal.create(Row(1, 2.0d, 3.0f),
+>>>>>>> upstream/master
       StructType(StructField("c1", IntegerType) ::
       StructField("c2", DoubleType) ::
       StructField("c3", FloatType) :: Nil)) ::
@@ -111,8 +127,13 @@ class HiveInspectorSuite extends FunSuite with HiveInspectors {
     case DecimalType() => PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector
     case StructType(fields) =>
       ObjectInspectorFactory.getStandardStructObjectInspector(
+<<<<<<< HEAD
         java.util.Arrays.asList(fields.map(f => f.name) :_*),
         java.util.Arrays.asList(fields.map(f => toWritableInspector(f.dataType)) :_*))
+=======
+        java.util.Arrays.asList(fields.map(f => f.name) : _*),
+        java.util.Arrays.asList(fields.map(f => toWritableInspector(f.dataType)) : _*))
+>>>>>>> upstream/master
   }
 
   def checkDataType(dt1: Seq[DataType], dt2: Seq[DataType]): Unit = {

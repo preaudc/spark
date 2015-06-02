@@ -27,10 +27,13 @@ import org.apache.spark.sql.types.DataType
 case class ScalaUdf(function: AnyRef, dataType: DataType, children: Seq[Expression])
   extends Expression {
 
-  type EvaluatedType = Any
-
   override def nullable: Boolean = true
 
+<<<<<<< HEAD
+  override def nullable: Boolean = true
+
+=======
+>>>>>>> upstream/master
   override def toString: String = s"scalaUDF(${children.mkString(",")})"
 
   // scalastyle:off
@@ -55,9 +58,15 @@ case class ScalaUdf(function: AnyRef, dataType: DataType, children: Seq[Expressi
     }.foreach(println)
 
   */
+<<<<<<< HEAD
   
   val f = children.size match {
     case 0 => 
+=======
+
+  private[this] val f = children.size match {
+    case 0 =>
+>>>>>>> upstream/master
       val func = function.asInstanceOf[() => Any]
       (input: Row) => {
         func()
@@ -956,7 +965,12 @@ case class ScalaUdf(function: AnyRef, dataType: DataType, children: Seq[Expressi
   }
 
   // scalastyle:on
+<<<<<<< HEAD
 
   override def eval(input: Row): Any = CatalystTypeConverters.convertToCatalyst(f(input), dataType)
+=======
+  private[this] val converter = CatalystTypeConverters.createToCatalystConverter(dataType)
+  override def eval(input: Row): Any = converter(f(input))
+>>>>>>> upstream/master
 
 }

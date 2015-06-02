@@ -24,14 +24,23 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
 import scala.tools.nsc.interpreter.SparkILoop
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.spark.SparkContext
+=======
+import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.spark.{SparkContext, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.util.Utils
 
 
 
+<<<<<<< HEAD
 class ReplSuite extends FunSuite {
+=======
+class ReplSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   def runInterpreter(master: String, input: String): String = {
     val CONF_EXECUTOR_CLASSPATH = "spark.executor.extraClassPath"

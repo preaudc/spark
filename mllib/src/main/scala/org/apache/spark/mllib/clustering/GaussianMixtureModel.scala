@@ -34,6 +34,7 @@ import org.apache.spark.sql.{SQLContext, Row}
 /**
  * :: Experimental ::
  *
+<<<<<<< HEAD
  * Multivariate Gaussian Mixture Model (GMM) consisting of k Gaussians, where points 
  * are drawn from each Gaussian i=1..k with probability w(i); mu(i) and sigma(i) are 
  * the respective mean and covariance for each Gaussian distribution i=1..k. 
@@ -49,6 +50,22 @@ class GaussianMixtureModel(
   val weights: Array[Double], 
   val gaussians: Array[MultivariateGaussian]) extends Serializable with Saveable{
   
+=======
+ * Multivariate Gaussian Mixture Model (GMM) consisting of k Gaussians, where points
+ * are drawn from each Gaussian i=1..k with probability w(i); mu(i) and sigma(i) are
+ * the respective mean and covariance for each Gaussian distribution i=1..k.
+ *
+ * @param weights Weights for each Gaussian distribution in the mixture, where weights(i) is
+ *                the weight for Gaussian i, and weights.sum == 1
+ * @param gaussians Array of MultivariateGaussian where gaussians(i) represents
+ *                  the Multivariate Gaussian (Normal) Distribution for Gaussian i
+ */
+@Experimental
+class GaussianMixtureModel(
+  val weights: Array[Double],
+  val gaussians: Array[MultivariateGaussian]) extends Serializable with Saveable{
+
+>>>>>>> upstream/master
   require(weights.length == gaussians.length, "Length of weight and Gaussian arrays must match")
 
   override protected def formatVersion = "1.0"
@@ -65,20 +82,35 @@ class GaussianMixtureModel(
     val responsibilityMatrix = predictSoft(points)
     responsibilityMatrix.map(r => r.indexOf(r.max))
   }
+<<<<<<< HEAD
   
   /**
    * Given the input vectors, return the membership value of each vector
    * to all mixture components. 
+=======
+
+  /**
+   * Given the input vectors, return the membership value of each vector
+   * to all mixture components.
+>>>>>>> upstream/master
    */
   def predictSoft(points: RDD[Vector]): RDD[Array[Double]] = {
     val sc = points.sparkContext
     val bcDists = sc.broadcast(gaussians)
     val bcWeights = sc.broadcast(weights)
+<<<<<<< HEAD
     points.map { x => 
       computeSoftAssignments(x.toBreeze.toDenseVector, bcDists.value, bcWeights.value, k)
     }
   }
   
+=======
+    points.map { x =>
+      computeSoftAssignments(x.toBreeze.toDenseVector, bcDists.value, bcWeights.value, k)
+    }
+  }
+
+>>>>>>> upstream/master
   /**
    * Compute the partial assignments for each vector
    */
@@ -90,7 +122,11 @@ class GaussianMixtureModel(
     val p = weights.zip(dists).map {
       case (weight, dist) => MLUtils.EPSILON + weight * dist.pdf(pt)
     }
+<<<<<<< HEAD
     val pSum = p.sum 
+=======
+    val pSum = p.sum
+>>>>>>> upstream/master
     for (i <- 0 until k) {
       p(i) /= pSum
     }
@@ -127,13 +163,21 @@ object GaussianMixtureModel extends Loader[GaussianMixtureModel] {
       val dataArray = Array.tabulate(weights.length) { i =>
         Data(weights(i), gaussians(i).mu, gaussians(i).sigma)
       }
+<<<<<<< HEAD
       sc.parallelize(dataArray, 1).toDF().saveAsParquetFile(Loader.dataPath(path))
+=======
+      sc.parallelize(dataArray, 1).toDF().write.parquet(Loader.dataPath(path))
+>>>>>>> upstream/master
     }
 
     def load(sc: SparkContext, path: String): GaussianMixtureModel = {
       val dataPath = Loader.dataPath(path)
       val sqlContext = new SQLContext(sc)
+<<<<<<< HEAD
       val dataFrame = sqlContext.parquetFile(dataPath)
+=======
+      val dataFrame = sqlContext.read.parquet(dataPath)
+>>>>>>> upstream/master
       val dataArray = dataFrame.select("weight", "mu", "sigma").collect()
 
       // Check schema explicitly since erasure makes it hard to use match-case for checking.

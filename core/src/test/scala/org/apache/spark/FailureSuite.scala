@@ -17,8 +17,11 @@
 
 package org.apache.spark
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
+=======
+>>>>>>> upstream/master
 import org.apache.spark.util.NonSerializable
 
 import java.io.NotSerializableException
@@ -38,7 +41,7 @@ object FailureSuiteState {
   }
 }
 
-class FailureSuite extends FunSuite with LocalSparkContext {
+class FailureSuite extends SparkFunSuite with LocalSparkContext {
 
   // Run a 3-task map job in which task 1 deterministically fails once, and check
   // whether the job completes successfully and we ran 4 tasks in total.
@@ -57,7 +60,7 @@ class FailureSuite extends FunSuite with LocalSparkContext {
     FailureSuiteState.synchronized {
       assert(FailureSuiteState.tasksRun === 4)
     }
-    assert(results.toList === List(1,4,9))
+    assert(results.toList === List(1, 4, 9))
     FailureSuiteState.clear()
   }
 
@@ -119,7 +122,7 @@ class FailureSuite extends FunSuite with LocalSparkContext {
       sc.parallelize(1 to 10, 2).map(x => a).count()
     }
     assert(thrown.getClass === classOf[SparkException])
-    assert(thrown.getMessage.contains("NotSerializableException") || 
+    assert(thrown.getMessage.contains("NotSerializableException") ||
       thrown.getCause.getClass === classOf[NotSerializableException])
 
     // Non-serializable closure in an earlier stage
@@ -127,7 +130,7 @@ class FailureSuite extends FunSuite with LocalSparkContext {
       sc.parallelize(1 to 10, 2).map(x => (x, a)).partitionBy(new HashPartitioner(3)).count()
     }
     assert(thrown1.getClass === classOf[SparkException])
-    assert(thrown1.getMessage.contains("NotSerializableException") || 
+    assert(thrown1.getMessage.contains("NotSerializableException") ||
       thrown1.getCause.getClass === classOf[NotSerializableException])
 
     // Non-serializable closure in foreach function
@@ -135,7 +138,7 @@ class FailureSuite extends FunSuite with LocalSparkContext {
       sc.parallelize(1 to 10, 2).foreach(x => println(a))
     }
     assert(thrown2.getClass === classOf[SparkException])
-    assert(thrown2.getMessage.contains("NotSerializableException") || 
+    assert(thrown2.getMessage.contains("NotSerializableException") ||
       thrown2.getCause.getClass === classOf[NotSerializableException])
 
     FailureSuiteState.clear()

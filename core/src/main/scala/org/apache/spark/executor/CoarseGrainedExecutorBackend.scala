@@ -20,9 +20,17 @@ package org.apache.spark.executor
 import java.net.URL
 import java.nio.ByteBuffer
 
+<<<<<<< HEAD
 import scala.collection.mutable
 import scala.util.{Failure, Success}
 
+=======
+import org.apache.hadoop.conf.Configuration
+
+import scala.collection.mutable
+import scala.util.{Failure, Success}
+
+>>>>>>> upstream/master
 import org.apache.spark.rpc._
 import org.apache.spark._
 import org.apache.spark.TaskState.TaskState
@@ -30,7 +38,12 @@ import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.deploy.worker.WorkerWatcher
 import org.apache.spark.scheduler.TaskDescription
 import org.apache.spark.scheduler.cluster.CoarseGrainedClusterMessages._
+<<<<<<< HEAD
 import org.apache.spark.util.{SignalLogger, Utils}
+=======
+import org.apache.spark.serializer.SerializerInstance
+import org.apache.spark.util.{ThreadUtils, SignalLogger, Utils}
+>>>>>>> upstream/master
 
 private[spark] class CoarseGrainedExecutorBackend(
     override val rpcEnv: RpcEnv,
@@ -47,6 +60,7 @@ private[spark] class CoarseGrainedExecutorBackend(
   var executor: Executor = null
   @volatile var driver: Option[RpcEndpointRef] = None
 
+<<<<<<< HEAD
   override def onStart() {
     import scala.concurrent.ExecutionContext.Implicits.global
     logInfo("Connecting to driver: " + driverUrl)
@@ -55,10 +69,26 @@ private[spark] class CoarseGrainedExecutorBackend(
       ref.sendWithReply[RegisteredExecutor.type](
         RegisterExecutor(executorId, self, hostPort, cores, extractLogUrls))
     } onComplete {
+=======
+  // If this CoarseGrainedExecutorBackend is changed to support multiple threads, then this may need
+  // to be changed so that we don't share the serializer instance across threads
+  private[this] val ser: SerializerInstance = env.closureSerializer.newInstance()
+
+  override def onStart() {
+    logInfo("Connecting to driver: " + driverUrl)
+    rpcEnv.asyncSetupEndpointRefByURI(driverUrl).flatMap { ref =>
+      // This is a very fast action so we can use "ThreadUtils.sameThread"
+      driver = Some(ref)
+      ref.ask[RegisteredExecutor.type](
+        RegisterExecutor(executorId, self, hostPort, cores, extractLogUrls))
+    }(ThreadUtils.sameThread).onComplete {
+      // This is a very fast action so we can use "ThreadUtils.sameThread"
+>>>>>>> upstream/master
       case Success(msg) => Utils.tryLogNonFatalError {
         Option(self).foreach(_.send(msg)) // msg must be RegisteredExecutor
       }
       case Failure(e) => logError(s"Cannot register with driver: $driverUrl", e)
+<<<<<<< HEAD
     }
   }
 
@@ -68,6 +98,17 @@ private[spark] class CoarseGrainedExecutorBackend(
       .map(e => (e._1.substring(prefix.length).toLowerCase, e._2))
   }
 
+=======
+    }(ThreadUtils.sameThread)
+  }
+
+  def extractLogUrls: Map[String, String] = {
+    val prefix = "SPARK_LOG_URL_"
+    sys.env.filterKeys(_.startsWith(prefix))
+      .map(e => (e._1.substring(prefix.length).toLowerCase, e._2))
+  }
+
+>>>>>>> upstream/master
   override def receive: PartialFunction[Any, Unit] = {
     case RegisteredExecutor =>
       logInfo("Successfully registered with driver")
@@ -83,7 +124,10 @@ private[spark] class CoarseGrainedExecutorBackend(
         logError("Received LaunchTask command but executor was null")
         System.exit(1)
       } else {
+<<<<<<< HEAD
         val ser = env.closureSerializer.newInstance()
+=======
+>>>>>>> upstream/master
         val taskDesc = ser.deserialize[TaskDescription](data.value)
         logInfo("Got assigned task " + taskDesc.taskId)
         executor.launchTask(this, taskId = taskDesc.taskId, attemptNumber = taskDesc.attemptNumber,
@@ -150,7 +194,11 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
         executorConf,
         new SecurityManager(executorConf))
       val driver = fetcher.setupEndpointRefByURI(driverUrl)
+<<<<<<< HEAD
       val props = driver.askWithReply[Seq[(String, String)]](RetrieveSparkProps) ++
+=======
+      val props = driver.askWithRetry[Seq[(String, String)]](RetrieveSparkProps) ++
+>>>>>>> upstream/master
         Seq[(String, String)](("spark.app.id", appId))
       fetcher.shutdown()
 
@@ -164,6 +212,15 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
           driverConf.set(key, value)
         }
       }
+<<<<<<< HEAD
+=======
+      if (driverConf.contains("spark.yarn.credentials.file")) {
+        logInfo("Will periodically update credentials from: " +
+          driverConf.get("spark.yarn.credentials.file"))
+        SparkHadoopUtil.get.startExecutorDelegationTokenRenewer(driverConf)
+      }
+
+>>>>>>> upstream/master
       val env = SparkEnv.createExecutorEnv(
         driverConf, executorId, hostname, port, cores, isLocal = false)
 
@@ -179,6 +236,10 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
         env.rpcEnv.setupEndpoint("WorkerWatcher", new WorkerWatcher(env.rpcEnv, url))
       }
       env.rpcEnv.awaitTermination()
+<<<<<<< HEAD
+=======
+      SparkHadoopUtil.get.stopExecutorDelegationTokenRenewer()
+>>>>>>> upstream/master
     }
   }
 

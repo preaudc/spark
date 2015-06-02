@@ -21,9 +21,14 @@ import org.apache.spark.sql.catalyst.expressions.Attribute
 
 /**
  * A logical node that represents a non-query command to be executed by the system.  For example,
- * commands can be used by parsers to represent DDL operations.
+ * commands can be used by parsers to represent DDL operations.  Commands, unlike queries, are
+ * eagerly executed.
  */
+<<<<<<< HEAD
 abstract class Command extends LeafNode {
   self: Product =>
   def output: Seq[Attribute] = Seq.empty
 }
+=======
+trait Command
+>>>>>>> upstream/master

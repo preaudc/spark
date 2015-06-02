@@ -45,12 +45,13 @@ case class LeftSemiJoinBNL(
   override def right: SparkPlan = broadcast
 
   @transient private lazy val boundCondition =
-    InterpretedPredicate(
-      condition
-        .map(c => BindReferences.bindReference(c, left.output ++ right.output))
-        .getOrElse(Literal(true)))
+    newPredicate(condition.getOrElse(Literal(true)), left.output ++ right.output)
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     val broadcastedRelation =
       sparkContext.broadcast(broadcast.execute().map(_.copy()).collect().toIndexedSeq)
 

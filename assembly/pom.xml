@@ -92,6 +92,27 @@
           <skip>true</skip>
         </configuration>
       </plugin>
+        <!-- zip pyspark archives to run python application on yarn mode -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                  <goals>
+                    <goal>run</goal>
+                  </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <target>
+                <delete dir="${basedir}/../python/lib/pyspark.zip"/>
+                <zip destfile="${basedir}/../python/lib/pyspark.zip">
+                  <fileset dir="${basedir}/../python/" includes="pyspark/**/*"/>
+                </zip>
+              </target>
+            </configuration>
+        </plugin>
       <!-- Use the shade plugin to create a big JAR with all the dependencies -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -194,7 +215,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>2.4</version>
             <executions>
               <execution>
                 <id>dist</id>
@@ -213,7 +233,10 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Profiles that disable inclusion of certain dependencies. -->
     <profile>
+<<<<<<< HEAD
       <id>kinesis-asl</id>
       <dependencies>
         <dependency>
@@ -222,6 +245,24 @@
           <version>${commons.httpclient.version}</version>
         </dependency>
       </dependencies>
+=======
+      <id>hadoop-provided</id>
+      <properties>
+        <hadoop.deps.scope>provided</hadoop.deps.scope>
+      </properties>
+    </profile>
+    <profile>
+      <id>hive-provided</id>
+      <properties>
+        <hive.deps.scope>provided</hive.deps.scope>
+      </properties>
+    </profile>
+    <profile>
+      <id>parquet-provided</id>
+      <properties>
+        <parquet.deps.scope>provided</parquet.deps.scope>
+      </properties>
+>>>>>>> upstream/master
     </profile>
 
     <!-- Profiles that disable inclusion of certain dependencies. -->

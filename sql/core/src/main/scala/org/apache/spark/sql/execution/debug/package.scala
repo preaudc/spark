@@ -125,7 +125,11 @@ package object debug {
       }
     }
 
+<<<<<<< HEAD
     def execute(): RDD[Row] = {
+=======
+    protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
       child.execute().mapPartitions { iter =>
         new Iterator[Row] {
           def hasNext: Boolean = iter.hasNext
@@ -193,7 +197,11 @@ package object debug {
 
     def children: List[SparkPlan] = child :: Nil
 
+<<<<<<< HEAD
     def execute(): RDD[Row] = {
+=======
+    protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
       child.execute().map { row =>
         try typeCheck(row, child.schema) catch {
           case e: Exception =>

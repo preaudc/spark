@@ -482,6 +482,7 @@ class GradientBoostedTrees(object):
         ...     LabeledPoint(1.0, [3.0])
         ... ]
         >>>
+<<<<<<< HEAD
         >>> model = GradientBoostedTrees.trainClassifier(sc.parallelize(data), {})
         >>> model.numTrees()
         100
@@ -489,6 +490,15 @@ class GradientBoostedTrees(object):
         300
         >>> print(model)  # it already has newline
         TreeEnsembleModel classifier with 100 trees
+=======
+        >>> model = GradientBoostedTrees.trainClassifier(sc.parallelize(data), {}, numIterations=10)
+        >>> model.numTrees()
+        10
+        >>> model.totalNumNodes()
+        30
+        >>> print(model)  # it already has newline
+        TreeEnsembleModel classifier with 10 trees
+>>>>>>> upstream/master
         <BLANKLINE>
         >>> model.predict([2.0])
         1.0
@@ -541,11 +551,20 @@ class GradientBoostedTrees(object):
         ...     LabeledPoint(1.0, SparseVector(2, {1: 2.0}))
         ... ]
         >>>
+<<<<<<< HEAD
         >>> model = GradientBoostedTrees.trainRegressor(sc.parallelize(sparse_data), {})
         >>> model.numTrees()
         100
         >>> model.totalNumNodes()
         102
+=======
+        >>> data = sc.parallelize(sparse_data)
+        >>> model = GradientBoostedTrees.trainRegressor(data, {}, numIterations=10)
+        >>> model.numTrees()
+        10
+        >>> model.totalNumNodes()
+        12
+>>>>>>> upstream/master
         >>> model.predict(SparseVector(2, {1: 1.0}))
         1.0
         >>> model.predict(SparseVector(2, {0: 1.0}))

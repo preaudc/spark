@@ -17,6 +17,7 @@
 
 package org.apache.spark.sql.catalyst.analysis
 
+import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.expressions.Expression
 import scala.collection.mutable
 
@@ -28,12 +29,20 @@ trait FunctionRegistry {
 
   def lookupFunction(name: String, children: Seq[Expression]): Expression
 
+<<<<<<< HEAD
   def caseSensitive: Boolean
+=======
+  def conf: CatalystConf
+>>>>>>> upstream/master
 }
 
 trait OverrideFunctionRegistry extends FunctionRegistry {
 
+<<<<<<< HEAD
   val functionBuilders = StringKeyHashMap[FunctionBuilder](caseSensitive)
+=======
+  val functionBuilders = StringKeyHashMap[FunctionBuilder](conf.caseSensitiveAnalysis)
+>>>>>>> upstream/master
 
   override def registerFunction(name: String, builder: FunctionBuilder): Unit = {
     functionBuilders.put(name, builder)
@@ -44,8 +53,14 @@ trait OverrideFunctionRegistry extends FunctionRegistry {
   }
 }
 
+<<<<<<< HEAD
 class SimpleFunctionRegistry(val caseSensitive: Boolean) extends FunctionRegistry {
   val functionBuilders = StringKeyHashMap[FunctionBuilder](caseSensitive)
+=======
+class SimpleFunctionRegistry(val conf: CatalystConf) extends FunctionRegistry {
+
+  val functionBuilders = StringKeyHashMap[FunctionBuilder](conf.caseSensitiveAnalysis)
+>>>>>>> upstream/master
 
   override def registerFunction(name: String, builder: FunctionBuilder): Unit = {
     functionBuilders.put(name, builder)
@@ -69,6 +84,7 @@ object EmptyFunctionRegistry extends FunctionRegistry {
     throw new UnsupportedOperationException
   }
 
+<<<<<<< HEAD
   override def caseSensitive: Boolean = throw new UnsupportedOperationException
 }
 
@@ -95,3 +111,31 @@ class StringKeyHashMap[T](normalizer: (String) => String) {
   def iterator: Iterator[(String, T)] = base.toIterator
 }
 
+=======
+  override def conf: CatalystConf = throw new UnsupportedOperationException
+}
+
+/**
+ * Build a map with String type of key, and it also supports either key case
+ * sensitive or insensitive.
+ * TODO move this into util folder?
+ */
+object StringKeyHashMap {
+  def apply[T](caseSensitive: Boolean): StringKeyHashMap[T] = caseSensitive match {
+    case false => new StringKeyHashMap[T](_.toLowerCase)
+    case true => new StringKeyHashMap[T](identity)
+  }
+}
+
+class StringKeyHashMap[T](normalizer: (String) => String) {
+  private val base = new collection.mutable.HashMap[String, T]()
+
+  def apply(key: String): T = base(normalizer(key))
+
+  def get(key: String): Option[T] = base.get(normalizer(key))
+  def put(key: String, value: T): Option[T] = base.put(normalizer(key), value)
+  def remove(key: String): Option[T] = base.remove(normalizer(key))
+  def iterator: Iterator[(String, T)] = base.toIterator
+}
+
+>>>>>>> upstream/master

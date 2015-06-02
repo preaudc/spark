@@ -20,14 +20,23 @@ package org.apache.spark.mllib.linalg.distributed
 import java.{util => ju}
 
 import breeze.linalg.{DenseMatrix => BDM}
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.SparkException
+=======
+
+import org.apache.spark.{SparkException, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.mllib.linalg.{SparseMatrix, DenseMatrix, Matrices, Matrix}
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 import org.apache.spark.mllib.util.TestingUtils._
 
+<<<<<<< HEAD
 class BlockMatrixSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class BlockMatrixSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   val m = 5
   val n = 4
@@ -57,11 +66,19 @@ class BlockMatrixSuite extends FunSuite with MLlibTestSparkContext {
     val random = new ju.Random()
     // This should generate a 4x4 grid of 1x2 blocks.
     val part0 = GridPartitioner(4, 7, suggestedNumPartitions = 12)
+<<<<<<< HEAD
+=======
+    // scalastyle:off
+>>>>>>> upstream/master
     val expected0 = Array(
       Array(0, 0, 4, 4,  8,  8, 12),
       Array(1, 1, 5, 5,  9,  9, 13),
       Array(2, 2, 6, 6, 10, 10, 14),
       Array(3, 3, 7, 7, 11, 11, 15))
+<<<<<<< HEAD
+=======
+    // scalastyle:on
+>>>>>>> upstream/master
     for (i <- 0 until 4; j <- 0 until 7) {
       assert(part0.getPartition((i, j)) === expected0(i)(j))
       assert(part0.getPartition((i, j, random.nextInt())) === expected0(i)(j))

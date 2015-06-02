@@ -23,6 +23,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.io.Source
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.scheduler.cluster.ExecutorInfo
@@ -30,6 +31,13 @@ import org.apache.spark.scheduler.{SparkListenerExecutorAdded, SparkListener}
 import org.apache.spark.{SparkConf, SparkContext, LocalSparkContext}
 
 class LogUrlsStandaloneSuite extends FunSuite with LocalSparkContext {
+=======
+import org.apache.spark.scheduler.cluster.ExecutorInfo
+import org.apache.spark.scheduler.{SparkListenerExecutorAdded, SparkListener}
+import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkFunSuite}
+
+class LogUrlsStandaloneSuite extends SparkFunSuite with LocalSparkContext {
+>>>>>>> upstream/master
 
   /** Length of time to wait while draining listener events. */
   private val WAIT_TIMEOUT_MILLIS = 10000

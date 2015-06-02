@@ -26,13 +26,21 @@ import org.apache.hadoop.yarn.api.records._
 import org.apache.hadoop.yarn.client.api.AMRMClient
 import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest
 
+<<<<<<< HEAD
 import org.apache.spark.SecurityManager
+=======
+import org.apache.spark.{SecurityManager, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.SparkConf
 import org.apache.spark.deploy.yarn.YarnSparkHadoopUtil._
 import org.apache.spark.deploy.yarn.YarnAllocator._
 import org.apache.spark.scheduler.SplitInfo
 
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
+=======
+import org.scalatest.{BeforeAndAfterEach, Matchers}
+>>>>>>> upstream/master
 
 class MockResolver extends DNSToSwitchMapping {
 
@@ -46,7 +54,11 @@ class MockResolver extends DNSToSwitchMapping {
   def reloadCachedMappings(names: JList[String]) {}
 }
 
+<<<<<<< HEAD
 class YarnAllocatorSuite extends FunSuite with Matchers with BeforeAndAfterEach {
+=======
+class YarnAllocatorSuite extends SparkFunSuite with Matchers with BeforeAndAfterEach {
+>>>>>>> upstream/master
   val conf = new Configuration()
   conf.setClass(
     CommonConfigurationKeysPublic.NET_TOPOLOGY_NODE_SWITCH_MAPPING_IMPL_KEY,
@@ -90,6 +102,10 @@ class YarnAllocatorSuite extends FunSuite with Matchers with BeforeAndAfterEach 
       "--jar", "somejar.jar",
       "--class", "SomeClass")
     new YarnAllocator(
+<<<<<<< HEAD
+=======
+      "not used",
+>>>>>>> upstream/master
       conf,
       sparkConf,
       rmClient,

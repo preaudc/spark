@@ -222,19 +222,41 @@ sparkR.init <- function(
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #'}
 
 sparkRSQL.init <- function(jsc) {
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#'}
+
+sparkRSQL.init <- function(jsc = NULL) {
+>>>>>>> upstream/master
   if (exists(".sparkRSQLsc", envir = .sparkREnv)) {
     return(get(".sparkRSQLsc", envir = .sparkREnv))
   }
 
+<<<<<<< HEAD
   sqlCtx <- callJStatic("org.apache.spark.sql.api.r.SQLUtils",
                         "createSQLContext",
                         jsc)
   assign(".sparkRSQLsc", sqlCtx, envir = .sparkREnv)
   sqlCtx
+=======
+  # If jsc is NULL, create a Spark Context
+  sc <- if (is.null(jsc)) {
+    sparkR.init()
+  } else {
+    jsc
+  }
+
+  sqlContext <- callJStatic("org.apache.spark.sql.api.r.SQLUtils",
+                            "createSQLContext",
+                            sc)
+  assign(".sparkRSQLsc", sqlContext, envir = .sparkREnv)
+  sqlContext
+>>>>>>> upstream/master
 }
 
 #' Initialize a new HiveContext.
@@ -246,15 +268,33 @@ sparkRSQL.init <- function(jsc) {
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRHive.init(sc)
 #'}
 
 sparkRHive.init <- function(jsc) {
+=======
+#' sqlContext <- sparkRHive.init(sc)
+#'}
+
+sparkRHive.init <- function(jsc = NULL) {
+>>>>>>> upstream/master
   if (exists(".sparkRHivesc", envir = .sparkREnv)) {
     return(get(".sparkRHivesc", envir = .sparkREnv))
   }
 
+<<<<<<< HEAD
   ssc <- callJMethod(jsc, "sc")
+=======
+  # If jsc is NULL, create a Spark Context
+  sc <- if (is.null(jsc)) {
+    sparkR.init()
+  } else {
+    jsc
+  }
+
+  ssc <- callJMethod(sc, "sc")
+>>>>>>> upstream/master
   hiveCtx <- tryCatch({
     newJObject("org.apache.spark.sql.hive.HiveContext", ssc)
   }, error = function(err) {

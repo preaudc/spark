@@ -24,7 +24,11 @@ import scala.util.Random
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
+<<<<<<< HEAD
 import org.apache.spark.sql.types.{UTF8String, DataType, Decimal, NativeType}
+=======
+import org.apache.spark.sql.types.{UTF8String, DataType, Decimal, AtomicType}
+>>>>>>> upstream/master
 
 object ColumnarTestUtils {
   def makeNullRow(length: Int): GenericMutableRow = {
@@ -91,9 +95,13 @@ object ColumnarTestUtils {
     row
   }
 
-  def makeUniqueValuesAndSingleValueRows[T <: NativeType](
+  def makeUniqueValuesAndSingleValueRows[T <: AtomicType](
       columnType: NativeColumnType[T],
+<<<<<<< HEAD
       count: Int): (Seq[T#JvmType], Seq[GenericMutableRow]) = {
+=======
+      count: Int): (Seq[T#InternalType], Seq[GenericMutableRow]) = {
+>>>>>>> upstream/master
 
     val values = makeUniqueRandomValues(columnType, count)
     val rows = values.map { value =>

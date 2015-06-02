@@ -21,11 +21,19 @@ import java.io.*;
 import java.lang.Iterable;
 import java.nio.charset.Charset;
 import java.util.*;
+<<<<<<< HEAD
+=======
+import java.util.concurrent.atomic.AtomicBoolean;
+>>>>>>> upstream/master
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
 import scala.Tuple2;
 
 import org.junit.Assert;
@@ -45,6 +53,7 @@ import org.apache.spark.api.java.function.*;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.streaming.api.java.*;
 import org.apache.spark.util.Utils;
+import org.apache.spark.SparkConf;
 
 // The test suite itself is Serializable so that anonymous Function implementations can be
 // serialized, as an alternative to converting these anonymous classes to static inner classes;
@@ -65,6 +74,23 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
   @Test
   public void testInitialization() {
     Assert.assertNotNull(ssc.sparkContext());
+<<<<<<< HEAD
+=======
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testContextState() {
+    List<List<Integer>> inputData = Arrays.asList(Arrays.asList(1, 2, 3, 4));
+    Assert.assertTrue(ssc.getState() == StreamingContextState.INITIALIZED);
+    JavaDStream<Integer> stream = JavaTestUtils.attachTestInputStream(ssc, inputData, 1);
+    JavaTestUtils.attachTestOutputStream(stream);
+    Assert.assertTrue(ssc.getState() == StreamingContextState.INITIALIZED);
+    ssc.start();
+    Assert.assertTrue(ssc.getState() == StreamingContextState.ACTIVE);
+    ssc.stop();
+    Assert.assertTrue(ssc.getState() == StreamingContextState.STOPPED);
+>>>>>>> upstream/master
   }
 
   @SuppressWarnings("unchecked")
@@ -929,7 +955,7 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
           public Tuple2<Integer, String> call(Tuple2<String, Integer> in) throws Exception {
             return in.swap();
           }
-    });
+        });
 
     JavaTestUtils.attachTestOutputStream(reversed);
     List<List<Tuple2<Integer, String>>> result = JavaTestUtils.runStreams(ssc, 2, 2);
@@ -987,12 +1013,12 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
     JavaDStream<Tuple2<String, Integer>> stream = JavaTestUtils.attachTestInputStream(ssc, inputData, 1);
     JavaPairDStream<String, Integer> pairStream = JavaPairDStream.fromJavaDStream(stream);
     JavaDStream<Integer> reversed = pairStream.map(
-            new Function<Tuple2<String, Integer>, Integer>() {
-              @Override
-              public Integer call(Tuple2<String, Integer> in) throws Exception {
-                return in._2();
-              }
-            });
+        new Function<Tuple2<String, Integer>, Integer>() {
+          @Override
+          public Integer call(Tuple2<String, Integer> in) throws Exception {
+            return in._2();
+          }
+        });
 
     JavaTestUtils.attachTestOutputStream(reversed);
     List<List<Integer>> result = JavaTestUtils.runStreams(ssc, 2, 2);
@@ -1123,7 +1149,7 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
 
     JavaPairDStream<String, Integer> combined = pairStream.<Integer>combineByKey(
         new Function<Integer, Integer>() {
-        @Override
+          @Override
           public Integer call(Integer i) throws Exception {
             return i;
           }
@@ -1144,14 +1170,14 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
       Arrays.asList("hello"));
 
     List<List<Tuple2<String, Long>>> expected = Arrays.asList(
-      Arrays.asList(
-              new Tuple2<String, Long>("hello", 1L),
-              new Tuple2<String, Long>("world", 1L)),
-      Arrays.asList(
-              new Tuple2<String, Long>("hello", 1L),
-              new Tuple2<String, Long>("moon", 1L)),
-      Arrays.asList(
-              new Tuple2<String, Long>("hello", 1L)));
+        Arrays.asList(
+            new Tuple2<String, Long>("hello", 1L),
+            new Tuple2<String, Long>("world", 1L)),
+        Arrays.asList(
+            new Tuple2<String, Long>("hello", 1L),
+            new Tuple2<String, Long>("moon", 1L)),
+        Arrays.asList(
+            new Tuple2<String, Long>("hello", 1L)));
 
     JavaDStream<String> stream = JavaTestUtils.attachTestInputStream(ssc, inputData, 1);
     JavaPairDStream<String, Long> counted = stream.countByValue();
@@ -1249,17 +1275,17 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
 
     JavaPairDStream<String, Integer> updated = pairStream.updateStateByKey(
         new Function2<List<Integer>, Optional<Integer>, Optional<Integer>>() {
-        @Override
-        public Optional<Integer> call(List<Integer> values, Optional<Integer> state) {
-          int out = 0;
-          if (state.isPresent()) {
-            out = out + state.get();
+          @Override
+          public Optional<Integer> call(List<Integer> values, Optional<Integer> state) {
+            int out = 0;
+            if (state.isPresent()) {
+              out = out + state.get();
+            }
+            for (Integer v : values) {
+              out = out + v;
+            }
+            return Optional.of(out);
           }
-          for (Integer v: values) {
-            out = out + v;
-          }
-          return Optional.of(out);
-        }
         });
     JavaTestUtils.attachTestOutputStream(updated);
     List<List<Tuple2<String, Integer>>> result = JavaTestUtils.runStreams(ssc, 3, 3);
@@ -1292,6 +1318,7 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
 
     JavaPairDStream<String, Integer> updated = pairStream.updateStateByKey(
         new Function2<List<Integer>, Optional<Integer>, Optional<Integer>>() {
+<<<<<<< HEAD
         @Override
         public Optional<Integer> call(List<Integer> values, Optional<Integer> state) {
           int out = 0;
@@ -1303,6 +1330,19 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
           }
           return Optional.of(out);
         }
+=======
+          @Override
+          public Optional<Integer> call(List<Integer> values, Optional<Integer> state) {
+            int out = 0;
+            if (state.isPresent()) {
+              out = out + state.get();
+            }
+            for (Integer v : values) {
+              out = out + v;
+            }
+            return Optional.of(out);
+          }
+>>>>>>> upstream/master
         }, new HashPartitioner(1), initialRDD);
     JavaTestUtils.attachTestOutputStream(updated);
     List<List<Tuple2<String, Integer>>> result = JavaTestUtils.runStreams(ssc, 3, 3);
@@ -1328,7 +1368,7 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
 
     JavaPairDStream<String, Integer> reduceWindowed =
         pairStream.reduceByKeyAndWindow(new IntegerSum(), new IntegerDifference(),
-          new Duration(2000), new Duration(1000));
+            new Duration(2000), new Duration(1000));
     JavaTestUtils.attachTestOutputStream(reduceWindowed);
     List<List<Tuple2<String, Integer>>> result = JavaTestUtils.runStreams(ssc, 3, 3);
 
@@ -1707,6 +1747,55 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
     Utils.deleteRecursively(tempDir);
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testContextGetOrCreate() throws InterruptedException {
+
+    final SparkConf conf = new SparkConf()
+        .setMaster("local[2]")
+        .setAppName("test")
+        .set("newContext", "true");
+
+    File emptyDir = Files.createTempDir();
+    emptyDir.deleteOnExit();
+    StreamingContextSuite contextSuite = new StreamingContextSuite();
+    String corruptedCheckpointDir = contextSuite.createCorruptedCheckpoint();
+    String checkpointDir = contextSuite.createValidCheckpoint();
+
+    // Function to create JavaStreamingContext without any output operations
+    // (used to detect the new context)
+    final AtomicBoolean newContextCreated = new AtomicBoolean(false);
+    Function0<JavaStreamingContext> creatingFunc = new Function0<JavaStreamingContext>() {
+      public JavaStreamingContext call() {
+        newContextCreated.set(true);
+        return new JavaStreamingContext(conf, Seconds.apply(1));
+      }
+    };
+
+    newContextCreated.set(false);
+    ssc = JavaStreamingContext.getOrCreate(emptyDir.getAbsolutePath(), creatingFunc);
+    Assert.assertTrue("new context not created", newContextCreated.get());
+    ssc.stop();
+
+    newContextCreated.set(false);
+    ssc = JavaStreamingContext.getOrCreate(corruptedCheckpointDir, creatingFunc,
+        new org.apache.hadoop.conf.Configuration(), true);
+    Assert.assertTrue("new context not created", newContextCreated.get());
+    ssc.stop();
+
+    newContextCreated.set(false);
+    ssc = JavaStreamingContext.getOrCreate(checkpointDir, creatingFunc,
+        new org.apache.hadoop.conf.Configuration());
+    Assert.assertTrue("old context not recovered", !newContextCreated.get());
+    ssc.stop();
+
+    newContextCreated.set(false);
+    JavaSparkContext sc = new JavaSparkContext(conf);
+    ssc = JavaStreamingContext.getOrCreate(checkpointDir, creatingFunc,
+        new org.apache.hadoop.conf.Configuration());
+    Assert.assertTrue("old context not recovered", !newContextCreated.get());
+    ssc.stop();
+  }
 
   /* TEST DISABLED: Pending a discussion about checkpoint() semantics with TD
   @SuppressWarnings("unchecked")
@@ -1770,6 +1859,7 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
   }
 
   @SuppressWarnings("unchecked")
+<<<<<<< HEAD
   @Test
   public void testTextFileStream() throws IOException {
     File testDir = Utils.createTempDir(System.getProperty("java.io.tmpdir"), "spark");
@@ -1784,6 +1874,22 @@ public class JavaAPISuite extends LocalJavaStreamingContext implements Serializa
 
   @SuppressWarnings("unchecked")
   @Test
+=======
+  @Test
+  public void testTextFileStream() throws IOException {
+    File testDir = Utils.createTempDir(System.getProperty("java.io.tmpdir"), "spark");
+    List<List<String>> expected = fileTestPrepare(testDir);
+
+    JavaDStream<String> input = ssc.textFileStream(testDir.toString());
+    JavaTestUtils.attachTestOutputStream(input);
+    List<List<String>> result = JavaTestUtils.runStreams(ssc, 1, 1);
+
+    assertOrderInvariantEquals(expected, result);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+>>>>>>> upstream/master
   public void testFileStream() throws IOException {
     File testDir = Utils.createTempDir(System.getProperty("java.io.tmpdir"), "spark");
     List<List<String>> expected = fileTestPrepare(testDir);

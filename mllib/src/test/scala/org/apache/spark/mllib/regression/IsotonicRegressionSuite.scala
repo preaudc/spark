@@ -17,6 +17,7 @@
 
 package org.apache.spark.mllib.regression
 
+<<<<<<< HEAD
 import org.scalatest.{Matchers, FunSuite}
 
 import org.apache.spark.mllib.util.MLlibTestSparkContext
@@ -26,6 +27,19 @@ class IsotonicRegressionSuite extends FunSuite with MLlibTestSparkContext with M
 
   private def round(d: Double) = {
     Math.round(d * 100).toDouble / 100
+=======
+import org.scalatest.Matchers
+
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.mllib.util.MLlibTestSparkContext
+import org.apache.spark.mllib.util.TestingUtils._
+import org.apache.spark.util.Utils
+
+class IsotonicRegressionSuite extends SparkFunSuite with MLlibTestSparkContext with Matchers {
+
+  private def round(d: Double) = {
+    math.round(d * 100).toDouble / 100
+>>>>>>> upstream/master
   }
 
   private def generateIsotonicInput(labels: Seq[Double]): Seq[(Double, Double, Double)] = {
@@ -73,6 +87,29 @@ class IsotonicRegressionSuite extends FunSuite with MLlibTestSparkContext with M
     assert(model.isotonic)
   }
 
+<<<<<<< HEAD
+=======
+  test("model save/load") {
+    val boundaries = Array(0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
+    val predictions = Array(1, 2, 2, 6, 16.5, 16.5, 17.0, 18.0)
+    val model = new IsotonicRegressionModel(boundaries, predictions, true)
+
+    val tempDir = Utils.createTempDir()
+    val path = tempDir.toURI.toString
+
+    // Save model, load it back, and compare.
+    try {
+      model.save(sc, path)
+      val sameModel = IsotonicRegressionModel.load(sc, path)
+      assert(model.boundaries === sameModel.boundaries)
+      assert(model.predictions === sameModel.predictions)
+      assert(model.isotonic === model.isotonic)
+    } finally {
+      Utils.deleteRecursively(tempDir)
+    }
+  }
+
+>>>>>>> upstream/master
   test("isotonic regression with size 0") {
     val model = runIsotonicRegression(Seq(), true)
 

@@ -55,7 +55,7 @@ private[spark] class DiskBlockManager(blockManager: BlockManager, conf: SparkCon
 
   /** Looks up a file by hashing it into one of our local subdirectories. */
   // This method should be kept in sync with
-  // org.apache.spark.network.shuffle.StandaloneShuffleBlockManager#getFile().
+  // org.apache.spark.network.shuffle.ExternalShuffleBlockResolver#getFile().
   def getFile(filename: String): File = {
     // Figure out which local directory it hashes to, and which subdirectory in that
     val hash = Utils.nonNegativeHash(filename)
@@ -138,6 +138,7 @@ private[spark] class DiskBlockManager(blockManager: BlockManager, conf: SparkCon
     }
   }
 
+<<<<<<< HEAD
   private def addShutdownHook(): Thread = {
     val shutdownHook = new Thread("delete Spark local dirs") {
       override def run(): Unit = Utils.logUncaughtExceptions {
@@ -147,15 +148,29 @@ private[spark] class DiskBlockManager(blockManager: BlockManager, conf: SparkCon
     }
     Runtime.getRuntime.addShutdownHook(shutdownHook)
     shutdownHook
+=======
+  private def addShutdownHook(): AnyRef = {
+    Utils.addShutdownHook(Utils.TEMP_DIR_SHUTDOWN_PRIORITY + 1) { () =>
+      logInfo("Shutdown hook called")
+      DiskBlockManager.this.doStop()
+    }
+>>>>>>> upstream/master
   }
 
   /** Cleanup local dirs and stop shuffle sender. */
   private[spark] def stop() {
     // Remove the shutdown hook.  It causes memory leaks if we leave it around.
     try {
+<<<<<<< HEAD
       Runtime.getRuntime.removeShutdownHook(shutdownHook)
     } catch {
       case e: IllegalStateException => None
+=======
+      Utils.removeShutdownHook(shutdownHook)
+    } catch {
+      case e: Exception =>
+        logError(s"Exception while removing shutdown hook.", e)
+>>>>>>> upstream/master
     }
     doStop()
   }

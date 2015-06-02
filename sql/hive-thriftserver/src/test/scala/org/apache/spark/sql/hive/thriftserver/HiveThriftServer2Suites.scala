@@ -19,6 +19,11 @@ package org.apache.spark.sql.hive.thriftserver
 
 import java.io.File
 import java.net.URL
+<<<<<<< HEAD
+=======
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+>>>>>>> upstream/master
 import java.sql.{Date, DriverManager, Statement}
 
 import scala.collection.mutable.ArrayBuffer
@@ -35,9 +40,15 @@ import org.apache.hive.service.cli.thrift.TCLIService.Client
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.transport.TSocket
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import org.apache.spark.Logging
+=======
+import org.scalatest.BeforeAndAfterAll
+
+import org.apache.spark.{Logging, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.sql.hive.HiveShim
 import org.apache.spark.util.Utils
 
@@ -54,7 +65,11 @@ class HiveThriftBinaryServerSuite extends HiveThriftJdbcTest {
   override def mode: ServerMode.Value = ServerMode.binary
 
   private def withCLIServiceClient(f: ThriftCLIServiceClient => Unit): Unit = {
+<<<<<<< HEAD
     // Transport creation logics below mimics HiveConnection.createBinaryTransport
+=======
+    // Transport creation logic below mimics HiveConnection.createBinaryTransport
+>>>>>>> upstream/master
     val rawTransport = new TSocket("localhost", serverPort)
     val user = System.getProperty("user.name")
     val transport = PlainSaslHelper.getPlainTransport(user, "anonymous", rawTransport)
@@ -391,10 +406,17 @@ abstract class HiveThriftJdbcTest extends HiveThriftServer2Test {
     val statements = connections.map(_.createStatement())
 
     try {
+<<<<<<< HEAD
       statements.zip(fs).map { case (s, f) => f(s) }
     } finally {
       statements.map(_.close())
       connections.map(_.close())
+=======
+      statements.zip(fs).foreach { case (s, f) => f(s) }
+    } finally {
+      statements.foreach(_.close())
+      connections.foreach(_.close())
+>>>>>>> upstream/master
     }
   }
 
@@ -403,45 +425,91 @@ abstract class HiveThriftJdbcTest extends HiveThriftServer2Test {
   }
 }
 
+<<<<<<< HEAD
 abstract class HiveThriftServer2Test extends FunSuite with BeforeAndAfterAll with Logging {
+=======
+abstract class HiveThriftServer2Test extends SparkFunSuite with BeforeAndAfterAll with Logging {
+>>>>>>> upstream/master
   def mode: ServerMode.Value
 
   private val CLASS_NAME = HiveThriftServer2.getClass.getCanonicalName.stripSuffix("$")
   private val LOG_FILE_MARK = s"starting $CLASS_NAME, logging to "
 
+<<<<<<< HEAD
   private val startScript = "../../sbin/start-thriftserver.sh".split("/").mkString(File.separator)
   private val stopScript = "../../sbin/stop-thriftserver.sh".split("/").mkString(File.separator)
+=======
+  protected val startScript = "../../sbin/start-thriftserver.sh".split("/").mkString(File.separator)
+  protected val stopScript = "../../sbin/stop-thriftserver.sh".split("/").mkString(File.separator)
+>>>>>>> upstream/master
 
   private var listeningPort: Int = _
   protected def serverPort: Int = listeningPort
 
   protected def user = System.getProperty("user.name")
 
+<<<<<<< HEAD
   private var warehousePath: File = _
   private var metastorePath: File = _
   private def metastoreJdbcUri = s"jdbc:derby:;databaseName=$metastorePath;create=true"
+=======
+  protected var warehousePath: File = _
+  protected var metastorePath: File = _
+  protected def metastoreJdbcUri = s"jdbc:derby:;databaseName=$metastorePath;create=true"
+>>>>>>> upstream/master
 
   private val pidDir: File = Utils.createTempDir("thriftserver-pid")
   private var logPath: File = _
   private var logTailingProcess: Process = _
   private var diagnosisBuffer: ArrayBuffer[String] = ArrayBuffer.empty[String]
 
+<<<<<<< HEAD
   private def serverStartCommand(port: Int) = {
+=======
+  protected def serverStartCommand(port: Int) = {
+>>>>>>> upstream/master
     val portConf = if (mode == ServerMode.binary) {
       ConfVars.HIVE_SERVER2_THRIFT_PORT
     } else {
       ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT
     }
 
+<<<<<<< HEAD
     s"""$startScript
        |  --master local
        |  --hiveconf hive.root.logger=INFO,console
+=======
+    val driverClassPath = {
+      // Writes a temporary log4j.properties and prepend it to driver classpath, so that it
+      // overrides all other potential log4j configurations contained in other dependency jar files.
+      val tempLog4jConf = Utils.createTempDir().getCanonicalPath
+
+      Files.write(
+        Paths.get(s"$tempLog4jConf/log4j.properties"),
+        """log4j.rootCategory=INFO, console
+          |log4j.appender.console=org.apache.log4j.ConsoleAppender
+          |log4j.appender.console.target=System.err
+          |log4j.appender.console.layout=org.apache.log4j.PatternLayout
+          |log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+        """.stripMargin.getBytes(StandardCharsets.UTF_8))
+
+      tempLog4jConf + File.pathSeparator + sys.props("java.class.path")
+    }
+
+    s"""$startScript
+       |  --master local
+>>>>>>> upstream/master
        |  --hiveconf ${ConfVars.METASTORECONNECTURLKEY}=$metastoreJdbcUri
        |  --hiveconf ${ConfVars.METASTOREWAREHOUSE}=$warehousePath
        |  --hiveconf ${ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST}=localhost
        |  --hiveconf ${ConfVars.HIVE_SERVER2_TRANSPORT_MODE}=$mode
        |  --hiveconf $portConf=$port
+<<<<<<< HEAD
        |  --driver-class-path ${sys.props("java.class.path")}
+=======
+       |  --driver-class-path $driverClassPath
+       |  --driver-java-options -Dlog4j.debug
+>>>>>>> upstream/master
        |  --conf spark.ui.enabled=false
      """.stripMargin.split("\\s+").toSeq
   }

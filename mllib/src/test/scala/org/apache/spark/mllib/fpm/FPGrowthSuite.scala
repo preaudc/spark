@@ -16,11 +16,18 @@
  */
 package org.apache.spark.mllib.fpm
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 
 class FPGrowthSuite extends FunSuite with MLlibTestSparkContext {
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.mllib.util.MLlibTestSparkContext
+
+class FPGrowthSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
 
   test("FP-Growth using String type") {

@@ -18,7 +18,11 @@
 package org.apache.spark.api.r
 
 import java.io.{DataOutputStream, File, FileOutputStream, IOException}
+<<<<<<< HEAD
 import java.net.{InetSocketAddress, ServerSocket}
+=======
+import java.net.{InetAddress, InetSocketAddress, ServerSocket}
+>>>>>>> upstream/master
 import java.util.concurrent.TimeUnit
 
 import io.netty.bootstrap.ServerBootstrap
@@ -44,11 +48,19 @@ private[spark] class RBackend {
     bossGroup = new NioEventLoopGroup(2)
     val workerGroup = bossGroup
     val handler = new RBackendHandler(this)
+<<<<<<< HEAD
   
     bootstrap = new ServerBootstrap()
       .group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
   
+=======
+
+    bootstrap = new ServerBootstrap()
+      .group(bossGroup, workerGroup)
+      .channel(classOf[NioServerSocketChannel])
+
+>>>>>>> upstream/master
     bootstrap.childHandler(new ChannelInitializer[SocketChannel]() {
       def initChannel(ch: SocketChannel): Unit = {
         ch.pipeline()
@@ -65,7 +77,11 @@ private[spark] class RBackend {
       }
     })
 
+<<<<<<< HEAD
     channelFuture = bootstrap.bind(new InetSocketAddress(0))
+=======
+    channelFuture = bootstrap.bind(new InetSocketAddress("localhost", 0))
+>>>>>>> upstream/master
     channelFuture.syncUninterruptibly()
     channelFuture.channel().localAddress().asInstanceOf[InetSocketAddress].getPort()
   }
@@ -101,7 +117,11 @@ private[spark] object RBackend extends Logging {
     try {
       // bind to random port
       val boundPort = sparkRBackend.init()
+<<<<<<< HEAD
       val serverSocket = new ServerSocket(0, 1)
+=======
+      val serverSocket = new ServerSocket(0, 1, InetAddress.getByName("localhost"))
+>>>>>>> upstream/master
       val listenPort = serverSocket.getLocalPort()
 
       // tell the R process via temporary file

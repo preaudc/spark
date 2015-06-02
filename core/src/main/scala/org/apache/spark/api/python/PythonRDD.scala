@@ -47,6 +47,10 @@ private[spark] class PythonRDD(
     pythonIncludes: JList[String],
     preservePartitoning: Boolean,
     pythonExec: String,
+<<<<<<< HEAD
+=======
+    pythonVer: String,
+>>>>>>> upstream/master
     broadcastVars: JList[Broadcast[PythonBroadcast]],
     accumulator: Accumulator[JList[Array[Byte]]])
   extends RDD[Array[Byte]](parent) {
@@ -210,6 +214,8 @@ private[spark] class PythonRDD(
         val dataOut = new DataOutputStream(stream)
         // Partition index
         dataOut.writeInt(split.index)
+        // Python version of driver
+        PythonRDD.writeUTF(pythonVer, dataOut)
         // sparkFilesDir
         PythonRDD.writeUTF(SparkFiles.getRootDirectory, dataOut)
         // Python includes (*.zip and *.egg files)
@@ -720,7 +726,7 @@ private[spark] object PythonRDD extends Logging {
     val converted = convertRDD(rdd, keyConverterClass, valueConverterClass,
       new JavaToWritableConverter)
     val fc = Utils.classForName(outputFormatClass).asInstanceOf[Class[F]]
-    converted.saveAsHadoopFile(path, kc, vc, fc, new JobConf(mergedConf), codec=codec)
+    converted.saveAsHadoopFile(path, kc, vc, fc, new JobConf(mergedConf), codec = codec)
   }
 
   /**
@@ -794,10 +800,10 @@ private class PythonAccumulatorParam(@transient serverHost: String, serverPort: 
 
   val bufferSize = SparkEnv.get.conf.getInt("spark.buffer.size", 65536)
 
-  /** 
+  /**
    * We try to reuse a single Socket to transfer accumulator updates, as they are all added
    * by the DAGScheduler's single-threaded actor anyway.
-   */ 
+   */
   @transient var socket: Socket = _
 
   def openSocket(): Socket = synchronized {
@@ -840,6 +846,10 @@ private class PythonAccumulatorParam(@transient serverHost: String, serverPort: 
  * An Wrapper for Python Broadcast, which is written into disk by Python. It also will
  * write the data into disk after deserialization, then Python can read it from disks.
  */
+<<<<<<< HEAD
+=======
+// scalastyle:off no.finalize
+>>>>>>> upstream/master
 private[spark] class PythonBroadcast(@transient var path: String) extends Serializable {
 
   /**
@@ -881,3 +891,7 @@ private[spark] class PythonBroadcast(@transient var path: String) extends Serial
     }
   }
 }
+<<<<<<< HEAD
+=======
+// scalastyle:on no.finalize
+>>>>>>> upstream/master

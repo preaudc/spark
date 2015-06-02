@@ -17,11 +17,20 @@
 
 package org.apache.spark.deploy.worker
 
+<<<<<<< HEAD:core/src/test/scala/org/apache/spark/deploy/worker/CommandUtilsSuite.scala
 import org.apache.spark.deploy.Command
 import org.apache.spark.util.Utils
 import org.scalatest.{FunSuite, Matchers}
 
 class CommandUtilsSuite extends FunSuite with Matchers {
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.deploy.Command
+import org.apache.spark.util.Utils
+import org.scalatest.Matchers
+
+class CommandUtilsSuite extends SparkFunSuite with Matchers {
+>>>>>>> upstream/master:core/src/test/scala/org/apache/spark/deploy/worker/CommandUtilsSuite.scala
 
   test("set libraryPath correctly") {
     val appId = "12345-worker321-9876"

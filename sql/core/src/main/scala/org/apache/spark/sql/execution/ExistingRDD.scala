@@ -23,7 +23,11 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.analysis.MultiInstanceRelation
 import org.apache.spark.sql.catalyst.expressions.{Attribute, GenericMutableRow, SpecificMutableRow}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Statistics}
+<<<<<<< HEAD
 import org.apache.spark.sql.types.StructType
+=======
+import org.apache.spark.sql.types.DataType
+>>>>>>> upstream/master
 import org.apache.spark.sql.{Row, SQLContext}
 
 /**
@@ -31,8 +35,9 @@ import org.apache.spark.sql.{Row, SQLContext}
  */
 @DeveloperApi
 object RDDConversions {
-  def productToRowRdd[A <: Product](data: RDD[A], schema: StructType): RDD[Row] = {
+  def productToRowRdd[A <: Product](data: RDD[A], outputTypes: Seq[DataType]): RDD[Row] = {
     data.mapPartitions { iterator =>
+<<<<<<< HEAD
       if (iterator.isEmpty) {
         Iterator.empty
       } else {
@@ -77,14 +82,50 @@ object RDDConversions {
           }
 
           mutableRow
+=======
+      val numColumns = outputTypes.length
+      val mutableRow = new GenericMutableRow(numColumns)
+      val converters = outputTypes.map(CatalystTypeConverters.createToCatalystConverter)
+      iterator.map { r =>
+        var i = 0
+        while (i < numColumns) {
+          mutableRow(i) = converters(i)(r.productElement(i))
+          i += 1
+>>>>>>> upstream/master
         }
+
+        mutableRow
+      }
+    }
+  }
+
+  /**
+   * Convert the objects inside Row into the types Catalyst expected.
+   */
+  def rowToRowRdd(data: RDD[Row], outputTypes: Seq[DataType]): RDD[Row] = {
+    data.mapPartitions { iterator =>
+      val numColumns = outputTypes.length
+      val mutableRow = new GenericMutableRow(numColumns)
+      val converters = outputTypes.map(CatalystTypeConverters.createToCatalystConverter)
+      iterator.map { r =>
+        var i = 0
+        while (i < numColumns) {
+          mutableRow(i) = converters(i)(r(i))
+          i += 1
+        }
+
+        mutableRow
       }
     }
   }
 }
 
 /** Logical plan node for scanning data from an RDD. */
+<<<<<<< HEAD
 case class LogicalRDD(output: Seq[Attribute], rdd: RDD[Row])(sqlContext: SQLContext)
+=======
+private[sql] case class LogicalRDD(output: Seq[Attribute], rdd: RDD[Row])(sqlContext: SQLContext)
+>>>>>>> upstream/master
   extends LogicalPlan with MultiInstanceRelation {
 
   override def children: Seq[LogicalPlan] = Nil
@@ -105,6 +146,7 @@ case class LogicalRDD(output: Seq[Attribute], rdd: RDD[Row])(sqlContext: SQLCont
 }
 
 /** Physical plan node for scanning data from an RDD. */
+<<<<<<< HEAD
 case class PhysicalRDD(output: Seq[Attribute], rdd: RDD[Row]) extends LeafNode {
   override def execute(): RDD[Row] = rdd
 }
@@ -118,6 +160,22 @@ case class LogicalLocalTable(output: Seq[Attribute], rows: Seq[Row])(sqlContext:
   override def newInstance(): this.type =
     LogicalLocalTable(output.map(_.newInstance()), rows)(sqlContext).asInstanceOf[this.type]
 
+=======
+private[sql] case class PhysicalRDD(output: Seq[Attribute], rdd: RDD[Row]) extends LeafNode {
+  protected override def doExecute(): RDD[Row] = rdd
+}
+
+/** Logical plan node for scanning data from a local collection. */
+private[sql]
+case class LogicalLocalTable(output: Seq[Attribute], rows: Seq[Row])(sqlContext: SQLContext)
+   extends LogicalPlan with MultiInstanceRelation {
+
+  override def children: Seq[LogicalPlan] = Nil
+
+  override def newInstance(): this.type =
+    LogicalLocalTable(output.map(_.newInstance()), rows)(sqlContext).asInstanceOf[this.type]
+
+>>>>>>> upstream/master
   override def sameResult(plan: LogicalPlan): Boolean = plan match {
     case LogicalRDD(_, otherRDD) => rows == rows
     case _ => false

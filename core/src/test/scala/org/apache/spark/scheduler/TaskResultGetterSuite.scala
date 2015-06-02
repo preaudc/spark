@@ -23,10 +23,17 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.control.NonFatal
 
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.scalatest.concurrent.Eventually._
 
 import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkEnv}
+=======
+import org.scalatest.BeforeAndAfter
+import org.scalatest.concurrent.Eventually._
+
+import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkEnv, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.storage.TaskResultBlockId
 
 /**
@@ -71,7 +78,11 @@ class ResultDeletingTaskResultGetter(sparkEnv: SparkEnv, scheduler: TaskSchedule
 /**
  * Tests related to handling task results (both direct and indirect).
  */
+<<<<<<< HEAD
 class TaskResultGetterSuite extends FunSuite with BeforeAndAfter with LocalSparkContext {
+=======
+class TaskResultGetterSuite extends SparkFunSuite with BeforeAndAfter with LocalSparkContext {
+>>>>>>> upstream/master
 
   // Set the Akka frame size to be as small as possible (it must be an integer, so 1 is as small
   // as we can make it) so the tests don't take too long.

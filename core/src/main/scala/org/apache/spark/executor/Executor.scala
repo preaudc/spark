@@ -21,7 +21,11 @@ import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URL
 import java.nio.ByteBuffer
+<<<<<<< HEAD
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
+=======
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
+>>>>>>> upstream/master
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
@@ -32,6 +36,10 @@ import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.scheduler.{DirectTaskResult, IndirectTaskResult, Task}
 import org.apache.spark.shuffle.FetchFailedException
 import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
+<<<<<<< HEAD
+=======
+import org.apache.spark.unsafe.memory.TaskMemoryManager
+>>>>>>> upstream/master
 import org.apache.spark.util._
 
 /**
@@ -76,7 +84,11 @@ private[spark] class Executor(
   }
 
   // Start worker thread pool
+<<<<<<< HEAD
   private val threadPool = Utils.newDaemonCachedThreadPool("Executor task launch worker")
+=======
+  private val threadPool = ThreadUtils.newDaemonCachedThreadPool("Executor task launch worker")
+>>>>>>> upstream/master
   private val executorSource = new ExecutorSource(threadPool, executorId)
 
   if (!isLocal) {
@@ -110,8 +122,12 @@ private[spark] class Executor(
   private val runningTasks = new ConcurrentHashMap[Long, TaskRunner]
 
   // Executor for the heartbeat task.
+<<<<<<< HEAD
   private val heartbeater = Executors.newSingleThreadScheduledExecutor(
     Utils.namedThreadFactory("driver-heartbeater"))
+=======
+  private val heartbeater = ThreadUtils.newDaemonSingleThreadScheduledExecutor("driver-heartbeater")
+>>>>>>> upstream/master
 
   startDriverHeartbeater()
 
@@ -179,6 +195,10 @@ private[spark] class Executor(
     }
 
     override def run(): Unit = {
+<<<<<<< HEAD
+=======
+      val taskMemoryManager = new TaskMemoryManager(env.executorMemoryManager)
+>>>>>>> upstream/master
       val deserializeStartTime = System.currentTimeMillis()
       Thread.currentThread.setContextClassLoader(replClassLoader)
       val ser = env.closureSerializer.newInstance()
@@ -191,6 +211,7 @@ private[spark] class Executor(
         val (taskFiles, taskJars, taskBytes) = Task.deserializeWithDependencies(serializedTask)
         updateDependencies(taskFiles, taskJars)
         task = ser.deserialize[Task[Any]](taskBytes, Thread.currentThread.getContextClassLoader)
+        task.setTaskMemoryManager(taskMemoryManager)
 
         // If this task has been killed before we deserialized it, let's quit now. Otherwise,
         // continue executing the task.
@@ -207,7 +228,25 @@ private[spark] class Executor(
 
         // Run the actual task and measure its runtime.
         taskStart = System.currentTimeMillis()
+<<<<<<< HEAD
         val value = task.run(taskAttemptId = taskId, attemptNumber = attemptNumber)
+=======
+        val value = try {
+          task.run(taskAttemptId = taskId, attemptNumber = attemptNumber)
+        } finally {
+          // Note: this memory freeing logic is duplicated in DAGScheduler.runLocallyWithinThread;
+          // when changing this, make sure to update both copies.
+          val freedMemory = taskMemoryManager.cleanUpAllAllocatedMemory()
+          if (freedMemory > 0) {
+            val errMsg = s"Managed memory leak detected; size = $freedMemory bytes, TID = $taskId"
+            if (conf.getBoolean("spark.unsafe.exceptionOnMemoryLeak", false)) {
+              throw new SparkException(errMsg)
+            } else {
+              logError(errMsg)
+            }
+          }
+        }
+>>>>>>> upstream/master
         val taskFinish = System.currentTimeMillis()
 
         // If the task has been killed, let's fail it.
@@ -221,8 +260,17 @@ private[spark] class Executor(
         val afterSerialization = System.currentTimeMillis()
 
         for (m <- task.metrics) {
+<<<<<<< HEAD
           m.setExecutorDeserializeTime(taskStart - deserializeStartTime)
           m.setExecutorRunTime(taskFinish - taskStart)
+=======
+          // Deserialization happens in two parts: first, we deserialize a Task object, which
+          // includes the Partition. Second, Task.run() deserializes the RDD and function to be run.
+          m.setExecutorDeserializeTime(
+            (taskStart - deserializeStartTime) + task.executorDeserializeTime)
+          // We need to subtract Task.run()'s deserialization time to avoid double-counting
+          m.setExecutorRunTime((taskFinish - taskStart) - task.executorDeserializeTime)
+>>>>>>> upstream/master
           m.setJvmGCTime(computeTotalGcTime() - startGCTime)
           m.setResultSerializationTime(afterSerialization - beforeSerialization)
         }
@@ -421,7 +469,11 @@ private[spark] class Executor(
 
     val message = Heartbeat(executorId, tasksMetrics.toArray, env.blockManager.blockManagerId)
     try {
+<<<<<<< HEAD
       val response = heartbeatReceiverRef.askWithReply[HeartbeatResponse](message)
+=======
+      val response = heartbeatReceiverRef.askWithRetry[HeartbeatResponse](message)
+>>>>>>> upstream/master
       if (response.reregisterBlockManager) {
         logWarning("Told to re-register on heartbeat")
         env.blockManager.reregister()

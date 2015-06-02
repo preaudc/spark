@@ -27,7 +27,11 @@ import org.apache.spark.util.Utils
 
 class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
 
+<<<<<<< HEAD
   import caseInsensisitiveContext._
+=======
+  import caseInsensitiveContext._
+>>>>>>> upstream/master
 
   var originalDefaultSource: String = null
 
@@ -42,7 +46,11 @@ class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
     path.delete()
 
     val rdd = sparkContext.parallelize((1 to 10).map(i => s"""{"a":$i, "b":"str${i}"}"""))
+<<<<<<< HEAD
     df = jsonRDD(rdd)
+=======
+    df = read.json(rdd)
+>>>>>>> upstream/master
     df.registerTempTable("jsonTable")
   }
 
@@ -57,6 +65,7 @@ class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
 
   def checkLoad(): Unit = {
     conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "org.apache.spark.sql.json")
+<<<<<<< HEAD
     checkAnswer(load(path.toString), df.collect())
 
     // Test if we can pick up the data source name passed in load.
@@ -66,32 +75,69 @@ class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
     val schema = StructType(StructField("b", StringType, true) :: Nil)
     checkAnswer(
       load("org.apache.spark.sql.json", schema, Map("path" -> path.toString)),
+=======
+    checkAnswer(read.load(path.toString), df.collect())
+
+    // Test if we can pick up the data source name passed in load.
+    conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "not a source name")
+    checkAnswer(read.format("json").load(path.toString), df.collect())
+    checkAnswer(read.format("json").load(path.toString), df.collect())
+    val schema = StructType(StructField("b", StringType, true) :: Nil)
+    checkAnswer(
+      read.format("json").schema(schema).load(path.toString),
+>>>>>>> upstream/master
       sql("SELECT b FROM jsonTable").collect())
   }
 
   test("save with path and load") {
     conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "org.apache.spark.sql.json")
+<<<<<<< HEAD
     df.save(path.toString)
+=======
+    df.write.save(path.toString)
+    checkLoad()
+  }
+
+  test("save with string mode and path, and load") {
+    conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "org.apache.spark.sql.json")
+    path.createNewFile()
+    df.write.mode("overwrite").save(path.toString)
+>>>>>>> upstream/master
     checkLoad()
   }
 
   test("save with path and datasource, and load") {
     conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "not a source name")
+<<<<<<< HEAD
     df.save(path.toString, "org.apache.spark.sql.json")
+=======
+    df.write.json(path.toString)
+>>>>>>> upstream/master
     checkLoad()
   }
 
   test("save with data source and options, and load") {
     conf.setConf(SQLConf.DEFAULT_DATA_SOURCE_NAME, "not a source name")
+<<<<<<< HEAD
     df.save("org.apache.spark.sql.json", SaveMode.ErrorIfExists, Map("path" -> path.toString))
+=======
+    df.write.mode(SaveMode.ErrorIfExists).json(path.toString)
+>>>>>>> upstream/master
     checkLoad()
   }
 
   test("save and save again") {
+<<<<<<< HEAD
     df.save(path.toString, "org.apache.spark.sql.json")
 
     var message = intercept[RuntimeException] {
       df.save(path.toString, "org.apache.spark.sql.json")
+=======
+    df.write.json(path.toString)
+
+    var message = intercept[RuntimeException] {
+      df.write.json(path.toString)
+>>>>>>> upstream/master
     }.getMessage
 
     assert(
@@ -100,6 +146,7 @@ class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
 
     if (path.exists()) Utils.deleteRecursively(path)
 
+<<<<<<< HEAD
     df.save(path.toString, "org.apache.spark.sql.json")
     checkLoad()
 
@@ -108,6 +155,16 @@ class SaveLoadSuite extends DataSourceTest with BeforeAndAfterAll {
 
     message = intercept[RuntimeException] {
       df.save("org.apache.spark.sql.json", SaveMode.Append, Map("path" -> path.toString))
+=======
+    df.write.json(path.toString)
+    checkLoad()
+
+    df.write.mode(SaveMode.Overwrite).json(path.toString)
+    checkLoad()
+
+    message = intercept[RuntimeException] {
+      df.write.mode(SaveMode.Append).json(path.toString)
+>>>>>>> upstream/master
     }.getMessage
 
     assert(

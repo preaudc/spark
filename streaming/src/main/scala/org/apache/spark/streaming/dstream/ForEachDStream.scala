@@ -37,7 +37,11 @@ class ForEachDStream[T: ClassTag] (
   override def generateJob(time: Time): Option[Job] = {
     parent.getOrCompute(time) match {
       case Some(rdd) =>
+<<<<<<< HEAD
         val jobFunc = () => {
+=======
+        val jobFunc = () => createRDDWithLocalProperties(time) {
+>>>>>>> upstream/master
           ssc.sparkContext.setCallSite(creationSite)
           foreachFunc(rdd, time)
         }

@@ -22,6 +22,7 @@ import java.util.concurrent.Semaphore
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
+<<<<<<< HEAD
 import org.scalatest.{FunSuite, Matchers}
 
 import org.apache.spark.executor.TaskMetrics
@@ -29,6 +30,15 @@ import org.apache.spark.util.ResetSystemProperties
 import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext}
 
 class SparkListenerSuite extends FunSuite with LocalSparkContext with Matchers
+=======
+import org.scalatest.Matchers
+
+import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.util.ResetSystemProperties
+import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkFunSuite}
+
+class SparkListenerSuite extends SparkFunSuite with LocalSparkContext with Matchers
+>>>>>>> upstream/master
   with ResetSystemProperties {
 
   /** Length of time to wait while draining listener events. */

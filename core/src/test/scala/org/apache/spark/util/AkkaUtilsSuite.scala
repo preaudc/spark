@@ -20,7 +20,10 @@ package org.apache.spark.util
 import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorNotFound
+<<<<<<< HEAD
 import org.scalatest.FunSuite
+=======
+>>>>>>> upstream/master
 
 import org.apache.spark._
 import org.apache.spark.rpc.RpcEnv
@@ -32,7 +35,11 @@ import org.apache.spark.SSLSampleConfigs._
 /**
   * Test the AkkaUtils with various security settings.
   */
+<<<<<<< HEAD
 class AkkaUtilsSuite extends FunSuite with LocalSparkContext with ResetSystemProperties {
+=======
+class AkkaUtilsSuite extends SparkFunSuite with LocalSparkContext with ResetSystemProperties {
+>>>>>>> upstream/master
 
   test("remote fetch security bad password") {
     val conf = new SparkConf
@@ -138,7 +145,11 @@ class AkkaUtilsSuite extends FunSuite with LocalSparkContext with ResetSystemPro
 
     assert(securityManagerGood.isAuthenticationEnabled() === true)
 
+<<<<<<< HEAD
     val slaveRpcEnv =RpcEnv.create("spark-slave", hostname, 0, goodconf, securityManagerGood)
+=======
+    val slaveRpcEnv = RpcEnv.create("spark-slave", hostname, 0, goodconf, securityManagerGood)
+>>>>>>> upstream/master
     val slaveTracker = new MapOutputTrackerWorker(conf)
     slaveTracker.trackerEndpoint =
       slaveRpcEnv.setupEndpointRef("spark", rpcEnv.address, MapOutputTracker.ENDPOINT_NAME)

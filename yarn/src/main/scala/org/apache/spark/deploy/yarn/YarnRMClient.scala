@@ -55,6 +55,10 @@ private[spark] class YarnRMClient(args: ApplicationMasterArguments) extends Logg
    * @param uiHistoryAddress Address of the application on the History Server.
    */
   def register(
+<<<<<<< HEAD:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
+=======
+      driverUrl: String,
+>>>>>>> upstream/master:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
       conf: YarnConfiguration,
       sparkConf: SparkConf,
       preferredNodeLocations: Map[String, Set[SplitInfo]],
@@ -72,7 +76,11 @@ private[spark] class YarnRMClient(args: ApplicationMasterArguments) extends Logg
       amClient.registerApplicationMaster(Utils.localHostName(), 0, uiAddress)
       registered = true
     }
+<<<<<<< HEAD:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
     new YarnAllocator(conf, sparkConf, amClient, getAttemptId(), args, securityMgr)
+=======
+    new YarnAllocator(driverUrl, conf, sparkConf, amClient, getAttemptId(), args, securityMgr)
+>>>>>>> upstream/master:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
   }
 
   /**
@@ -89,9 +97,13 @@ private[spark] class YarnRMClient(args: ApplicationMasterArguments) extends Logg
 
   /** Returns the attempt ID. */
   def getAttemptId(): ApplicationAttemptId = {
+<<<<<<< HEAD:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
     val containerIdString = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name())
     val containerId = ConverterUtils.toContainerId(containerIdString)
     containerId.getApplicationAttemptId()
+=======
+    YarnSparkHadoopUtil.get.getContainerId.getApplicationAttemptId()
+>>>>>>> upstream/master:yarn/src/main/scala/org/apache/spark/deploy/yarn/YarnRMClient.scala
   }
 
   /** Returns the configuration for the AmIpFilter to add to the Spark UI. */

@@ -26,12 +26,34 @@ import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
 import org.apache.spark.{Logging, SparkConf}
+import org.apache.spark.deploy.SparkCuratorUtil
 
+<<<<<<< HEAD
 
 private[master] class ZooKeeperPersistenceEngine(conf: SparkConf, val serialization: Serialization)
   extends PersistenceEngine
   with Logging {
   
+  private val WORKING_DIR = conf.get("spark.deploy.zookeeper.dir", "/spark") + "/master_status"
+  private val zk: CuratorFramework = SparkCuratorUtil.newClient(conf)
+=======
+>>>>>>> upstream/master
+
+private[master] class ZooKeeperPersistenceEngine(conf: SparkConf, val serialization: Serialization)
+  extends PersistenceEngine
+  with Logging {
+
+<<<<<<< HEAD
+
+  override def persist(name: String, obj: Object): Unit = {
+    serializeIntoFile(WORKING_DIR + "/" + name, obj)
+  }
+
+  override def unpersist(name: String): Unit = {
+    zk.delete().forPath(WORKING_DIR + "/" + name)
+  }
+
+=======
   private val WORKING_DIR = conf.get("spark.deploy.zookeeper.dir", "/spark") + "/master_status"
   private val zk: CuratorFramework = SparkCuratorUtil.newClient(conf)
 
@@ -46,6 +68,7 @@ private[master] class ZooKeeperPersistenceEngine(conf: SparkConf, val serializat
     zk.delete().forPath(WORKING_DIR + "/" + name)
   }
 
+>>>>>>> upstream/master
   override def read[T: ClassTag](prefix: String): Seq[T] = {
     val file = zk.getChildren.forPath(WORKING_DIR).filter(_.startsWith(prefix))
     file.map(deserializeFromFile[T]).flatten

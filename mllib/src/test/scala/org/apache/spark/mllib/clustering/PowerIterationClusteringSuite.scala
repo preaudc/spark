@@ -20,15 +20,23 @@ package org.apache.spark.mllib.clustering
 import scala.collection.mutable
 import scala.util.Random
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.SparkContext
+=======
+import org.apache.spark.{SparkContext, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
 
+<<<<<<< HEAD
 class PowerIterationClusteringSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class PowerIterationClusteringSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   import org.apache.spark.mllib.clustering.PowerIterationClustering._
 
@@ -58,7 +66,11 @@ class PowerIterationClusteringSuite extends FunSuite with MLlibTestSparkContext 
       predictions(a.cluster) += a.id
     }
     assert(predictions.toSet == Set((0 to 3).toSet, (4 to 15).toSet))
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> upstream/master
     val model2 = new PowerIterationClustering()
       .setK(2)
       .setInitializationMode("degree")
@@ -94,11 +106,19 @@ class PowerIterationClusteringSuite extends FunSuite with MLlibTestSparkContext 
      */
     val similarities = Seq[(Long, Long, Double)](
       (0, 1, 1.0), (0, 2, 1.0), (0, 3, 1.0), (1, 2, 1.0), (2, 3, 1.0))
+<<<<<<< HEAD
+=======
+    // scalastyle:off
+>>>>>>> upstream/master
     val expected = Array(
       Array(0.0,     1.0/3.0, 1.0/3.0, 1.0/3.0),
       Array(1.0/2.0,     0.0, 1.0/2.0,     0.0),
       Array(1.0/3.0, 1.0/3.0,     0.0, 1.0/3.0),
       Array(1.0/2.0,     0.0, 1.0/2.0,     0.0))
+<<<<<<< HEAD
+=======
+    // scalastyle:on
+>>>>>>> upstream/master
     val w = normalize(sc.parallelize(similarities, 2))
     w.edges.collect().foreach { case Edge(i, j, x) =>
       assert(x ~== expected(i.toInt)(j.toInt) absTol 1e-14)
@@ -128,7 +148,11 @@ class PowerIterationClusteringSuite extends FunSuite with MLlibTestSparkContext 
   }
 }
 
+<<<<<<< HEAD
 object PowerIterationClusteringSuite extends FunSuite {
+=======
+object PowerIterationClusteringSuite extends SparkFunSuite {
+>>>>>>> upstream/master
   def createModel(sc: SparkContext, k: Int, nPoints: Int): PowerIterationClusteringModel = {
     val assignments = sc.parallelize(
       (0 until nPoints).map(p => PowerIterationClustering.Assignment(p, Random.nextInt(k))))

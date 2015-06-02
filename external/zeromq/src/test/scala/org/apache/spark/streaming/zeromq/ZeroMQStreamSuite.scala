@@ -22,11 +22,16 @@ import akka.util.ByteString
 import akka.zeromq.Subscribe
 import org.scalatest.FunSuite
 
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.dstream.ReceiverInputDStream
 
+<<<<<<< HEAD
 class ZeroMQStreamSuite extends FunSuite {
+=======
+class ZeroMQStreamSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   val batchDuration = Seconds(1)
 

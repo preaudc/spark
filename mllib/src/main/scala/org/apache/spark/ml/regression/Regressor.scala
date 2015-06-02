@@ -17,6 +17,7 @@
 
 package org.apache.spark.ml.regression
 
+<<<<<<< HEAD
 import org.apache.spark.annotation.{DeveloperApi, AlphaComponent}
 import org.apache.spark.ml.impl.estimator.{PredictionModel, Predictor, PredictorParams}
 
@@ -32,33 +33,55 @@ private[spark] trait RegressorParams extends PredictorParams
 
 /**
  * :: AlphaComponent ::
+=======
+import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.ml.{PredictionModel, PredictorParams, Predictor}
+
+
+/**
+ * :: DeveloperApi ::
+>>>>>>> upstream/master
  *
  * Single-label regression
  *
  * @tparam FeaturesType  Type of input features.  E.g., [[org.apache.spark.mllib.linalg.Vector]]
  * @tparam Learner  Concrete Estimator type
  * @tparam M  Concrete Model type
+<<<<<<< HEAD
  *
  * NOTE: This is currently private[spark] but will be made public later once it is stabilized.
  */
 @AlphaComponent
+=======
+ */
+@DeveloperApi
+>>>>>>> upstream/master
 private[spark] abstract class Regressor[
     FeaturesType,
     Learner <: Regressor[FeaturesType, Learner, M],
     M <: RegressionModel[FeaturesType, M]]
+<<<<<<< HEAD
   extends Predictor[FeaturesType, Learner, M]
   with RegressorParams {
+=======
+  extends Predictor[FeaturesType, Learner, M] with PredictorParams {
+>>>>>>> upstream/master
 
   // TODO: defaultEvaluator (follow-up PR)
 }
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
+=======
+ * :: DeveloperApi ::
+>>>>>>> upstream/master
  *
  * Model produced by a [[Regressor]].
  *
  * @tparam FeaturesType  Type of input features.  E.g., [[org.apache.spark.mllib.linalg.Vector]]
  * @tparam M  Concrete Model type.
+<<<<<<< HEAD
  *
  * NOTE: This is currently private[spark] but will be made public later once it is stabilized.
  */
@@ -75,4 +98,12 @@ private[spark] abstract class RegressionModel[FeaturesType, M <: RegressionModel
   @DeveloperApi
   protected def predict(features: FeaturesType): Double
 
+=======
+ */
+@DeveloperApi
+abstract class RegressionModel[FeaturesType, M <: RegressionModel[FeaturesType, M]]
+  extends PredictionModel[FeaturesType, M] with PredictorParams {
+
+  // TODO: defaultEvaluator (follow-up PR)
+>>>>>>> upstream/master
 }

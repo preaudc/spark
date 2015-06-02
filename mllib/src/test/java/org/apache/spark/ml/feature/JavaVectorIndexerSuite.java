@@ -19,6 +19,10 @@ package org.apache.spark.ml.feature;
 
 import java.io.Serializable;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Map;
+>>>>>>> upstream/master
 
 import org.junit.After;
 import org.junit.Assert;
@@ -64,7 +68,12 @@ public class JavaVectorIndexerSuite implements Serializable {
       .setMaxCategories(2);
     VectorIndexerModel model = indexer.fit(data);
     Assert.assertEquals(model.numFeatures(), 2);
+<<<<<<< HEAD
     Assert.assertEquals(model.categoryMaps().size(), 1);
+=======
+    Map<Integer, Map<Double, Integer>> categoryMaps = model.javaCategoryMaps();
+    Assert.assertEquals(categoryMaps.size(), 1);
+>>>>>>> upstream/master
     DataFrame indexedData = model.transform(data);
   }
 }

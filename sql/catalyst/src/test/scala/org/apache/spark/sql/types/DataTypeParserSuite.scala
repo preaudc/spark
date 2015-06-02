@@ -17,6 +17,7 @@
 
 package org.apache.spark.sql.types
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 class DataTypeParserSuite extends FunSuite {
@@ -24,12 +25,25 @@ class DataTypeParserSuite extends FunSuite {
   def checkDataType(dataTypeString: String, expectedDataType: DataType): Unit = {
     test(s"parse ${dataTypeString.replace("\n", "")}") {
       assert(DataTypeParser(dataTypeString) === expectedDataType)
+=======
+import org.apache.spark.SparkFunSuite
+
+class DataTypeParserSuite extends SparkFunSuite {
+
+  def checkDataType(dataTypeString: String, expectedDataType: DataType): Unit = {
+    test(s"parse ${dataTypeString.replace("\n", "")}") {
+      assert(DataTypeParser.parse(dataTypeString) === expectedDataType)
+>>>>>>> upstream/master
     }
   }
 
   def unsupported(dataTypeString: String): Unit = {
     test(s"$dataTypeString is not supported") {
+<<<<<<< HEAD
       intercept[DataTypeException](DataTypeParser(dataTypeString))
+=======
+      intercept[DataTypeException](DataTypeParser.parse(dataTypeString))
+>>>>>>> upstream/master
     }
   }
 

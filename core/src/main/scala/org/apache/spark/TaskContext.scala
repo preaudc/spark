@@ -21,6 +21,10 @@ import java.io.Serializable
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.executor.TaskMetrics
+<<<<<<< HEAD
+=======
+import org.apache.spark.unsafe.memory.TaskMemoryManager
+>>>>>>> upstream/master
 import org.apache.spark.util.TaskCompletionListener
 
 
@@ -133,4 +137,12 @@ abstract class TaskContext extends Serializable {
   /** ::DeveloperApi:: */
   @DeveloperApi
   def taskMetrics(): TaskMetrics
+<<<<<<< HEAD
+=======
+
+  /**
+   * Returns the manager for this task's managed memory.
+   */
+  private[spark] def taskMemoryManager(): TaskMemoryManager
+>>>>>>> upstream/master
 }

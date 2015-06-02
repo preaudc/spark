@@ -42,7 +42,11 @@ case class LeftSemiJoinHash(
 
   override def output: Seq[Attribute] = left.output
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     buildPlan.execute().zipPartitions(streamedPlan.execute()) { (buildIter, streamIter) =>
       val hashSet = new java.util.HashSet[Row]()
       var currentRow: Row = null

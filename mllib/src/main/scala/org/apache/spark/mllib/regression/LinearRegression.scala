@@ -20,6 +20,10 @@ package org.apache.spark.mllib.regression
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.optimization._
+<<<<<<< HEAD
+=======
+import org.apache.spark.mllib.pmml.PMMLExportable
+>>>>>>> upstream/master
 import org.apache.spark.mllib.regression.impl.GLMRegressionModel
 import org.apache.spark.mllib.util.{Saveable, Loader}
 import org.apache.spark.rdd.RDD
@@ -34,7 +38,11 @@ class LinearRegressionModel (
     override val weights: Vector,
     override val intercept: Double)
   extends GeneralizedLinearModel(weights, intercept) with RegressionModel with Serializable
+<<<<<<< HEAD
   with Saveable {
+=======
+  with Saveable with PMMLExportable {
+>>>>>>> upstream/master
 
   override protected def predictPoint(
       dataMatrix: Vector,

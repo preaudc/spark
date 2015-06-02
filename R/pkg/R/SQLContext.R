@@ -54,9 +54,15 @@ infer_type <- function(x) {
       # StructType
       types <- lapply(x, infer_type)
       fields <- lapply(1:length(x), function(i) {
+<<<<<<< HEAD
         list(name = names[[i]], type = types[[i]], nullable = TRUE)
       })
       list(type = "struct", fields = fields)
+=======
+        structField(names[[i]], types[[i]], TRUE)
+      })
+      do.call(structType, fields)
+>>>>>>> upstream/master
     }
   } else if (length(x) > 1) {
     list(type = "array", elementType = type, containsNull = TRUE)
@@ -65,6 +71,7 @@ infer_type <- function(x) {
   }
 }
 
+<<<<<<< HEAD
 #' dump the schema into JSON string
 tojson <- function(x) {
   if (is.list(x)) {
@@ -89,11 +96,17 @@ tojson <- function(x) {
   }
 }
 
+=======
+>>>>>>> upstream/master
 #' Create a DataFrame from an RDD
 #'
 #' Converts an RDD to a DataFrame by infer the types.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx A SQLContext
+=======
+#' @param sqlContext A SQLContext
+>>>>>>> upstream/master
 #' @param data An RDD or list or data.frame
 #' @param schema a list of column names or named list (StructType), optional
 #' @return an DataFrame
@@ -101,6 +114,7 @@ tojson <- function(x) {
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' rdd <- lapply(parallelize(sc, 1:10), function(x) list(a=x, b=as.character(x)))
 #' df <- createDataFrame(sqlCtx, rdd)
@@ -108,6 +122,15 @@ tojson <- function(x) {
 
 # TODO(davies): support sampling and infer type from NA
 createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' rdd <- lapply(parallelize(sc, 1:10), function(x) list(a=x, b=as.character(x)))
+#' df <- createDataFrame(sqlContext, rdd)
+#' }
+
+# TODO(davies): support sampling and infer type from NA
+createDataFrame <- function(sqlContext, data, schema = NULL, samplingRatio = 1.0) {
+>>>>>>> upstream/master
   if (is.data.frame(data)) {
       # get the names of columns, they will be put into RDD
       schema <- names(data)
@@ -126,7 +149,11 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
       })
   }
   if (is.list(data)) {
+<<<<<<< HEAD
     sc <- callJStatic("org.apache.spark.sql.api.r.SQLUtils", "getJavaSparkContext", sqlCtx)
+=======
+    sc <- callJStatic("org.apache.spark.sql.api.r.SQLUtils", "getJavaSparkContext", sqlContext)
+>>>>>>> upstream/master
     rdd <- parallelize(sc, data)
   } else if (inherits(data, "RDD")) {
     rdd <- data
@@ -134,7 +161,11 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
     stop(paste("unexpected type:", class(data)))
   }
 
+<<<<<<< HEAD
   if (is.null(schema) || is.null(names(schema))) {
+=======
+  if (is.null(schema) || (!inherits(schema, "structType") && is.null(names(schema)))) {
+>>>>>>> upstream/master
     row <- first(rdd)
     names <- if (is.null(schema)) {
       names(row)
@@ -143,7 +174,11 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
     }
     if (is.null(names)) {
       names <- lapply(1:length(row), function(x) {
+<<<<<<< HEAD
        paste("_", as.character(x), sep = "")
+=======
+        paste("_", as.character(x), sep = "")
+>>>>>>> upstream/master
       })
     }
 
@@ -159,6 +194,7 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
 
     types <- lapply(row, infer_type)
     fields <- lapply(1:length(row), function(i) {
+<<<<<<< HEAD
       list(name = names[[i]], type = types[[i]], nullable = TRUE)
     })
     schema <- list(type = "struct", fields = fields)
@@ -168,10 +204,20 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
   stopifnot(schema$type == "struct")
   stopifnot(class(schema$fields) == "list")
   schemaString <- tojson(schema)
+=======
+      structField(names[[i]], types[[i]], TRUE)
+    })
+    schema <- do.call(structType, fields)
+  }
+
+  stopifnot(class(schema) == "structType")
+  # schemaString <- tojson(schema)
+>>>>>>> upstream/master
 
   jrdd <- getJRDD(lapply(rdd, function(x) x), "row")
   srdd <- callJMethod(jrdd, "rdd")
   sdf <- callJStatic("org.apache.spark.sql.api.r.SQLUtils", "createDF",
+<<<<<<< HEAD
                      srdd, schemaString, sqlCtx)
   dataFrame(sdf)
 }
@@ -191,19 +237,48 @@ createDataFrame <- function(sqlCtx, data, schema = NULL, samplingRatio = 1.0) {
 #' rdd <- lapply(parallelize(sc, 1:10), function(x) list(a=x, b=as.character(x)))
 #' df <- toDF(rdd)
 #' }
+=======
+                     srdd, schema$jobj, sqlContext)
+  dataFrame(sdf)
+}
+
+# toDF
+#
+# Converts an RDD to a DataFrame by infer the types.
+#
+# @param x An RDD
+#
+# @rdname DataFrame
+# @export
+# @examples
+#\dontrun{
+# sc <- sparkR.init()
+# sqlContext <- sparkRSQL.init(sc)
+# rdd <- lapply(parallelize(sc, 1:10), function(x) list(a=x, b=as.character(x)))
+# df <- toDF(rdd)
+# }
+>>>>>>> upstream/master
 
 setGeneric("toDF", function(x, ...) { standardGeneric("toDF") })
 
 setMethod("toDF", signature(x = "RDD"),
           function(x, ...) {
+<<<<<<< HEAD
             sqlCtx <- if (exists(".sparkRHivesc", envir = .sparkREnv)) {
+=======
+            sqlContext <- if (exists(".sparkRHivesc", envir = .sparkREnv)) {
+>>>>>>> upstream/master
               get(".sparkRHivesc", envir = .sparkREnv)
             } else if (exists(".sparkRSQLsc", envir = .sparkREnv)) {
               get(".sparkRSQLsc", envir = .sparkREnv)
             } else {
               stop("no SQL context available")
             }
+<<<<<<< HEAD
             createDataFrame(sqlCtx, x, ...)
+=======
+            createDataFrame(sqlContext, x, ...)
+>>>>>>> upstream/master
           })
 
 #' Create a DataFrame from a JSON file.
@@ -211,28 +286,46 @@ setMethod("toDF", signature(x = "RDD"),
 #' Loads a JSON file (one object per line), returning the result as a DataFrame 
 #' It goes through the entire dataset once to determine the schema.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param path Path of file to read. A vector of multiple paths is allowed.
 #' @return DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' path <- "path/to/file.json"
 #' df <- jsonFile(sqlCtx, path)
 #' }
 
 jsonFile <- function(sqlCtx, path) {
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' path <- "path/to/file.json"
+#' df <- jsonFile(sqlContext, path)
+#' }
+
+jsonFile <- function(sqlContext, path) {
+>>>>>>> upstream/master
   # Allow the user to have a more flexible definiton of the text file path
   path <- normalizePath(path)
   # Convert a string vector of paths to a string containing comma separated paths
   path <- paste(path, collapse = ",")
+<<<<<<< HEAD
   sdf <- callJMethod(sqlCtx, "jsonFile", path)
+=======
+  sdf <- callJMethod(sqlContext, "jsonFile", path)
+>>>>>>> upstream/master
   dataFrame(sdf)
 }
 
 
+<<<<<<< HEAD
 #' JSON RDD
 #'
 #' Loads an RDD storing one JSON object per string as a DataFrame.
@@ -256,6 +349,31 @@ jsonRDD <- function(sqlCtx, rdd, schema = NULL, samplingRatio = 1.0) {
   rdd <- serializeToString(rdd)
   if (is.null(schema)) {
     sdf <- callJMethod(sqlCtx, "jsonRDD", callJMethod(getJRDD(rdd), "rdd"), samplingRatio)
+=======
+# JSON RDD
+#
+# Loads an RDD storing one JSON object per string as a DataFrame.
+#
+# @param sqlContext SQLContext to use
+# @param rdd An RDD of JSON string
+# @param schema A StructType object to use as schema
+# @param samplingRatio The ratio of simpling used to infer the schema
+# @return A DataFrame
+# @export
+# @examples
+#\dontrun{
+# sc <- sparkR.init()
+# sqlContext <- sparkRSQL.init(sc)
+# rdd <- texFile(sc, "path/to/json")
+# df <- jsonRDD(sqlContext, rdd)
+# }
+
+# TODO: support schema
+jsonRDD <- function(sqlContext, rdd, schema = NULL, samplingRatio = 1.0) {
+  rdd <- serializeToString(rdd)
+  if (is.null(schema)) {
+    sdf <- callJMethod(sqlContext, "jsonRDD", callJMethod(getJRDD(rdd), "rdd"), samplingRatio)
+>>>>>>> upstream/master
     dataFrame(sdf)
   } else {
     stop("not implemented")
@@ -267,30 +385,49 @@ jsonRDD <- function(sqlCtx, rdd, schema = NULL, samplingRatio = 1.0) {
 #' 
 #' Loads a Parquet file, returning the result as a DataFrame.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param ... Path(s) of parquet file(s) to read.
 #' @return DataFrame
 #' @export
 
 # TODO: Implement saveasParquetFile and write examples for both
+<<<<<<< HEAD
 parquetFile <- function(sqlCtx, ...) {
   # Allow the user to have a more flexible definiton of the text file path
   paths <- lapply(list(...), normalizePath)
   sdf <- callJMethod(sqlCtx, "parquetFile", paths)
+=======
+parquetFile <- function(sqlContext, ...) {
+  # Allow the user to have a more flexible definiton of the text file path
+  paths <- lapply(list(...), normalizePath)
+  sdf <- callJMethod(sqlContext, "parquetFile", paths)
+>>>>>>> upstream/master
   dataFrame(sdf)
 }
 
 #' SQL Query
+<<<<<<< HEAD
 #' 
 #' Executes a SQL query using Spark, returning the result as a DataFrame.
 #'
 #' @param sqlCtx SQLContext to use
+=======
+#'
+#' Executes a SQL query using Spark, returning the result as a DataFrame.
+#'
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param sqlQuery A character vector containing the SQL query
 #' @return DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' path <- "path/to/file.json"
 #' df <- jsonFile(sqlCtx, path)
@@ -304,18 +441,37 @@ sql <- function(sqlCtx, sqlQuery) {
 }
 
 
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' path <- "path/to/file.json"
+#' df <- jsonFile(sqlContext, path)
+#' registerTempTable(df, "table")
+#' new_df <- sql(sqlContext, "SELECT * FROM table")
+#' }
+
+sql <- function(sqlContext, sqlQuery) {
+ sdf <- callJMethod(sqlContext, "sql", sqlQuery)
+ dataFrame(sdf)
+}
+
+>>>>>>> upstream/master
 #' Create a DataFrame from a SparkSQL Table
 #' 
 #' Returns the specified Table as a DataFrame.  The Table must have already been registered
 #' in the SQLContext.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param tableName The SparkSQL Table to convert to a DataFrame.
 #' @return DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' path <- "path/to/file.json"
 #' df <- jsonFile(sqlCtx, path)
@@ -325,6 +481,17 @@ sql <- function(sqlCtx, sqlQuery) {
 
 table <- function(sqlCtx, tableName) {
   sdf <- callJMethod(sqlCtx, "table", tableName)
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' path <- "path/to/file.json"
+#' df <- jsonFile(sqlContext, path)
+#' registerTempTable(df, "table")
+#' new_df <- table(sqlContext, "table")
+#' }
+
+table <- function(sqlContext, tableName) {
+  sdf <- callJMethod(sqlContext, "table", tableName)
+>>>>>>> upstream/master
   dataFrame(sdf) 
 }
 
@@ -333,13 +500,18 @@ table <- function(sqlCtx, tableName) {
 #'
 #' Returns a DataFrame containing names of tables in the given database.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param databaseName name of the database
 #' @return a DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' tables(sqlCtx, "hive")
 #' }
@@ -349,6 +521,17 @@ tables <- function(sqlCtx, databaseName = NULL) {
     callJMethod(sqlCtx, "tables")
   } else {
     callJMethod(sqlCtx, "tables", databaseName)
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' tables(sqlContext, "hive")
+#' }
+
+tables <- function(sqlContext, databaseName = NULL) {
+  jdf <- if (is.null(databaseName)) {
+    callJMethod(sqlContext, "tables")
+  } else {
+    callJMethod(sqlContext, "tables", databaseName)
+>>>>>>> upstream/master
   }
   dataFrame(jdf)
 }
@@ -358,13 +541,18 @@ tables <- function(sqlCtx, databaseName = NULL) {
 #'
 #' Returns the names of tables in the given database as an array.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param databaseName name of the database
 #' @return a list of table names
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' tableNames(sqlCtx, "hive")
 #' }
@@ -374,6 +562,17 @@ tableNames <- function(sqlCtx, databaseName = NULL) {
     callJMethod(sqlCtx, "tableNames")
   } else {
     callJMethod(sqlCtx, "tableNames", databaseName)
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' tableNames(sqlContext, "hive")
+#' }
+
+tableNames <- function(sqlContext, databaseName = NULL) {
+  if (is.null(databaseName)) {
+    callJMethod(sqlContext, "tableNames")
+  } else {
+    callJMethod(sqlContext, "tableNames", databaseName)
+>>>>>>> upstream/master
   }
 }
 
@@ -382,13 +581,18 @@ tableNames <- function(sqlCtx, databaseName = NULL) {
 #' 
 #' Caches the specified table in-memory.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param tableName The name of the table being cached
 #' @return DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' path <- "path/to/file.json"
 #' df <- jsonFile(sqlCtx, path)
@@ -398,19 +602,35 @@ tableNames <- function(sqlCtx, databaseName = NULL) {
 
 cacheTable <- function(sqlCtx, tableName) {
   callJMethod(sqlCtx, "cacheTable", tableName)  
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' path <- "path/to/file.json"
+#' df <- jsonFile(sqlContext, path)
+#' registerTempTable(df, "table")
+#' cacheTable(sqlContext, "table")
+#' }
+
+cacheTable <- function(sqlContext, tableName) {
+  callJMethod(sqlContext, "cacheTable", tableName)  
+>>>>>>> upstream/master
 }
 
 #' Uncache Table
 #' 
 #' Removes the specified table from the in-memory cache.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param tableName The name of the table being uncached
 #' @return DataFrame
 #' @export
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' path <- "path/to/file.json"
 #' df <- jsonFile(sqlCtx, path)
@@ -420,12 +640,24 @@ cacheTable <- function(sqlCtx, tableName) {
 
 uncacheTable <- function(sqlCtx, tableName) {
   callJMethod(sqlCtx, "uncacheTable", tableName)
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' path <- "path/to/file.json"
+#' df <- jsonFile(sqlContext, path)
+#' registerTempTable(df, "table")
+#' uncacheTable(sqlContext, "table")
+#' }
+
+uncacheTable <- function(sqlContext, tableName) {
+  callJMethod(sqlContext, "uncacheTable", tableName)
+>>>>>>> upstream/master
 }
 
 #' Clear Cache
 #'
 #' Removes all cached tables from the in-memory cache.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
 #' @examples
 #' \dontrun{
@@ -434,6 +666,16 @@ uncacheTable <- function(sqlCtx, tableName) {
 
 clearCache <- function(sqlCtx) {
   callJMethod(sqlCtx, "clearCache")
+=======
+#' @param sqlContext SQLContext to use
+#' @examples
+#' \dontrun{
+#' clearCache(sqlContext)
+#' }
+
+clearCache <- function(sqlContext) {
+  callJMethod(sqlContext, "clearCache")
+>>>>>>> upstream/master
 }
 
 #' Drop Temporary Table
@@ -441,11 +683,16 @@ clearCache <- function(sqlCtx) {
 #' Drops the temporary table with the given table name in the catalog.
 #' If the table has been cached/persisted before, it's also unpersisted.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param tableName The name of the SparkSQL table to be dropped.
 #' @examples
 #' \dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' df <- loadDF(sqlCtx, path, "parquet")
 #' registerTempTable(df, "table")
@@ -457,6 +704,19 @@ dropTempTable <- function(sqlCtx, tableName) {
     stop("tableName must be a string.")
   }
   callJMethod(sqlCtx, "dropTempTable", tableName)
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' df <- read.df(sqlContext, path, "parquet")
+#' registerTempTable(df, "table")
+#' dropTempTable(sqlContext, "table")
+#' }
+
+dropTempTable <- function(sqlContext, tableName) {
+  if (class(tableName) != "character") {
+    stop("tableName must be a string.")
+  }
+  callJMethod(sqlContext, "dropTempTable", tableName)
+>>>>>>> upstream/master
 }
 
 #' Load an DataFrame
@@ -467,7 +727,11 @@ dropTempTable <- function(sqlCtx, tableName) {
 #' If `source` is not specified, the default data source configured by
 #' "spark.sql.sources.default" will be used.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param path The path of files to load
 #' @param source the name of external data source
 #' @return DataFrame
@@ -475,19 +739,46 @@ dropTempTable <- function(sqlCtx, tableName) {
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' df <- load(sqlCtx, "path/to/file.json", source = "json")
 #' }
 
 loadDF <- function(sqlCtx, path = NULL, source = NULL, ...) {
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' df <- read.df(sqlContext, "path/to/file.json", source = "json")
+#' }
+
+read.df <- function(sqlContext, path = NULL, source = NULL, ...) {
+>>>>>>> upstream/master
   options <- varargsToEnv(...)
   if (!is.null(path)) {
     options[['path']] <- path
   }
+<<<<<<< HEAD
   sdf <- callJMethod(sqlCtx, "load", source, options)
   dataFrame(sdf)
 }
 
+=======
+  if (is.null(source)) {
+    sqlContext <- get(".sparkRSQLsc", envir = .sparkREnv)
+    source <- callJMethod(sqlContext, "getConf", "spark.sql.sources.default",
+                          "org.apache.spark.sql.parquet")
+  }
+  sdf <- callJMethod(sqlContext, "load", source, options)
+  dataFrame(sdf)
+}
+
+#' @aliases loadDF
+#' @export
+
+loadDF <- function(sqlContext, path = NULL, source = NULL, ...) {
+  read.df(sqlContext, path, source, ...)
+}
+
+>>>>>>> upstream/master
 #' Create an external table
 #'
 #' Creates an external table based on the dataset in a data source,
@@ -497,7 +788,11 @@ loadDF <- function(sqlCtx, path = NULL, source = NULL, ...) {
 #' If `source` is not specified, the default data source configured by
 #' "spark.sql.sources.default" will be used.
 #'
+<<<<<<< HEAD
 #' @param sqlCtx SQLContext to use
+=======
+#' @param sqlContext SQLContext to use
+>>>>>>> upstream/master
 #' @param tableName A name of the table
 #' @param path The path of files to load
 #' @param source the name of external data source
@@ -506,15 +801,27 @@ loadDF <- function(sqlCtx, path = NULL, source = NULL, ...) {
 #' @examples
 #'\dontrun{
 #' sc <- sparkR.init()
+<<<<<<< HEAD
 #' sqlCtx <- sparkRSQL.init(sc)
 #' df <- sparkRSQL.createExternalTable(sqlCtx, "myjson", path="path/to/json", source="json")
 #' }
 
 createExternalTable <- function(sqlCtx, tableName, path = NULL, source = NULL, ...) {
+=======
+#' sqlContext <- sparkRSQL.init(sc)
+#' df <- sparkRSQL.createExternalTable(sqlContext, "myjson", path="path/to/json", source="json")
+#' }
+
+createExternalTable <- function(sqlContext, tableName, path = NULL, source = NULL, ...) {
+>>>>>>> upstream/master
   options <- varargsToEnv(...)
   if (!is.null(path)) {
     options[['path']] <- path
   }
+<<<<<<< HEAD
   sdf <- callJMethod(sqlCtx, "createExternalTable", tableName, source, options)
+=======
+  sdf <- callJMethod(sqlContext, "createExternalTable", tableName, source, options)
+>>>>>>> upstream/master
   dataFrame(sdf)
 }

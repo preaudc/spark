@@ -37,7 +37,7 @@ abstract class AggregateExpression extends Expression {
    * [[AggregateExpression.eval]] should never be invoked because [[AggregateExpression]]'s are
    * replaced with a physical aggregate operator at runtime.
    */
-  override def eval(input: Row = null): EvaluatedType =
+  override def eval(input: Row = null): Any =
     throw new TreeNodeException(this, s"No function to evaluate expression. type: ${this.nodeName}")
 }
 
@@ -73,8 +73,6 @@ abstract class PartialAggregate extends AggregateExpression {
 abstract class AggregateFunction
   extends AggregateExpression with Serializable with trees.LeafNode[Expression] {
   self: Product =>
-
-  override type EvaluatedType = Any
 
   /** Base should return the generic aggregate expression that this function is computing */
   val base: AggregateExpression
@@ -113,7 +111,7 @@ case class MinFunction(expr: Expression, base: AggregateExpression) extends Aggr
   override def update(input: Row): Unit = {
     if (currentMin.value == null) {
       currentMin.value = expr.eval(input)
-    } else if(cmp.eval(input) == true) {
+    } else if (cmp.eval(input) == true) {
       currentMin.value = expr.eval(input)
     }
   }
@@ -144,7 +142,7 @@ case class MaxFunction(expr: Expression, base: AggregateExpression) extends Aggr
   override def update(input: Row): Unit = {
     if (currentMax.value == null) {
       currentMax.value = expr.eval(input)
-    } else if(cmp.eval(input) == true) {
+    } else if (cmp.eval(input) == true) {
       currentMax.value = expr.eval(input)
     }
   }
@@ -396,6 +394,7 @@ case class Sum(child: Expression) extends PartialAggregate with trees.UnaryNode[
  * Combining    PartitionLevel   InputData
  *                           <-- null
  * Zero     <-- Zero         <-- null
+<<<<<<< HEAD
  *                              
  *          <-- null         <-- no data
  * null     <-- null         <-- no data 
@@ -413,6 +412,25 @@ case class CombineSum(child: Expression) extends AggregateExpression {
 case class SumDistinct(child: Expression)
   extends PartialAggregate with trees.UnaryNode[Expression] {
 
+=======
+ *
+ *          <-- null         <-- no data
+ * null     <-- null         <-- no data
+ */
+case class CombineSum(child: Expression) extends AggregateExpression {
+  def this() = this(null)
+
+  override def children: Seq[Expression] = child :: Nil
+  override def nullable: Boolean = true
+  override def dataType: DataType = child.dataType
+  override def toString: String = s"CombineSum($child)"
+  override def newInstance(): CombineSumFunction = new CombineSumFunction(child, this)
+}
+
+case class SumDistinct(child: Expression)
+  extends PartialAggregate with trees.UnaryNode[Expression] {
+
+>>>>>>> upstream/master
   def this() = this(null)
   override def nullable: Boolean = true
   override def dataType: DataType = child.dataType match {
@@ -425,6 +443,7 @@ case class SumDistinct(child: Expression)
   }
   override def toString: String = s"SUM(DISTINCT $child)"
   override def newInstance(): SumDistinctFunction = new SumDistinctFunction(child, this)
+<<<<<<< HEAD
 
   override def asPartial: SplitEvaluation = {
     val partialSet = Alias(CollectHashSet(child :: Nil), "partialSets")()
@@ -463,6 +482,46 @@ case class CombineSetsAndSumFunction(
     }
   }
 
+=======
+
+  override def asPartial: SplitEvaluation = {
+    val partialSet = Alias(CollectHashSet(child :: Nil), "partialSets")()
+    SplitEvaluation(
+      CombineSetsAndSum(partialSet.toAttribute, this),
+      partialSet :: Nil)
+  }
+}
+
+case class CombineSetsAndSum(inputSet: Expression, base: Expression) extends AggregateExpression {
+  def this() = this(null, null)
+
+  override def children: Seq[Expression] = inputSet :: Nil
+  override def nullable: Boolean = true
+  override def dataType: DataType = base.dataType
+  override def toString: String = s"CombineAndSum($inputSet)"
+  override def newInstance(): CombineSetsAndSumFunction = {
+    new CombineSetsAndSumFunction(inputSet, this)
+  }
+}
+
+case class CombineSetsAndSumFunction(
+    @transient inputSet: Expression,
+    @transient base: AggregateExpression)
+  extends AggregateFunction {
+
+  def this() = this(null, null) // Required for serialization.
+
+  val seen = new OpenHashSet[Any]()
+
+  override def update(input: Row): Unit = {
+    val inputSetEval = inputSet.eval(input).asInstanceOf[OpenHashSet[Any]]
+    val inputIterator = inputSetEval.iterator
+    while (inputIterator.hasNext) {
+      seen.add(inputIterator.next)
+    }
+  }
+
+>>>>>>> upstream/master
   override def eval(input: Row): Any = {
     val casted = seen.asInstanceOf[OpenHashSet[Row]]
     if (casted.size == 0) {
@@ -618,7 +677,11 @@ case class SumFunction(expr: Expression, base: AggregateExpression) extends Aggr
 
   private val sum = MutableLiteral(null, calcType)
 
+<<<<<<< HEAD
   private val addFunction = 
+=======
+  private val addFunction =
+>>>>>>> upstream/master
     Coalesce(Seq(Add(Coalesce(Seq(sum, zero)), Cast(expr, calcType)), sum, zero))
 
   override def update(input: Row): Unit = {
@@ -636,7 +699,11 @@ case class SumFunction(expr: Expression, base: AggregateExpression) extends Aggr
 
 case class CombineSumFunction(expr: Expression, base: AggregateExpression)
   extends AggregateFunction {
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   def this() = this(null, null) // Required for serialization.
 
   private val calcType =
@@ -651,12 +718,21 @@ case class CombineSumFunction(expr: Expression, base: AggregateExpression)
 
   private val sum = MutableLiteral(null, calcType)
 
+<<<<<<< HEAD
   private val addFunction = 
     Coalesce(Seq(Add(Coalesce(Seq(sum, zero)), Cast(expr, calcType)), sum, zero))
   
   override def update(input: Row): Unit = {
     val result = expr.eval(input)
     // partial sum result can be null only when no input rows present 
+=======
+  private val addFunction =
+    Coalesce(Seq(Add(Coalesce(Seq(sum, zero)), Cast(expr, calcType)), sum, zero))
+
+  override def update(input: Row): Unit = {
+    val result = expr.eval(input)
+    // partial sum result can be null only when no input rows present
+>>>>>>> upstream/master
     if(result != null) {
       sum.update(addFunction, input)
     }

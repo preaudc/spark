@@ -17,7 +17,11 @@
 
 package org.apache.spark.sql.catalyst.expressions
 
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/expressions/rows.scala
 import org.apache.spark.sql.types.{UTF8String, DataType, StructType, NativeType}
+=======
+import org.apache.spark.sql.types.{UTF8String, DataType, StructType, AtomicType}
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/expressions/rows.scala
 
 /**
  * An extended interface to [[Row]] that allows the values for each column to be updated.  Setting
@@ -174,6 +178,7 @@ class GenericRow(protected[sql] val values: Array[Any]) extends Row {
   }
 
   override def copy(): Row = this
+<<<<<<< HEAD:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/expressions/rows.scala
 }
 
 class GenericRowWithSchema(values: Array[Any], override val schema: StructType)
@@ -185,6 +190,21 @@ class GenericRowWithSchema(values: Array[Any], override val schema: StructType)
 
 class GenericMutableRow(v: Array[Any]) extends GenericRow(v) with MutableRow {
   /** No-arg constructor for serialization. */
+=======
+}
+
+class GenericRowWithSchema(values: Array[Any], override val schema: StructType)
+  extends GenericRow(values) {
+
+  /** No-arg constructor for serialization. */
+  protected def this() = this(null, null)
+
+  override def fieldIndex(name: String): Int = schema.fieldIndex(name)
+}
+
+class GenericMutableRow(v: Array[Any]) extends GenericRow(v) with MutableRow {
+  /** No-arg constructor for serialization. */
+>>>>>>> upstream/master:sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/expressions/rows.scala
   protected def this() = this(null)
 
   def this(size: Int) = this(new Array[Any](size))
@@ -225,9 +245,9 @@ class RowOrdering(ordering: Seq[SortOrder]) extends Ordering[Row] {
         return if (order.direction == Ascending) 1 else -1
       } else {
         val comparison = order.dataType match {
-          case n: NativeType if order.direction == Ascending =>
+          case n: AtomicType if order.direction == Ascending =>
             n.ordering.asInstanceOf[Ordering[Any]].compare(left, right)
-          case n: NativeType if order.direction == Descending =>
+          case n: AtomicType if order.direction == Descending =>
             n.ordering.asInstanceOf[Ordering[Any]].reverse.compare(left, right)
           case other => sys.error(s"Type $other does not support ordered operations")
         }

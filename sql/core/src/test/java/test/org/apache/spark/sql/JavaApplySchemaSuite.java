@@ -187,14 +187,22 @@ public class JavaApplySchemaSuite implements Serializable {
         null,
         "this is another simple string."));
 
+<<<<<<< HEAD:sql/core/src/test/java/test/org/apache/spark/sql/JavaApplySchemaSuite.java
     DataFrame df1 = sqlContext.jsonRDD(jsonRDD);
+=======
+    DataFrame df1 = sqlContext.read().json(jsonRDD);
+>>>>>>> upstream/master:sql/core/src/test/java/test/org/apache/spark/sql/JavaApplySchemaSuite.java
     StructType actualSchema1 = df1.schema();
     Assert.assertEquals(expectedSchema, actualSchema1);
     df1.registerTempTable("jsonTable1");
     List<Row> actual1 = sqlContext.sql("select * from jsonTable1").collectAsList();
     Assert.assertEquals(expectedResult, actual1);
 
+<<<<<<< HEAD:sql/core/src/test/java/test/org/apache/spark/sql/JavaApplySchemaSuite.java
     DataFrame df2 = sqlContext.jsonRDD(jsonRDD, expectedSchema);
+=======
+    DataFrame df2 = sqlContext.read().schema(expectedSchema).json(jsonRDD);
+>>>>>>> upstream/master:sql/core/src/test/java/test/org/apache/spark/sql/JavaApplySchemaSuite.java
     StructType actualSchema2 = df2.schema();
     Assert.assertEquals(expectedSchema, actualSchema2);
     df2.registerTempTable("jsonTable2");

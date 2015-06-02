@@ -33,7 +33,11 @@ import scala.reflect.ClassTag
  * The implementation of this trait defines how name-object pairs are stored or retrieved.
  */
 @DeveloperApi
+<<<<<<< HEAD
 trait PersistenceEngine {
+=======
+abstract class PersistenceEngine {
+>>>>>>> upstream/master
 
   /**
    * Defines how the object is serialized and persisted. Implementation will

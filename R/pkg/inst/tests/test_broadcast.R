@@ -29,7 +29,11 @@ test_that("using broadcast variable", {
   randomMatBr <- broadcast(sc, randomMat)
 
   useBroadcast <- function(x) {
+<<<<<<< HEAD
     sum(value(randomMatBr) * x)
+=======
+    sum(SparkR:::value(randomMatBr) * x)
+>>>>>>> upstream/master
   }
   actual <- collect(lapply(rrdd, useBroadcast))
   expected <- list(sum(randomMat) * 1, sum(randomMat) * 2)

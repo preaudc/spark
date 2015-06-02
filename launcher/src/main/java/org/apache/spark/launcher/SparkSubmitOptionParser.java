@@ -69,8 +69,15 @@ class SparkSubmitOptionParser {
   // YARN-only options.
   protected final String ARCHIVES = "--archives";
   protected final String EXECUTOR_CORES = "--executor-cores";
+<<<<<<< HEAD
   protected final String QUEUE = "--queue";
   protected final String NUM_EXECUTORS = "--num-executors";
+=======
+  protected final String KEYTAB = "--keytab";
+  protected final String NUM_EXECUTORS = "--num-executors";
+  protected final String PRINCIPAL = "--principal";
+  protected final String QUEUE = "--queue";
+>>>>>>> upstream/master
 
   /**
    * This is the canonical list of spark-submit options. Each entry in the array contains the
@@ -96,11 +103,19 @@ class SparkSubmitOptionParser {
     { EXECUTOR_MEMORY },
     { FILES },
     { JARS },
+<<<<<<< HEAD
+=======
+    { KEYTAB },
+>>>>>>> upstream/master
     { KILL_SUBMISSION },
     { MASTER },
     { NAME },
     { NUM_EXECUTORS },
     { PACKAGES },
+<<<<<<< HEAD
+=======
+    { PRINCIPAL },
+>>>>>>> upstream/master
     { PROPERTIES_FILE },
     { PROXY_USER },
     { PY_FILES },

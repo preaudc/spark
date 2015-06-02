@@ -54,7 +54,11 @@ private[spark] object UIWorkloadGenerator {
     val sc = new SparkContext(conf)
 
     def setProperties(s: String): Unit = {
+<<<<<<< HEAD
       if(schedulingMode == SchedulingMode.FAIR) {
+=======
+      if (schedulingMode == SchedulingMode.FAIR) {
+>>>>>>> upstream/master
         sc.setLocalProperty("spark.scheduler.pool", s)
       }
       sc.setLocalProperty(SparkContext.SPARK_JOB_DESCRIPTION, s)

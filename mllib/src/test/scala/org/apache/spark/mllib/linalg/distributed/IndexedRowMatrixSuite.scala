@@ -17,15 +17,21 @@
 
 package org.apache.spark.mllib.linalg.distributed
 
-import org.scalatest.FunSuite
-
 import breeze.linalg.{diag => brzDiag, DenseMatrix => BDM, DenseVector => BDV}
 
+<<<<<<< HEAD
+=======
+import org.apache.spark.SparkFunSuite
+>>>>>>> upstream/master
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 
+<<<<<<< HEAD
 class IndexedRowMatrixSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class IndexedRowMatrixSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   val m = 4
   val n = 3

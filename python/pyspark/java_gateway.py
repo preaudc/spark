@@ -17,17 +17,39 @@
 
 import atexit
 import os
+<<<<<<< HEAD
+=======
+import sys
+>>>>>>> upstream/master
 import select
 import signal
 import shlex
 import socket
 import platform
 from subprocess import Popen, PIPE
+<<<<<<< HEAD
+=======
+
+if sys.version >= '3':
+    xrange = range
+
+>>>>>>> upstream/master
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
+from py4j.java_collections import ListConverter
 
 from pyspark.serializers import read_int
 
 
+<<<<<<< HEAD
+=======
+# patching ListConverter, or it will convert bytearray into Java ArrayList
+def can_convert_list(self, obj):
+    return isinstance(obj, (list, tuple, xrange))
+
+ListConverter.can_convert = can_convert_list
+
+
+>>>>>>> upstream/master
 def launch_gateway():
     if "PYSPARK_GATEWAY_PORT" in os.environ:
         gateway_port = int(os.environ["PYSPARK_GATEWAY_PORT"])
@@ -92,7 +114,7 @@ def launch_gateway():
             atexit.register(killChild)
 
     # Connect to the gateway
-    gateway = JavaGateway(GatewayClient(port=gateway_port), auto_convert=False)
+    gateway = JavaGateway(GatewayClient(port=gateway_port), auto_convert=True)
 
     # Import the classes used by PySpark
     java_import(gateway.jvm, "org.apache.spark.SparkConf")

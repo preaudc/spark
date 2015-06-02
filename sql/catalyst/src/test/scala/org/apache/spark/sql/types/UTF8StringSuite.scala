@@ -17,10 +17,17 @@
 
 package org.apache.spark.sql.types
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 // scalastyle:off
 class UTF8StringSuite extends FunSuite {
+=======
+import org.apache.spark.SparkFunSuite
+
+// scalastyle:off
+class UTF8StringSuite extends SparkFunSuite {
+>>>>>>> upstream/master
   test("basic") {
     def check(str: String, len: Int) {
 

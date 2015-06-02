@@ -29,29 +29,47 @@ import org.apache.spark.mllib.util.MLUtils
  * the event that the covariance matrix is singular, the density will be computed in a
  * reduced dimensional subspace under which the distribution is supported.
  * (see [[http://en.wikipedia.org/wiki/Multivariate_normal_distribution#Degenerate_case]])
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> upstream/master
  * @param mu The mean vector of the distribution
  * @param sigma The covariance matrix of the distribution
  */
 @DeveloperApi
 class MultivariateGaussian (
+<<<<<<< HEAD
     val mu: Vector, 
+=======
+    val mu: Vector,
+>>>>>>> upstream/master
     val sigma: Matrix) extends Serializable {
 
   require(sigma.numCols == sigma.numRows, "Covariance matrix must be square")
   require(mu.size == sigma.numCols, "Mean vector length must match covariance matrix size")
+<<<<<<< HEAD
   
   private val breezeMu = mu.toBreeze.toDenseVector
   
   /**
    * private[mllib] constructor
    * 
+=======
+
+  private val breezeMu = mu.toBreeze.toDenseVector
+
+  /**
+   * private[mllib] constructor
+   *
+>>>>>>> upstream/master
    * @param mu The mean vector of the distribution
    * @param sigma The covariance matrix of the distribution
    */
   private[mllib] def this(mu: DBV[Double], sigma: DBM[Double]) = {
     this(Vectors.fromBreeze(mu), Matrices.fromBreeze(sigma))
   }
+<<<<<<< HEAD
   
   /**
    * Compute distribution dependent constants:
@@ -60,32 +78,59 @@ class MultivariateGaussian (
    */
   private val (rootSigmaInv: DBM[Double], u: Double) = calculateCovarianceConstants
   
+=======
+
+  /**
+   * Compute distribution dependent constants:
+   *    rootSigmaInv = D^(-1/2)^ * U, where sigma = U * D * U.t
+   *    u = log((2*pi)^(-k/2)^ * det(sigma)^(-1/2)^)
+   */
+  private val (rootSigmaInv: DBM[Double], u: Double) = calculateCovarianceConstants
+
+>>>>>>> upstream/master
   /** Returns density of this multivariate Gaussian at given point, x */
   def pdf(x: Vector): Double = {
     pdf(x.toBreeze)
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   /** Returns the log-density of this multivariate Gaussian at given point, x */
   def logpdf(x: Vector): Double = {
     logpdf(x.toBreeze)
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   /** Returns density of this multivariate Gaussian at given point, x */
   private[mllib] def pdf(x: BV[Double]): Double = {
     math.exp(logpdf(x))
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   /** Returns the log-density of this multivariate Gaussian at given point, x */
   private[mllib] def logpdf(x: BV[Double]): Double = {
     val delta = x - breezeMu
     val v = rootSigmaInv * delta
     u + v.t * v * -0.5
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   /**
    * Calculate distribution dependent components used for the density function:
    *    pdf(x) = (2*pi)^(-k/2)^ * det(sigma)^(-1/2)^ * exp((-1/2) * (x-mu).t * inv(sigma) * (x-mu))
    * where k is length of the mean vector.
+<<<<<<< HEAD
    * 
    * We here compute distribution-fixed parts 
    *  log((2*pi)^(-k/2)^ * det(sigma)^(-1/2)^)
@@ -106,12 +151,35 @@ class MultivariateGaussian (
    *    -0.5 * (x-mu).t * inv(Sigma) * (x-mu) = -0.5 * norm(D^{-1/2}^ * U  * (x-mu))^2^
    *  
    * To guard against singular covariance matrices, this method computes both the 
+=======
+   *
+   * We here compute distribution-fixed parts
+   *  log((2*pi)^(-k/2)^ * det(sigma)^(-1/2)^)
+   * and
+   *  D^(-1/2)^ * U, where sigma = U * D * U.t
+   *
+   * Both the determinant and the inverse can be computed from the singular value decomposition
+   * of sigma.  Noting that covariance matrices are always symmetric and positive semi-definite,
+   * we can use the eigendecomposition. We also do not compute the inverse directly; noting
+   * that
+   *
+   *    sigma = U * D * U.t
+   *    inv(Sigma) = U * inv(D) * U.t
+   *               = (D^{-1/2}^ * U).t * (D^{-1/2}^ * U)
+   *
+   * and thus
+   *
+   *    -0.5 * (x-mu).t * inv(Sigma) * (x-mu) = -0.5 * norm(D^{-1/2}^ * U  * (x-mu))^2^
+   *
+   * To guard against singular covariance matrices, this method computes both the
+>>>>>>> upstream/master
    * pseudo-determinant and the pseudo-inverse (Moore-Penrose).  Singular values are considered
    * to be non-zero only if they exceed a tolerance based on machine precision, matrix size, and
    * relation to the maximum singular value (same tolerance used by, e.g., Octave).
    */
   private def calculateCovarianceConstants: (DBM[Double], Double) = {
     val eigSym.EigSym(d, u) = eigSym(sigma.toBreeze.toDenseMatrix) // sigma = u * diag(d) * u.t
+<<<<<<< HEAD
     
     // For numerical stability, values are considered to be non-zero only if they exceed tol.
     // This prevents any inverted value from exceeding (eps * n * max(d))^-1
@@ -125,6 +193,21 @@ class MultivariateGaussian (
       // by inverting the square root of all non-zero values
       val pinvS = diag(new DBV(d.map(v => if (v > tol) math.sqrt(1.0 / v) else 0.0).toArray))
     
+=======
+
+    // For numerical stability, values are considered to be non-zero only if they exceed tol.
+    // This prevents any inverted value from exceeding (eps * n * max(d))^-1
+    val tol = MLUtils.EPSILON * max(d) * d.length
+
+    try {
+      // log(pseudo-determinant) is sum of the logs of all non-zero singular values
+      val logPseudoDetSigma = d.activeValuesIterator.filter(_ > tol).map(math.log).sum
+
+      // calculate the root-pseudo-inverse of the diagonal matrix of singular values
+      // by inverting the square root of all non-zero values
+      val pinvS = diag(new DBV(d.map(v => if (v > tol) math.sqrt(1.0 / v) else 0.0).toArray))
+
+>>>>>>> upstream/master
       (pinvS * u, -0.5 * (mu.size * math.log(2.0 * math.Pi) + logPseudoDetSigma))
     } catch {
       case uex: UnsupportedOperationException =>

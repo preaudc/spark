@@ -17,6 +17,7 @@
 
 package org.apache.spark.sql.catalyst
 
+<<<<<<< HEAD
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.Command
 import org.scalatest.FunSuite
@@ -25,6 +26,20 @@ private[sql] case class TestCommand(cmd: String) extends Command
 
 private[sql] class SuperLongKeywordTestParser extends AbstractSparkSQLParser {
   protected val EXECUTE   = Keyword("THISISASUPERLONGKEYWORDTEST")
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Command
+
+private[sql] case class TestCommand(cmd: String) extends LogicalPlan with Command {
+  override def output: Seq[Attribute] = Seq.empty
+  override def children: Seq[LogicalPlan] = Seq.empty
+}
+
+private[sql] class SuperLongKeywordTestParser extends AbstractSparkSQLParser {
+  protected val EXECUTE = Keyword("THISISASUPERLONGKEYWORDTEST")
+>>>>>>> upstream/master
 
   override protected lazy val start: Parser[LogicalPlan] = set
 
@@ -35,7 +50,11 @@ private[sql] class SuperLongKeywordTestParser extends AbstractSparkSQLParser {
 }
 
 private[sql] class CaseInsensitiveTestParser extends AbstractSparkSQLParser {
+<<<<<<< HEAD
   protected val EXECUTE   = Keyword("EXECUTE")
+=======
+  protected val EXECUTE = Keyword("EXECUTE")
+>>>>>>> upstream/master
 
   override protected lazy val start: Parser[LogicalPlan] = set
 
@@ -45,17 +64,32 @@ private[sql] class CaseInsensitiveTestParser extends AbstractSparkSQLParser {
     }
 }
 
+<<<<<<< HEAD
 class SqlParserSuite extends FunSuite {
 
   test("test long keyword") {
     val parser = new SuperLongKeywordTestParser
     assert(TestCommand("NotRealCommand") === parser("ThisIsASuperLongKeyWordTest NotRealCommand"))
+=======
+class SqlParserSuite extends SparkFunSuite {
+
+  test("test long keyword") {
+    val parser = new SuperLongKeywordTestParser
+    assert(TestCommand("NotRealCommand") ===
+      parser.parse("ThisIsASuperLongKeyWordTest NotRealCommand"))
+>>>>>>> upstream/master
   }
 
   test("test case insensitive") {
     val parser = new CaseInsensitiveTestParser
+<<<<<<< HEAD
     assert(TestCommand("NotRealCommand") === parser("EXECUTE NotRealCommand"))
     assert(TestCommand("NotRealCommand") === parser("execute NotRealCommand"))
     assert(TestCommand("NotRealCommand") === parser("exEcute NotRealCommand"))
+=======
+    assert(TestCommand("NotRealCommand") === parser.parse("EXECUTE NotRealCommand"))
+    assert(TestCommand("NotRealCommand") === parser.parse("execute NotRealCommand"))
+    assert(TestCommand("NotRealCommand") === parser.parse("exEcute NotRealCommand"))
+>>>>>>> upstream/master
   }
 }

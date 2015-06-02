@@ -18,6 +18,7 @@
 package org.apache.spark.mllib.linalg
 
 import java.util.Random
+<<<<<<< HEAD
 
 import org.mockito.Mockito.when
 import org.scalatest.FunSuite
@@ -25,8 +26,17 @@ import org.scalatest.mock.MockitoSugar._
 import scala.collection.mutable.{Map => MutableMap}
 
 import org.apache.spark.mllib.util.TestingUtils._
+=======
+>>>>>>> upstream/master
 
-class MatricesSuite extends FunSuite {
+import org.mockito.Mockito.when
+import org.scalatest.mock.MockitoSugar._
+import scala.collection.mutable.{Map => MutableMap}
+
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.mllib.util.TestingUtils._
+
+class MatricesSuite extends SparkFunSuite {
   test("dense matrix construction") {
     val m = 3
     val n = 2

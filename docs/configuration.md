@@ -37,6 +37,30 @@ val sc = new SparkContext(conf)
 
 Note that we can have more than 1 thread in local mode, and in cases like Spark Streaming, we may 
 actually require one to prevent any sort of starvation issues.
+<<<<<<< HEAD
+=======
+
+Properties that specify some time duration should be configured with a unit of time. 
+The following format is accepted:
+ 
+    25ms (milliseconds)
+    5s (seconds)
+    10m or 10min (minutes)
+    3h (hours)
+    5d (days)
+    1y (years)
+    
+    
+Properties that specify a byte size should be configured with a unit of size.  
+The following format is accepted:
+
+    1b (bytes)
+    1k or 1kb (kibibytes = 1024 bytes)
+    1m or 1mb (mebibytes = 1024 kibibytes)
+    1g or 1gb (gibibytes = 1024 mebibytes)
+    1t or 1tb (tebibytes = 1024 gibibytes)
+    1p or 1pb (pebibytes = 1024 tebibytes)
+>>>>>>> upstream/master
 
 Properties that specify some time duration should be configured with a unit of time. 
 The following format is accepted:
@@ -272,12 +296,20 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.executor.logs.rolling.size.maxBytes</code></td>
   <td>(none)</td>
   <td>
     Set the max size of the file by which the executor logs will be rolled over.
     Rolling is disabled by default. Value is set in terms of bytes.
     See <code>spark.executor.logs.rolling.maxRetainedFiles</code>
+=======
+  <td><code>spark.executor.logs.rolling.maxSize</code></td>
+  <td>(none)</td>
+  <td>
+    Set the max size of the file by which the executor logs will be rolled over.
+    Rolling is disabled by default. See <code>spark.executor.logs.rolling.maxRetainedFiles</code>
+>>>>>>> upstream/master
     for automatic cleaning of old logs.
   </td>
 </tr>
@@ -366,10 +398,17 @@ Apart from these, the following properties are also available, and may be useful
 <table class="table">
 <tr><th>Property Name</th><th>Default</th><th>Meaning</th></tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.reducer.maxMbInFlight</code></td>
   <td>48</td>
   <td>
     Maximum size (in megabytes) of map outputs to fetch simultaneously from each reduce task. Since
+=======
+  <td><code>spark.reducer.maxSizeInFlight</code></td>
+  <td>48m</td>
+  <td>
+    Maximum size of map outputs to fetch simultaneously from each reduce task. Since
+>>>>>>> upstream/master
     each output requires us to create a buffer to receive it, this represents a fixed memory
     overhead per reduce task, so keep it small unless you have a large amount of memory.
   </td>
@@ -403,10 +442,17 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.shuffle.file.buffer.kb</code></td>
   <td>32</td>
   <td>
     Size of the in-memory buffer for each shuffle file output stream, in kilobytes. These buffers
+=======
+  <td><code>spark.shuffle.file.buffer</code></td>
+  <td>32k</td>
+  <td>
+    Size of the in-memory buffer for each shuffle file output stream. These buffers
+>>>>>>> upstream/master
     reduce the number of disk seeks and system calls made in creating intermediate shuffle files.
   </td>
 </tr>
@@ -582,18 +628,32 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.io.compression.lz4.block.size</code></td>
   <td>32768</td>
   <td>
     Block size (in bytes) used in LZ4 compression, in the case when LZ4 compression codec
+=======
+  <td><code>spark.io.compression.lz4.blockSize</code></td>
+  <td>32k</td>
+  <td>
+    Block size used in LZ4 compression, in the case when LZ4 compression codec
+>>>>>>> upstream/master
     is used. Lowering this block size will also lower shuffle memory usage when LZ4 is used.
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.io.compression.snappy.block.size</code></td>
   <td>32768</td>
   <td>
     Block size (in bytes) used in Snappy compression, in the case when Snappy compression codec
+=======
+  <td><code>spark.io.compression.snappy.blockSize</code></td>
+  <td>32k</td>
+  <td>
+    Block size used in Snappy compression, in the case when Snappy compression codec
+>>>>>>> upstream/master
     is used. Lowering this block size will also lower shuffle memory usage when Snappy is used.
   </td>
 </tr>
@@ -641,19 +701,26 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
-  <td><code>spark.kryoserializer.buffer.max.mb</code></td>
-  <td>64</td>
+  <td><code>spark.kryoserializer.buffer.max</code></td>
+  <td>64m</td>
   <td>
-    Maximum allowable size of Kryo serialization buffer, in megabytes. This must be larger than any
+    Maximum allowable size of Kryo serialization buffer. This must be larger than any
     object you attempt to serialize. Increase this if you get a "buffer limit exceeded" exception
     inside Kryo.
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.kryoserializer.buffer.mb</code></td>
   <td>0.064</td>
   <td>
     Initial size of Kryo's serialization buffer, in megabytes. Note that there will be one buffer
+=======
+  <td><code>spark.kryoserializer.buffer</code></td>
+  <td>64k</td>
+  <td>
+    Initial size of Kryo's serialization buffer. Note that there will be one buffer
+>>>>>>> upstream/master
      <i>per core</i> on each worker. This buffer will grow up to
      <code>spark.kryoserializer.buffer.max.mb</code> if needed.
   </td>
@@ -698,9 +765,15 @@ Apart from these, the following properties are also available, and may be useful
 <tr><th>Property Name</th><th>Default</th><th>Meaning</th></tr>
 <tr>
   <td><code>spark.broadcast.blockSize</code></td>
+<<<<<<< HEAD
   <td>4096</td>
   <td>
     Size of each piece of a block in kilobytes for <code>TorrentBroadcastFactory</code>.
+=======
+  <td>4m</td>
+  <td>
+    Size of each piece of a block for <code>TorrentBroadcastFactory</code>.
+>>>>>>> upstream/master
     Too large a value decreases parallelism during broadcast (makes it slower); however, if it is
     too small, <code>BlockManager</code> might take a performance hit.
   </td>
@@ -816,9 +889,15 @@ Apart from these, the following properties are also available, and may be useful
 </tr>
 <tr>
   <td><code>spark.storage.memoryMapThreshold</code></td>
+<<<<<<< HEAD
   <td>2097152</td>
   <td>
     Size of a block, in bytes, above which Spark memory maps when reading a block from disk.
+=======
+  <td>2m</td>
+  <td>
+    Size of a block above which Spark memory maps when reading a block from disk.
+>>>>>>> upstream/master
     This prevents Spark from memory mapping very small blocks. In general, memory
     mapping has high overhead for blocks close to or below the page size of the operating system.
   </td>
@@ -833,19 +912,31 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
-  <td><code>spark.tachyonStore.baseDir</code></td>
+  <td><code>spark.externalBlockStore.blockManager</code></td>
+  <td>org.apache.spark.storage.TachyonBlockManager</td>
+  <td>
+    Implementation of external block manager (file system) that store RDDs. The file system's URL is set by
+    <code>spark.externalBlockStore.url</code>.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.externalBlockStore.baseDir</code></td>
   <td>System.getProperty("java.io.tmpdir")</td>
   <td>
-    Directories of the Tachyon File System that store RDDs. The Tachyon file system's URL is set by
-    <code>spark.tachyonStore.url</code>. It can also be a comma-separated list of multiple
+    Directories of the external block store that store RDDs. The file system's URL is set by
+   <code>spark.externalBlockStore.url</code> It can also be a comma-separated list of multiple
     directories on Tachyon file system.
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.tachyonStore.url</code></td>
   <td>tachyon://localhost:19998</td>
+=======
+  <td><code>spark.externalBlockStore.url</code></td>
+  <td>tachyon://localhost:19998 for Tachyon</td>
   <td>
-    The URL of the underlying Tachyon file system in the TachyonStore.
+    The URL of the underlying external blocker file system in the external block store.
   </td>
 </tr>
 </table>
@@ -856,6 +947,23 @@ Apart from these, the following properties are also available, and may be useful
 <tr>
   <td><code>spark.akka.failure-detector.threshold</code></td>
   <td>300.0</td>
+>>>>>>> upstream/master
+  <td>
+     This is set to a larger value to disable failure detector that comes inbuilt akka. It can be
+     enabled again, if you plan to use this feature (Not recommended). This maps to akka's
+     `akka.remote.transport-failure-detector.threshold`. Tune this in combination of
+     `spark.akka.heartbeat.pauses` and `spark.akka.heartbeat.interval` if you need to.
+  </td>
+</tr>
+</table>
+
+#### Networking
+<table class="table">
+<tr><th>Property Name</th><th>Default</th><th>Meaning</th></tr>
+<tr>
+<<<<<<< HEAD
+  <td><code>spark.akka.failure-detector.threshold</code></td>
+  <td>300.0</td>
   <td>
      This is set to a larger value to disable failure detector that comes inbuilt akka. It can be
      enabled again, if you plan to use this feature (Not recommended). This maps to akka's
@@ -864,6 +972,38 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
+  <td><code>spark.akka.frameSize</code></td>
+  <td>10</td>
+  <td>
+    Maximum message size to allow in "control plane" communication (for serialized tasks and task
+    results), in MB. Increase this if your tasks need to send back large results to the driver
+    (e.g. using <code>collect()</code> on a large dataset).
+  </td>
+</tr>
+<tr>
+  <td><code>spark.akka.heartbeat.interval</code></td>
+  <td>1000s</td>
+  <td>
+    This is set to a larger value to disable the transport failure detector that comes built in to 
+    Akka. It can be enabled again, if you plan to use this feature (Not recommended). A larger 
+    interval value reduces network overhead and a smaller value ( ~ 1 s) might be more 
+    informative for Akka's failure detector. Tune this in combination of `spark.akka.heartbeat.pauses` 
+    if you need to. A likely positive use case for using failure detector would be: a sensistive 
+    failure detector can help evict rogue executors quickly. However this is usually not the case 
+    as GC pauses and network lags are expected in a real Spark cluster. Apart from that enabling 
+    this leads to a lot of exchanges of heart beats between nodes leading to flooding the network 
+    with those.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.akka.heartbeat.pauses</code></td>
+  <td>6000s</td>
+  <td>
+     This is set to a larger value to disable the transport failure detector that comes built in to Akka.
+     It can be enabled again, if you plan to use this feature (Not recommended). Acceptable heart 
+     beat pause for Akka. This can be used to control sensitivity to GC pauses. Tune
+     this along with `spark.akka.heartbeat.interval` if you need to.
+=======
   <td><code>spark.akka.frameSize</code></td>
   <td>10</td>
   <td>
@@ -925,6 +1065,58 @@ Apart from these, the following properties are also available, and may be useful
   <td>
     Port for the driver's HTTP broadcast server to listen on.
     This is not relevant for torrent broadcast.
+>>>>>>> upstream/master
+  </td>
+</tr>
+<tr>
+  <td><code>spark.akka.threads</code></td>
+  <td>4</td>
+  <td>
+    Number of actor threads to use for communication. Can be useful to increase on large clusters
+    when the driver has a lot of CPU cores.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.akka.timeout</code></td>
+  <td>100s</td>
+  <td>
+    Communication timeout between Spark nodes.
+  </td>
+</tr>
+<tr>
+<<<<<<< HEAD
+  <td><code>spark.blockManager.port</code></td>
+=======
+  <td><code>spark.executor.port</code></td>
+  <td>(random)</td>
+  <td>
+    Port for the executor to listen on. This is used for communicating with the driver.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.fileserver.port</code></td>
+>>>>>>> upstream/master
+  <td>(random)</td>
+  <td>
+    Port for all block managers to listen on. These exist on both the driver and the executors.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.network.timeout</code></td>
+  <td>120s</td>
+  <td>
+    Default timeout for all network interactions. This config will be used in place of 
+    <code>spark.core.connection.ack.wait.timeout</code>, <code>spark.akka.timeout</code>,
+    <code>spark.storage.blockManagerSlaveTimeoutMs</code>,
+    <code>spark.shuffle.io.connectionTimeout</code>, <code>spark.rpc.askTimeout</code> or
+    <code>spark.rpc.lookupTimeout</code> if they are not configured.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.port.maxRetries</code></td>
+  <td>16</td>
+  <td>
+    Default maximum number of retries when binding to a port before giving up.
   </td>
 </tr>
 <tr>
@@ -936,21 +1128,30 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
+<<<<<<< HEAD
   <td><code>spark.driver.port</code></td>
   <td>(random)</td>
   <td>
     Port for the driver to listen on.
     This is used for communicating with the executors and the standalone Master.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.executor.port</code></td>
-  <td>(random)</td>
+=======
+  <td><code>spark.rpc.numRetries</code></td>
+  <td>3</td>
+    Number of times to retry before an RPC task gives up.
+    An RPC task will run at most times of this number.
   <td>
-    Port for the executor to listen on. This is used for communicating with the driver.
+>>>>>>> upstream/master
   </td>
 </tr>
 <tr>
+  <td><code>spark.rpc.retry.wait</code></td>
+  <td>3s</td>
+  <td>
+    Duration for an RPC ask operation to wait before retrying.
+  </td>
+</tr>
+<tr>
+<<<<<<< HEAD
   <td><code>spark.fileserver.port</code></td>
   <td>(random)</td>
   <td>
@@ -980,6 +1181,12 @@ Apart from these, the following properties are also available, and may be useful
   <td>
     Port for the driver's HTTP class server to listen on.
     This is only relevant for the Spark shell.
+=======
+  <td><code>spark.rpc.askTimeout</code></td>
+  <td>120s</td>
+  <td>
+    Duration for an RPC ask operation to wait before timing out.
+>>>>>>> upstream/master
   </td>
 </tr>
 </table>
@@ -988,6 +1195,86 @@ Apart from these, the following properties are also available, and may be useful
 <table class="table">
 <tr><th>Property Name</th><th>Default</th><th>Meaning</th></tr>
 <tr>
+<<<<<<< HEAD
+  <td><code>spark.cores.max</code></td>
+  <td>(not set)</td>
+  <td>
+    When running on a <a href="spark-standalone.html">standalone deploy cluster</a> or a
+    <a href="running-on-mesos.html#mesos-run-modes">Mesos cluster in "coarse-grained"
+    sharing mode</a>, the maximum amount of CPU cores to request for the application from
+    across the cluster (not from each machine). If not set, the default will be
+    <code>spark.deploy.defaultCores</code> on Spark's standalone cluster manager, or
+    infinite (all available cores) on Mesos.
+=======
+  <td><code>spark.rpc.lookupTimeout</code></td>
+  <td>120s</td>
+    Duration for an RPC remote endpoint lookup operation to wait before timing out.
+  <td>
+>>>>>>> upstream/master
+  </td>
+</tr>
+</table>
+
+#### Scheduling
+<table class="table">
+<tr><th>Property Name</th><th>Default</th><th>Meaning</th></tr>
+<tr>
+<<<<<<< HEAD
+  <td><code>spark.localExecution.enabled</code></td>
+  <td>false</td>
+  <td>
+    Enables Spark to run certain jobs, such as first() or take() on the driver, without sending
+    tasks to the cluster. This can make certain jobs execute very quickly, but may require
+    shipping a whole partition of data to the driver.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.locality.wait</code></td>
+  <td>3s</td>
+  <td>
+    How long to wait to launch a data-local task before giving up and launching it
+    on a less-local node. The same wait will be used to step through multiple locality levels
+    (process-local, node-local, rack-local and then any). It is also possible to customize the
+    waiting time for each level by setting <code>spark.locality.wait.node</code>, etc.
+    You should increase this setting if your tasks are long and see poor locality, but the
+    default usually works well.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.locality.wait.node</code></td>
+  <td>spark.locality.wait</td>
+  <td>
+    Customize the locality wait for node locality. For example, you can set this to 0 to skip
+    node locality and search immediately for rack locality (if your cluster has rack information).
+  </td>
+</tr>
+<tr>
+  <td><code>spark.locality.wait.process</code></td>
+  <td>spark.locality.wait</td>
+  <td>
+    Customize the locality wait for process locality. This affects tasks that attempt to access
+    cached data in a particular executor process.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.locality.wait.rack</code></td>
+  <td>spark.locality.wait</td>
+  <td>
+    Customize the locality wait for rack locality.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.scheduler.maxRegisteredResourcesWaitingTime</code></td>
+  <td>30s</td>
+  <td>
+    Maximum amount of time to wait for resources to register before scheduling begins.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.scheduler.minRegisteredResourcesRatio</code></td>
+  <td>0.8 for YARN mode; 0.0 otherwise</td>
+  <td>
+=======
   <td><code>spark.cores.max</code></td>
   <td>(not set)</td>
   <td>
@@ -1054,6 +1341,7 @@ Apart from these, the following properties are also available, and may be useful
   <td><code>spark.scheduler.minRegisteredResourcesRatio</code></td>
   <td>0.8 for YARN mode; 0.0 otherwise</td>
   <td>
+>>>>>>> upstream/master
     The minimum ratio of registered resources (registered resources / total expected resources)
     (resources are executors in yarn mode, CPU cores in standalone mode)
     to wait for before scheduling begins. Specified as a double between 0.0 and 1.0.
@@ -1146,7 +1434,11 @@ Apart from these, the following properties are also available, and may be useful
 </tr>
 <tr>
   <td><code>spark.dynamicAllocation.executorIdleTimeout</code></td>
+<<<<<<< HEAD
   <td>600s</td>
+=======
+  <td>60s</td>
+>>>>>>> upstream/master
   <td>
     If dynamic allocation is enabled and an executor has been idle for more than this duration, 
     the executor will be removed. For more detail, see this
@@ -1176,7 +1468,11 @@ Apart from these, the following properties are also available, and may be useful
 </tr>
 <tr>
   <td><code>spark.dynamicAllocation.schedulerBacklogTimeout</code></td>
+<<<<<<< HEAD
   <td>5s</td>
+=======
+  <td>1s</td>
+>>>>>>> upstream/master
   <td>
     If dynamic allocation is enabled and there have been pending tasks backlogged for more than
     this duration, new executors will be requested. For more detail, see this
@@ -1409,11 +1705,36 @@ Apart from these, the following properties are also available, and may be useful
 <tr>
   <td><code>spark.streaming.kafka.maxRatePerPartition</code></td>
   <td>not set</td>
+<<<<<<< HEAD
   <td>
     Maximum rate (number of records per second) at which data will be read from each Kafka
     partition when using the new Kafka direct stream API. See the
     <a href="streaming-kafka-integration.html">Kafka Integration guide</a>
     for more details.
+=======
+  <td>
+    Maximum rate (number of records per second) at which data will be read from each Kafka
+    partition when using the new Kafka direct stream API. See the
+    <a href="streaming-kafka-integration.html">Kafka Integration guide</a>
+    for more details.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.streaming.kafka.maxRetries</code></td>
+  <td>1</td>
+  <td>
+    Maximum number of consecutive retries the driver will make in order to find
+    the latest offsets on the leader of each partition (a default value of 1
+    means that the driver will make a maximum of 2 attempts). Only applies to
+    the new Kafka direct stream API.
+  </td>
+</tr>
+<tr>
+  <td><code>spark.streaming.ui.retainedBatches</code></td>
+  <td>1000</td>
+  <td>
+    How many batches the Spark Streaming UI and status APIs remember before garbage collecting.
+>>>>>>> upstream/master
   </td>
 </tr>
 </table>

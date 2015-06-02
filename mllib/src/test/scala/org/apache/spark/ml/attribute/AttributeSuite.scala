@@ -17,11 +17,18 @@
 
 package org.apache.spark.ml.attribute
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.sql.types.{DoubleType, MetadataBuilder, Metadata}
 
 class AttributeSuite extends FunSuite {
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.types._
+
+class AttributeSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   test("default numeric attribute") {
     val attr: NumericAttribute = NumericAttribute.defaultAttr
@@ -36,9 +43,15 @@ class AttributeSuite extends FunSuite {
     assert(attr.max.isEmpty)
     assert(attr.std.isEmpty)
     assert(attr.sparsity.isEmpty)
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = false) === metadata)
     assert(attr.toMetadata(withType = true) === metadataWithType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadataWithType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === Attribute.fromMetadata(metadataWithType))
     intercept[NoSuchElementException] {
@@ -59,9 +72,15 @@ class AttributeSuite extends FunSuite {
     assert(!attr.isNominal)
     assert(attr.name === Some(name))
     assert(attr.index === Some(index))
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = false) === metadata)
     assert(attr.toMetadata(withType = true) === metadataWithType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadataWithType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === Attribute.fromMetadata(metadataWithType))
     val field = attr.toStructField()
@@ -81,7 +100,11 @@ class AttributeSuite extends FunSuite {
     assert(attr2.max === Some(1.0))
     assert(attr2.std === Some(0.5))
     assert(attr2.sparsity === Some(0.3))
+<<<<<<< HEAD
     assert(attr2 === Attribute.fromMetadata(attr2.toMetadata()))
+=======
+    assert(attr2 === Attribute.fromMetadata(attr2.toMetadataImpl()))
+>>>>>>> upstream/master
   }
 
   test("bad numeric attributes") {
@@ -105,9 +128,15 @@ class AttributeSuite extends FunSuite {
     assert(attr.values.isEmpty)
     assert(attr.numValues.isEmpty)
     assert(attr.isOrdinal.isEmpty)
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = true) === metadata)
     assert(attr.toMetadata(withType = false) === metadataWithoutType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadataWithoutType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === NominalAttribute.fromMetadata(metadataWithoutType))
     intercept[NoSuchElementException] {
@@ -135,9 +164,15 @@ class AttributeSuite extends FunSuite {
     assert(attr.values === Some(values))
     assert(attr.indexOf("medium") === 1)
     assert(attr.getValue(1) === "medium")
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = true) === metadata)
     assert(attr.toMetadata(withType = false) === metadataWithoutType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadataWithoutType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === NominalAttribute.fromMetadata(metadataWithoutType))
     assert(attr.withoutIndex === Attribute.fromStructField(attr.toStructField()))
@@ -147,8 +182,13 @@ class AttributeSuite extends FunSuite {
     assert(attr2.index.isEmpty)
     assert(attr2.values.get === Array("small", "medium", "large", "x-large"))
     assert(attr2.indexOf("x-large") === 3)
+<<<<<<< HEAD
     assert(attr2 === Attribute.fromMetadata(attr2.toMetadata()))
     assert(attr2 === NominalAttribute.fromMetadata(attr2.toMetadata(withType = false)))
+=======
+    assert(attr2 === Attribute.fromMetadata(attr2.toMetadataImpl()))
+    assert(attr2 === NominalAttribute.fromMetadata(attr2.toMetadataImpl(withType = false)))
+>>>>>>> upstream/master
   }
 
   test("bad nominal attributes") {
@@ -168,9 +208,15 @@ class AttributeSuite extends FunSuite {
     assert(attr.name.isEmpty)
     assert(attr.index.isEmpty)
     assert(attr.values.isEmpty)
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = true) === metadata)
     assert(attr.toMetadata(withType = false) === metadataWithoutType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadataWithoutType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === BinaryAttribute.fromMetadata(metadataWithoutType))
     intercept[NoSuchElementException] {
@@ -196,9 +242,15 @@ class AttributeSuite extends FunSuite {
     assert(attr.name === Some(name))
     assert(attr.index === Some(index))
     assert(attr.values.get === values)
+<<<<<<< HEAD
     assert(attr.toMetadata() === metadata)
     assert(attr.toMetadata(withType = true) === metadata)
     assert(attr.toMetadata(withType = false) === metadataWithoutType)
+=======
+    assert(attr.toMetadataImpl() === metadata)
+    assert(attr.toMetadataImpl(withType = true) === metadata)
+    assert(attr.toMetadataImpl(withType = false) === metadataWithoutType)
+>>>>>>> upstream/master
     assert(attr === Attribute.fromMetadata(metadata))
     assert(attr === BinaryAttribute.fromMetadata(metadataWithoutType))
     assert(attr.withoutIndex === Attribute.fromStructField(attr.toStructField()))
@@ -209,4 +261,15 @@ class AttributeSuite extends FunSuite {
     intercept[IllegalArgumentException](attr.withName(""))
     intercept[IllegalArgumentException](attr.withIndex(-1))
   }
+<<<<<<< HEAD
+=======
+
+  test("attribute from struct field") {
+    val metadata = NumericAttribute.defaultAttr.withName("label").toMetadata()
+    val fldWithoutMeta = new StructField("x", DoubleType, false, Metadata.empty)
+    assert(Attribute.fromStructField(fldWithoutMeta) == UnresolvedAttribute)
+    val fldWithMeta = new StructField("x", DoubleType, false, metadata)
+    assert(Attribute.fromStructField(fldWithMeta).isNumeric)
+  }
+>>>>>>> upstream/master
 }

@@ -17,9 +17,15 @@
 
 package org.apache.spark.ml.attribute
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 class AttributeGroupSuite extends FunSuite {
+=======
+import org.apache.spark.SparkFunSuite
+
+class AttributeGroupSuite extends SparkFunSuite {
+>>>>>>> upstream/master
 
   test("attribute group") {
     val attrs = Array(
@@ -44,7 +50,11 @@ class AttributeGroupSuite extends FunSuite {
       group("abc")
     }
     assert(group === AttributeGroup.fromMetadata(group.toMetadataImpl, group.name))
+<<<<<<< HEAD
     assert(group === AttributeGroup.fromStructField(group.toStructField))
+=======
+    assert(group === AttributeGroup.fromStructField(group.toStructField()))
+>>>>>>> upstream/master
   }
 
   test("attribute group without attributes") {
@@ -54,7 +64,11 @@ class AttributeGroupSuite extends FunSuite {
     assert(group0.size === 10)
     assert(group0.attributes.isEmpty)
     assert(group0 === AttributeGroup.fromMetadata(group0.toMetadataImpl, group0.name))
+<<<<<<< HEAD
     assert(group0 === AttributeGroup.fromStructField(group0.toStructField))
+=======
+    assert(group0 === AttributeGroup.fromStructField(group0.toStructField()))
+>>>>>>> upstream/master
 
     val group1 = new AttributeGroup("item")
     assert(group1.name === "item")

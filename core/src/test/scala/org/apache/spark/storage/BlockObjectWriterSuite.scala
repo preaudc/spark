@@ -18,21 +18,50 @@ package org.apache.spark.storage
 
 import java.io.File
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.SparkConf
 import org.apache.spark.executor.ShuffleWriteMetrics
 import org.apache.spark.serializer.JavaSerializer
 import org.apache.spark.util.Utils
+=======
+import org.scalatest.BeforeAndAfterEach
 
-class BlockObjectWriterSuite extends FunSuite {
+import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkFunSuite}
+import org.apache.spark.executor.ShuffleWriteMetrics
+import org.apache.spark.serializer.JavaSerializer
+import org.apache.spark.util.Utils
+
+class BlockObjectWriterSuite extends SparkFunSuite with BeforeAndAfterEach {
+
+  var tempDir: File = _
+
+  override def beforeEach(): Unit = {
+    tempDir = Utils.createTempDir()
+  }
+
+  override def afterEach(): Unit = {
+    Utils.deleteRecursively(tempDir)
+  }
+>>>>>>> upstream/master
+
   test("verify write metrics") {
+<<<<<<< HEAD
     val file = new File(Utils.createTempDir(), "somefile")
+=======
+    val file = new File(tempDir, "somefile")
+>>>>>>> upstream/master
     val writeMetrics = new ShuffleWriteMetrics()
     val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
-      new JavaSerializer(new SparkConf()), 1024, os => os, true, writeMetrics)
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
 
+<<<<<<< HEAD
     writer.write(Long.box(20))
+=======
+    writer.write(Long.box(20), Long.box(30))
+>>>>>>> upstream/master
     // Record metrics update on every write
     assert(writeMetrics.shuffleRecordsWritten === 1)
     // Metrics don't update on every write
@@ -40,7 +69,7 @@ class BlockObjectWriterSuite extends FunSuite {
     // After 32 writes, metrics should update
     for (i <- 0 until 32) {
       writer.flush()
-      writer.write(Long.box(i))
+      writer.write(Long.box(i), Long.box(i))
     }
     assert(writeMetrics.shuffleBytesWritten > 0)
     assert(writeMetrics.shuffleRecordsWritten === 33)
@@ -49,12 +78,20 @@ class BlockObjectWriterSuite extends FunSuite {
   }
 
   test("verify write metrics on revert") {
+<<<<<<< HEAD
     val file = new File(Utils.createTempDir(), "somefile")
+=======
+    val file = new File(tempDir, "somefile")
+>>>>>>> upstream/master
     val writeMetrics = new ShuffleWriteMetrics()
     val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
-      new JavaSerializer(new SparkConf()), 1024, os => os, true, writeMetrics)
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
 
+<<<<<<< HEAD
     writer.write(Long.box(20))
+=======
+    writer.write(Long.box(20), Long.box(30))
+>>>>>>> upstream/master
     // Record metrics update on every write
     assert(writeMetrics.shuffleRecordsWritten === 1)
     // Metrics don't update on every write
@@ -62,7 +99,7 @@ class BlockObjectWriterSuite extends FunSuite {
     // After 32 writes, metrics should update
     for (i <- 0 until 32) {
       writer.flush()
-      writer.write(Long.box(i))
+      writer.write(Long.box(i), Long.box(i))
     }
     assert(writeMetrics.shuffleBytesWritten > 0)
     assert(writeMetrics.shuffleRecordsWritten === 33)
@@ -72,15 +109,100 @@ class BlockObjectWriterSuite extends FunSuite {
   }
 
   test("Reopening a closed block writer") {
+<<<<<<< HEAD
     val file = new File(Utils.createTempDir(), "somefile")
     val writeMetrics = new ShuffleWriteMetrics()
     val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
       new JavaSerializer(new SparkConf()), 1024, os => os, true, writeMetrics)
+=======
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+>>>>>>> upstream/master
 
     writer.open()
     writer.close()
     intercept[IllegalStateException] {
       writer.open()
     }
+<<<<<<< HEAD
+=======
+  }
+
+  test("calling revertPartialWritesAndClose() on a closed block writer should have no effect") {
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+    for (i <- 1 to 1000) {
+      writer.write(i, i)
+    }
+    writer.commitAndClose()
+    val bytesWritten = writeMetrics.shuffleBytesWritten
+    assert(writeMetrics.shuffleRecordsWritten === 1000)
+    writer.revertPartialWritesAndClose()
+    assert(writeMetrics.shuffleRecordsWritten === 1000)
+    assert(writeMetrics.shuffleBytesWritten === bytesWritten)
+  }
+
+  test("commitAndClose() should be idempotent") {
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+    for (i <- 1 to 1000) {
+      writer.write(i, i)
+    }
+    writer.commitAndClose()
+    val bytesWritten = writeMetrics.shuffleBytesWritten
+    val writeTime = writeMetrics.shuffleWriteTime
+    assert(writeMetrics.shuffleRecordsWritten === 1000)
+    writer.commitAndClose()
+    assert(writeMetrics.shuffleRecordsWritten === 1000)
+    assert(writeMetrics.shuffleBytesWritten === bytesWritten)
+    assert(writeMetrics.shuffleWriteTime === writeTime)
+  }
+
+  test("revertPartialWritesAndClose() should be idempotent") {
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+    for (i <- 1 to 1000) {
+      writer.write(i, i)
+    }
+    writer.revertPartialWritesAndClose()
+    val bytesWritten = writeMetrics.shuffleBytesWritten
+    val writeTime = writeMetrics.shuffleWriteTime
+    assert(writeMetrics.shuffleRecordsWritten === 0)
+    writer.revertPartialWritesAndClose()
+    assert(writeMetrics.shuffleRecordsWritten === 0)
+    assert(writeMetrics.shuffleBytesWritten === bytesWritten)
+    assert(writeMetrics.shuffleWriteTime === writeTime)
+  }
+
+  test("fileSegment() can only be called after commitAndClose() has been called") {
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+    for (i <- 1 to 1000) {
+      writer.write(i, i)
+    }
+    intercept[IllegalStateException] {
+      writer.fileSegment()
+    }
+    writer.close()
+  }
+
+  test("commitAndClose() without ever opening or writing") {
+    val file = new File(tempDir, "somefile")
+    val writeMetrics = new ShuffleWriteMetrics()
+    val writer = new DiskBlockObjectWriter(new TestBlockId("0"), file,
+      new JavaSerializer(new SparkConf()).newInstance(), 1024, os => os, true, writeMetrics)
+    writer.commitAndClose()
+    assert(writer.fileSegment().length === 0)
+>>>>>>> upstream/master
   }
 }

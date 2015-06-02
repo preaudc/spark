@@ -23,10 +23,18 @@ import java.security.AccessController
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+<<<<<<< HEAD
 
 import org.apache.spark.Logging
 
 private[serializer] object SerializationDebugger extends Logging {
+=======
+import scala.util.control.NonFatal
+
+import org.apache.spark.Logging
+
+private[spark] object SerializationDebugger extends Logging {
+>>>>>>> upstream/master
 
   /**
    * Improve the given NotSerializableException with the serialization path leading from the given
@@ -35,8 +43,20 @@ private[serializer] object SerializationDebugger extends Logging {
    */
   def improveException(obj: Any, e: NotSerializableException): NotSerializableException = {
     if (enableDebugging && reflect != null) {
+<<<<<<< HEAD
       new NotSerializableException(
         e.getMessage + "\nSerialization stack:\n" + find(obj).map("\t- " + _).mkString("\n"))
+=======
+      try {
+        new NotSerializableException(
+          e.getMessage + "\nSerialization stack:\n" + find(obj).map("\t- " + _).mkString("\n"))
+      } catch {
+        case NonFatal(t) =>
+          // Fall back to old exception
+          logWarning("Exception in serialization debugger", t)
+          e
+      }
+>>>>>>> upstream/master
     } else {
       e
     }

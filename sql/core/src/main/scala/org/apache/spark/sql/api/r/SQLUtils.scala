@@ -23,7 +23,11 @@ import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.api.r.SerDe
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.{Alias, Expression, NamedExpression}
+<<<<<<< HEAD
 import org.apache.spark.sql.types.{DataType, StructType}
+=======
+import org.apache.spark.sql.types._
+>>>>>>> upstream/master
 import org.apache.spark.sql.{Column, DataFrame, GroupedData, Row, SQLContext, SaveMode}
 
 private[r] object SQLUtils {
@@ -39,6 +43,7 @@ private[r] object SQLUtils {
     arr.toSeq
   }
 
+<<<<<<< HEAD
   def createDF(rdd: RDD[Array[Byte]], schemaString: String, sqlContext: SQLContext): DataFrame = {
     val schema = DataType.fromJson(schemaString).asInstanceOf[StructType]
     val num = schema.fields.size
@@ -55,6 +60,39 @@ private[r] object SQLUtils {
       }
     }
     gd.toDF(aggExprs)
+=======
+  def createStructType(fields : Seq[StructField]): StructType = {
+    StructType(fields)
+  }
+
+  def getSQLDataType(dataType: String): DataType = {
+    dataType match {
+      case "byte" => org.apache.spark.sql.types.ByteType
+      case "integer" => org.apache.spark.sql.types.IntegerType
+      case "double" => org.apache.spark.sql.types.DoubleType
+      case "numeric" => org.apache.spark.sql.types.DoubleType
+      case "character" => org.apache.spark.sql.types.StringType
+      case "string" => org.apache.spark.sql.types.StringType
+      case "binary" => org.apache.spark.sql.types.BinaryType
+      case "raw" => org.apache.spark.sql.types.BinaryType
+      case "logical" => org.apache.spark.sql.types.BooleanType
+      case "boolean" => org.apache.spark.sql.types.BooleanType
+      case "timestamp" => org.apache.spark.sql.types.TimestampType
+      case "date" => org.apache.spark.sql.types.DateType
+      case _ => throw new IllegalArgumentException(s"Invaid type $dataType")
+    }
+  }
+
+  def createStructField(name: String, dataType: String, nullable: Boolean): StructField = {
+    val dtObj = getSQLDataType(dataType)
+    StructField(name, dtObj, nullable)
+  }
+
+  def createDF(rdd: RDD[Array[Byte]], schema: StructType, sqlContext: SQLContext): DataFrame = {
+    val num = schema.fields.size
+    val rowRDD = rdd.map(bytesToRow)
+    sqlContext.createDataFrame(rowRDD, schema)
+>>>>>>> upstream/master
   }
 
   def dfToRowRDD(df: DataFrame): JavaRDD[Array[Byte]] = {
@@ -91,7 +129,11 @@ private[r] object SQLUtils {
 
     dfCols.map { col =>
       colToRBytes(col)
+<<<<<<< HEAD
     } 
+=======
+    }
+>>>>>>> upstream/master
   }
 
   def convertRowsToColumns(localDF: Array[Row], numCols: Int): Array[Array[Any]] = {
@@ -106,7 +148,11 @@ private[r] object SQLUtils {
     val numRows = col.length
     val bos = new ByteArrayOutputStream()
     val dos = new DataOutputStream(bos)
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> upstream/master
     SerDe.writeInt(dos, numRows)
 
     col.map { item =>

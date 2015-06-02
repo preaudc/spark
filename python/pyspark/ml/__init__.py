@@ -15,7 +15,13 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 from pyspark.ml.param import *
 from pyspark.ml.pipeline import *
 
 __all__ = ["Param", "Params", "Transformer", "Estimator", "Pipeline"]
+=======
+from pyspark.ml.pipeline import Transformer, Estimator, Model, Pipeline, PipelineModel
+
+__all__ = ["Transformer", "Estimator", "Model", "Pipeline", "PipelineModel"]
+>>>>>>> upstream/master

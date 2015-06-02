@@ -17,6 +17,7 @@
 
 package org.apache.spark.ml.feature
 
+<<<<<<< HEAD
 import org.apache.spark.annotation.AlphaComponent
 import org.apache.spark.ml.UnaryTransformer
 import org.apache.spark.ml.param.{DoubleParam, ParamMap}
@@ -39,14 +40,49 @@ class Normalizer extends UnaryTransformer[Vector, Vector, Normalizer] {
 
   /** @group getParam */
   def getP: Double = getOrDefault(p)
+=======
+import org.apache.spark.annotation.Experimental
+import org.apache.spark.ml.UnaryTransformer
+import org.apache.spark.ml.param.{DoubleParam, ParamValidators}
+import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.mllib.feature
+import org.apache.spark.mllib.linalg.{Vector, VectorUDT}
+import org.apache.spark.sql.types.DataType
+
+/**
+ * :: Experimental ::
+ * Normalize a vector to have unit norm using the given p-norm.
+ */
+@Experimental
+class Normalizer(override val uid: String) extends UnaryTransformer[Vector, Vector, Normalizer] {
+
+  def this() = this(Identifiable.randomUID("normalizer"))
+
+  /**
+   * Normalization in L^p^ space.  Must be >= 1.
+   * (default: p = 2)
+   * @group param
+   */
+  val p = new DoubleParam(this, "p", "the p norm value", ParamValidators.gtEq(1))
+
+  setDefault(p -> 2.0)
+
+  /** @group getParam */
+  def getP: Double = $(p)
+>>>>>>> upstream/master
 
   /** @group setParam */
   def setP(value: Double): this.type = set(p, value)
 
+<<<<<<< HEAD
   setDefault(p -> 2.0)
 
   override protected def createTransformFunc(paramMap: ParamMap): Vector => Vector = {
     val normalizer = new feature.Normalizer(paramMap(p))
+=======
+  override protected def createTransformFunc: Vector => Vector = {
+    val normalizer = new feature.Normalizer($(p))
+>>>>>>> upstream/master
     normalizer.transform
   }
 

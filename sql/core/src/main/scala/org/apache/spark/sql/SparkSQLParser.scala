@@ -17,7 +17,10 @@
 
 package org.apache.spark.sql
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 import scala.util.parsing.combinator.RegexParsers
 
 import org.apache.spark.sql.catalyst.AbstractSparkSQLParser
@@ -55,6 +58,7 @@ private[sql] class SparkSQLParser(fallback: String => LogicalPlan) extends Abstr
     }
   }
 
+<<<<<<< HEAD
   protected val AS      = Keyword("AS")
   protected val CACHE   = Keyword("CACHE")
   protected val CLEAR   = Keyword("CLEAR")
@@ -64,6 +68,17 @@ private[sql] class SparkSQLParser(fallback: String => LogicalPlan) extends Abstr
   protected val SHOW    = Keyword("SHOW")
   protected val TABLE   = Keyword("TABLE")
   protected val TABLES  = Keyword("TABLES")
+=======
+  protected val AS = Keyword("AS")
+  protected val CACHE = Keyword("CACHE")
+  protected val CLEAR = Keyword("CLEAR")
+  protected val IN = Keyword("IN")
+  protected val LAZY = Keyword("LAZY")
+  protected val SET = Keyword("SET")
+  protected val SHOW = Keyword("SHOW")
+  protected val TABLE = Keyword("TABLE")
+  protected val TABLES = Keyword("TABLES")
+>>>>>>> upstream/master
   protected val UNCACHE = Keyword("UNCACHE")
 
   override protected lazy val start: Parser[LogicalPlan] = cache | uncache | set | show | others

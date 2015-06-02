@@ -19,20 +19,29 @@ package org.apache.spark.mllib.regression
 
 import scala.util.Random
 
-import org.scalatest.FunSuite
-
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.util.{LocalClusterSparkContext, LinearDataGenerator,
   MLlibTestSparkContext}
 import org.apache.spark.util.Utils
+<<<<<<< HEAD
 
 private object LassoSuite {
 
+=======
+
+private object LassoSuite {
+
+>>>>>>> upstream/master
   /** 3 features */
   val model = new LassoModel(weights = Vectors.dense(0.1, 0.2, 0.3), intercept = 0.5)
 }
 
+<<<<<<< HEAD
 class LassoSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   def validatePrediction(predictions: Seq[Double], input: Seq[LabeledPoint]) {
     val numOffPredictions = predictions.zip(input).count { case (prediction, expected) =>
@@ -67,11 +76,12 @@ class LassoSuite extends FunSuite with MLlibTestSparkContext {
     assert(weight1 >= -1.60 && weight1 <= -1.40, weight1 + " not in [-1.6, -1.4]")
     assert(weight2 >= -1.0e-3 && weight2 <= 1.0e-3, weight2 + " not in [-0.001, 0.001]")
 
-    val validationData = LinearDataGenerator.generateLinearInput(A, Array[Double](B,C), nPoints, 17)
+    val validationData = LinearDataGenerator
+      .generateLinearInput(A, Array[Double](B, C), nPoints, 17)
       .map { case LabeledPoint(label, features) =>
       LabeledPoint(label, Vectors.dense(1.0 +: features.toArray))
     }
-    val validationRDD  = sc.parallelize(validationData, 2)
+    val validationRDD = sc.parallelize(validationData, 2)
 
     // Test prediction on RDD.
     validatePrediction(model.predict(validationRDD.map(_.features)).collect(), validationData)
@@ -110,11 +120,12 @@ class LassoSuite extends FunSuite with MLlibTestSparkContext {
     assert(weight1 >= -1.60 && weight1 <= -1.40, weight1 + " not in [-1.6, -1.4]")
     assert(weight2 >= -1.0e-3 && weight2 <= 1.0e-3, weight2 + " not in [-0.001, 0.001]")
 
-    val validationData = LinearDataGenerator.generateLinearInput(A, Array[Double](B,C), nPoints, 17)
+    val validationData = LinearDataGenerator
+      .generateLinearInput(A, Array[Double](B, C), nPoints, 17)
       .map { case LabeledPoint(label, features) =>
       LabeledPoint(label, Vectors.dense(1.0 +: features.toArray))
     }
-    val validationRDD  = sc.parallelize(validationData,2)
+    val validationRDD = sc.parallelize(validationData, 2)
 
     // Test prediction on RDD.
     validatePrediction(model.predict(validationRDD.map(_.features)).collect(), validationData)
@@ -141,7 +152,7 @@ class LassoSuite extends FunSuite with MLlibTestSparkContext {
   }
 }
 
-class LassoClusterSuite extends FunSuite with LocalClusterSparkContext {
+class LassoClusterSuite extends SparkFunSuite with LocalClusterSparkContext {
 
   test("task size should be small in both training and prediction") {
     val m = 4

@@ -19,10 +19,18 @@ package org.apache.spark.ml.attribute
 
 import scala.collection.mutable.ArrayBuffer
 
+<<<<<<< HEAD
+=======
+import org.apache.spark.annotation.DeveloperApi
+>>>>>>> upstream/master
 import org.apache.spark.mllib.linalg.VectorUDT
 import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField}
 
 /**
+<<<<<<< HEAD
+=======
+ * :: DeveloperApi ::
+>>>>>>> upstream/master
  * Attributes that describe a vector ML column.
  *
  * @param name name of the attribute group (the ML column name)
@@ -31,6 +39,10 @@ import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField}
  * @param attrs optional array of attributes. Attribute will be copied with their corresponding
  *              indices in the array.
  */
+<<<<<<< HEAD
+=======
+@DeveloperApi
+>>>>>>> upstream/master
 class AttributeGroup private (
     val name: String,
     val numAttributes: Option[Int],
@@ -117,12 +129,22 @@ class AttributeGroup private (
         case numeric: NumericAttribute =>
           // Skip default numeric attributes.
           if (numeric.withoutIndex != NumericAttribute.defaultAttr) {
+<<<<<<< HEAD
             numericMetadata += numeric.toMetadata(withType = false)
           }
         case nominal: NominalAttribute =>
           nominalMetadata += nominal.toMetadata(withType = false)
         case binary: BinaryAttribute =>
           binaryMetadata += binary.toMetadata(withType = false)
+=======
+            numericMetadata += numeric.toMetadataImpl(withType = false)
+          }
+        case nominal: NominalAttribute =>
+          nominalMetadata += nominal.toMetadataImpl(withType = false)
+        case binary: BinaryAttribute =>
+          binaryMetadata += binary.toMetadataImpl(withType = false)
+        case UnresolvedAttribute =>
+>>>>>>> upstream/master
       }
       val attrBldr = new MetadataBuilder
       if (numericMetadata.nonEmpty) {
@@ -151,7 +173,11 @@ class AttributeGroup private (
   }
 
   /** Converts to ML metadata */
+<<<<<<< HEAD
   def toMetadata: Metadata = toMetadata(Metadata.empty)
+=======
+  def toMetadata(): Metadata = toMetadata(Metadata.empty)
+>>>>>>> upstream/master
 
   /** Converts to a StructField with some existing metadata. */
   def toStructField(existingMetadata: Metadata): StructField = {
@@ -159,7 +185,11 @@ class AttributeGroup private (
   }
 
   /** Converts to a StructField. */
+<<<<<<< HEAD
   def toStructField: StructField = toStructField(Metadata.empty)
+=======
+  def toStructField(): StructField = toStructField(Metadata.empty)
+>>>>>>> upstream/master
 
   override def equals(other: Any): Boolean = {
     other match {
@@ -181,7 +211,15 @@ class AttributeGroup private (
   }
 }
 
+<<<<<<< HEAD
 /** Factory methods to create attribute groups. */
+=======
+/**
+ * :: DeveloperApi ::
+ * Factory methods to create attribute groups.
+ */
+@DeveloperApi
+>>>>>>> upstream/master
 object AttributeGroup {
 
   import AttributeKeys._

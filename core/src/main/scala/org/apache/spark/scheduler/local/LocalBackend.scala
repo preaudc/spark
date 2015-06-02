@@ -23,9 +23,14 @@ import java.util.concurrent.{Executors, TimeUnit}
 import org.apache.spark.{Logging, SparkConf, SparkContext, SparkEnv, TaskState}
 import org.apache.spark.TaskState.TaskState
 import org.apache.spark.executor.{Executor, ExecutorBackend}
+<<<<<<< HEAD
 import org.apache.spark.rpc.{ThreadSafeRpcEndpoint, RpcCallContext, RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler.{SchedulerBackend, TaskSchedulerImpl, WorkerOffer}
 import org.apache.spark.util.Utils
+=======
+import org.apache.spark.rpc.{RpcCallContext, RpcEndpointRef, RpcEnv, ThreadSafeRpcEndpoint}
+import org.apache.spark.scheduler.{SchedulerBackend, TaskSchedulerImpl, WorkerOffer}
+>>>>>>> upstream/master
 
 private case class ReviveOffers()
 
@@ -46,9 +51,12 @@ private[spark] class LocalEndpoint(
     executorBackend: LocalBackend,
     private val totalCores: Int)
   extends ThreadSafeRpcEndpoint with Logging {
+<<<<<<< HEAD
 
   private val reviveThread = Executors.newSingleThreadScheduledExecutor(
     Utils.namedThreadFactory("local-revive-thread"))
+=======
+>>>>>>> upstream/master
 
   private var freeCores = totalCores
 
@@ -123,7 +131,11 @@ private[spark] class LocalBackend(
   }
 
   override def stop() {
+<<<<<<< HEAD
     localEndpoint.sendWithReply(StopExecutor)
+=======
+    localEndpoint.ask(StopExecutor)
+>>>>>>> upstream/master
   }
 
   override def reviveOffers() {

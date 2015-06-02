@@ -39,6 +39,10 @@ import org.apache.spark.network.protocol.RpcFailure;
 import org.apache.spark.network.protocol.RpcRequest;
 import org.apache.spark.network.protocol.RpcResponse;
 import org.apache.spark.network.protocol.StreamChunkId;
+<<<<<<< HEAD
+=======
+import org.apache.spark.network.util.ByteArrayWritableChannel;
+>>>>>>> upstream/master
 import org.apache.spark.network.util.NettyUtils;
 
 public class ProtocolSuite {

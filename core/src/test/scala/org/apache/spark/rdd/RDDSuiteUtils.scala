@@ -21,11 +21,20 @@ object RDDSuiteUtils {
   case class Person(first: String, last: String, age: Int)
 
   object AgeOrdering extends Ordering[Person] {
+<<<<<<< HEAD
     def compare(a:Person, b:Person): Int = a.age.compare(b.age)
   }
 
   object NameOrdering extends Ordering[Person] {
     def compare(a:Person, b:Person): Int =
       implicitly[Ordering[Tuple2[String,String]]].compare((a.last, a.first), (b.last, b.first))
+=======
+    def compare(a: Person, b: Person): Int = a.age.compare(b.age)
+  }
+
+  object NameOrdering extends Ordering[Person] {
+    def compare(a: Person, b: Person): Int =
+      implicitly[Ordering[Tuple2[String, String]]].compare((a.last, a.first), (b.last, b.first))
+>>>>>>> upstream/master
   }
 }

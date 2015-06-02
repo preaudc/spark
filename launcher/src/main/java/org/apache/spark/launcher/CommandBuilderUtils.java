@@ -32,6 +32,14 @@ class CommandBuilderUtils {
   static final String ENV_SPARK_HOME = "SPARK_HOME";
   static final String ENV_SPARK_ASSEMBLY = "_SPARK_ASSEMBLY";
 
+<<<<<<< HEAD
+=======
+  /** The set of known JVM vendors. */
+  static enum JavaVendor {
+    Oracle, IBM, OpenJDK, Unknown
+  };
+
+>>>>>>> upstream/master
   /** Returns whether the given string is null or empty. */
   static boolean isEmpty(String s) {
     return s == null || s.isEmpty();
@@ -108,6 +116,24 @@ class CommandBuilderUtils {
     return os.startsWith("Windows");
   }
 
+<<<<<<< HEAD
+=======
+  /** Returns an enum value indicating whose JVM is being used. */
+  static JavaVendor getJavaVendor() {
+    String vendorString = System.getProperty("java.vendor");
+    if (vendorString.contains("Oracle")) {
+      return JavaVendor.Oracle;
+    }
+    if (vendorString.contains("IBM")) {
+      return JavaVendor.IBM;
+    }
+    if (vendorString.contains("OpenJDK")) {
+      return JavaVendor.OpenJDK;
+    }
+    return JavaVendor.Unknown;
+  }
+
+>>>>>>> upstream/master
   /**
    * Updates the user environment, appending the given pathList to the existing value of the given
    * environment variable (or setting it if it hasn't yet been set).
@@ -244,7 +270,11 @@ class CommandBuilderUtils {
     boolean needsQuotes = false;
     for (int i = 0; i < arg.length(); i++) {
       int c = arg.codePointAt(i);
+<<<<<<< HEAD
       if (Character.isWhitespace(c) || c == '"' || c == '=') {
+=======
+      if (Character.isWhitespace(c) || c == '"' || c == '=' || c == ',' || c == ';') {
+>>>>>>> upstream/master
         needsQuotes = true;
         break;
       }
@@ -261,15 +291,24 @@ class CommandBuilderUtils {
         quoted.append('"');
         break;
 
+<<<<<<< HEAD
       case '=':
         quoted.append('^');
         break;
 
+=======
+>>>>>>> upstream/master
       default:
         break;
       }
       quoted.appendCodePoint(cp);
     }
+<<<<<<< HEAD
+=======
+    if (arg.codePointAt(arg.length() - 1) == '\\') {
+      quoted.append("\\");
+    }
+>>>>>>> upstream/master
     quoted.append("\"");
     return quoted.toString();
   }

@@ -26,9 +26,15 @@ import org.apache.spark.SecurityManager
 import org.apache.spark.metrics.MetricsSystem
 
 private[spark] class Slf4jSink(
+<<<<<<< HEAD
     val property: Properties, 
     val registry: MetricRegistry,
     securityMgr: SecurityManager) 
+=======
+    val property: Properties,
+    val registry: MetricRegistry,
+    securityMgr: SecurityManager)
+>>>>>>> upstream/master
   extends Sink {
   val SLF4J_DEFAULT_PERIOD = 10
   val SLF4J_DEFAULT_UNIT = "SECONDS"

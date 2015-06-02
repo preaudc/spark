@@ -17,12 +17,13 @@
 
 package org.apache.spark.rdd
 
-import org.scalatest.FunSuite
+import org.apache.spark.{Partition, SharedSparkContext, SparkFunSuite, TaskContext}
 
-import org.apache.spark.{Partition, SharedSparkContext, TaskContext}
+<<<<<<< HEAD
+=======
+class PartitionPruningRDDSuite extends SparkFunSuite with SharedSparkContext {
 
-class PartitionPruningRDDSuite extends FunSuite with SharedSparkContext {
-
+>>>>>>> upstream/master
   test("Pruned Partitions inherit locality prefs correctly") {
 
     val rdd = new RDD[Int](sc, Nil) {

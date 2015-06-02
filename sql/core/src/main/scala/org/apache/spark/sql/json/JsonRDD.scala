@@ -20,17 +20,28 @@ package org.apache.spark.sql.json
 import java.sql.Timestamp
 
 import scala.collection.Map
+<<<<<<< HEAD
 import scala.collection.convert.Wrappers.{JMapWrapper, JListWrapper}
+=======
+import scala.collection.convert.Wrappers.{JListWrapper, JMapWrapper}
+>>>>>>> upstream/master
 
 import com.fasterxml.jackson.core.{JsonGenerator, JsonProcessingException}
 import com.fasterxml.jackson.databind.ObjectMapper
 
+import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
 import org.apache.spark.sql.catalyst.expressions._
+<<<<<<< HEAD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types._
 import org.apache.spark.Logging
+=======
+import org.apache.spark.sql.catalyst.util.DateUtils
+import org.apache.spark.sql.types._
+>>>>>>> upstream/master
 
 private[sql] object JsonRDD extends Logging {
 
@@ -140,7 +151,7 @@ private[sql] object JsonRDD extends Logging {
           case ArrayType(NullType, containsNull) => ArrayType(StringType, containsNull)
           case ArrayType(struct: StructType, containsNull) =>
             ArrayType(nullTypeToStringType(struct), containsNull)
-          case struct: StructType =>nullTypeToStringType(struct)
+          case struct: StructType => nullTypeToStringType(struct)
           case other: DataType => other
         }
         StructField(fieldName, newType, nullable)
@@ -183,7 +194,11 @@ private[sql] object JsonRDD extends Logging {
   private def typeOfPrimitiveValue: PartialFunction[Any, DataType] = {
     // For Integer values, use LongType by default.
     val useLongType: PartialFunction[Any, DataType] = {
+<<<<<<< HEAD
       case value: IntegerType.JvmType => LongType
+=======
+      case value: IntegerType.InternalType => LongType
+>>>>>>> upstream/master
     }
 
     useLongType orElse ScalaReflection.typeOfObject orElse {
@@ -215,7 +230,7 @@ private[sql] object JsonRDD extends Logging {
           case map: Map[_, _] => StructType(Nil)
           // We have an array of arrays. If those element arrays do not have the same
           // element types, we will return ArrayType[StringType].
-          case seq: Seq[_] =>  typeOfArray(seq)
+          case seq: Seq[_] => typeOfArray(seq)
           case value => typeOfPrimitiveValue(value)
         }
       }.reduce((type1: DataType, type2: DataType) => compatibleType(type1, type2))
@@ -317,7 +332,8 @@ private[sql] object JsonRDD extends Logging {
 
           parsed
         } catch {
-          case e: JsonProcessingException => Map(columnNameOfCorruptRecords -> record) :: Nil
+          case e: JsonProcessingException =>
+            Map(columnNameOfCorruptRecords -> UTF8String(record)) :: Nil
         }
       }
     })
@@ -404,24 +420,35 @@ private[sql] object JsonRDD extends Logging {
     }
   }
 
-  private[json] def enforceCorrectType(value: Any, desiredType: DataType): Any ={
+  private[json] def enforceCorrectType(value: Any, desiredType: DataType): Any = {
     if (value == null) {
       null
     } else {
       desiredType match {
         case StringType => UTF8String(toString(value))
         case _ if value == null || value == "" => null // guard the non string type
+<<<<<<< HEAD
         case IntegerType => value.asInstanceOf[IntegerType.JvmType]
+=======
+        case IntegerType => value.asInstanceOf[IntegerType.InternalType]
+>>>>>>> upstream/master
         case LongType => toLong(value)
         case DoubleType => toDouble(value)
         case DecimalType() => toDecimal(value)
-        case BooleanType => value.asInstanceOf[BooleanType.JvmType]
+        case BooleanType => value.asInstanceOf[BooleanType.InternalType]
         case NullType => null
         case ArrayType(elementType, _) =>
           value.asInstanceOf[Seq[Any]].map(enforceCorrectType(_, elementType))
         case MapType(StringType, valueType, _) =>
           val map = value.asInstanceOf[Map[String, Any]]
+<<<<<<< HEAD
           map.mapValues(enforceCorrectType(_, valueType)).map(identity)
+=======
+          map.map {
+            case (k, v) =>
+              (UTF8String(k), enforceCorrectType(v, valueType))
+          }.map(identity)
+>>>>>>> upstream/master
         case struct: StructType => asRow(value.asInstanceOf[Map[String, Any]], struct)
         case DateType => toDate(value)
         case TimestampType => toTimestamp(value)
@@ -429,7 +456,7 @@ private[sql] object JsonRDD extends Logging {
     }
   }
 
-  private def asRow(json: Map[String,Any], schema: StructType): Row = {
+  private def asRow(json: Map[String, Any], schema: StructType): Row = {
     // TODO: Reuse the row instead of creating a new one for every record.
     val row = new GenericMutableRow(schema.fields.length)
     schema.fields.zipWithIndex.foreach {

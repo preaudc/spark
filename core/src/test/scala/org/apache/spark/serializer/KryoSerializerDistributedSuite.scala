@@ -20,12 +20,15 @@ package org.apache.spark.serializer
 import org.apache.spark.util.Utils
 
 import com.esotericsoftware.kryo.Kryo
-import org.scalatest.FunSuite
 
+<<<<<<< HEAD
 import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkEnv, TestUtils}
+=======
+import org.apache.spark._
+>>>>>>> upstream/master
 import org.apache.spark.serializer.KryoDistributedTest._
 
-class KryoSerializerDistributedSuite extends FunSuite {
+class KryoSerializerDistributedSuite extends SparkFunSuite {
 
   test("kryo objects are serialised consistently in different processes") {
     val conf = new SparkConf(false)

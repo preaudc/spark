@@ -69,8 +69,14 @@ writeJobj <- function(con, value) {
 }
 
 writeString <- function(con, value) {
+<<<<<<< HEAD
   writeInt(con, as.integer(nchar(value) + 1))
   writeBin(value, con, endian = "big")
+=======
+  utfVal <- enc2utf8(value)
+  writeInt(con, as.integer(nchar(utfVal, type = "bytes") + 1))
+  writeBin(utfVal, con, endian = "big")
+>>>>>>> upstream/master
 }
 
 writeInt <- function(con, value) {
@@ -159,6 +165,17 @@ writeList <- function(con, arr) {
   }
 }
 
+<<<<<<< HEAD
+=======
+# Used to pass arrays where the elements can be of different types
+writeGenericList <- function(con, list) {
+  writeInt(con, length(list))
+  for (elem in list) {
+    writeObject(con, elem)
+  }
+}
+  
+>>>>>>> upstream/master
 # Used to pass in hash maps required on Java side.
 writeEnv <- function(con, env) {
   len <- length(env)
@@ -167,7 +184,11 @@ writeEnv <- function(con, env) {
   if (len > 0) {
     writeList(con, as.list(ls(env)))
     vals <- lapply(ls(env), function(x) { env[[x]] })
+<<<<<<< HEAD
     writeList(con, as.list(vals))
+=======
+    writeGenericList(con, as.list(vals))
+>>>>>>> upstream/master
   }
 }
 
@@ -189,7 +210,10 @@ writeArgs <- function(con, args) {
     }
   }
 }
+<<<<<<< HEAD
 
 writeStrings <- function(con, stringList) {
   writeLines(unlist(stringList), con)
 }
+=======
+>>>>>>> upstream/master

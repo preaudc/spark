@@ -27,6 +27,10 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types._
+<<<<<<< HEAD
+=======
+import org.apache.spark.util.Utils
+>>>>>>> upstream/master
 
 /**
  * Analyzes the given table in the current database to generate statistics, which will be
@@ -81,11 +85,32 @@ case class AddJar(path: String) extends RunnableCommand {
       StructField("result", IntegerType, false) :: Nil)
     schema.toAttributes
   }
+<<<<<<< HEAD
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val hiveContext = sqlContext.asInstanceOf[HiveContext]
+=======
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    val hiveContext = sqlContext.asInstanceOf[HiveContext]
+    val currentClassLoader = Utils.getContextOrSparkClassLoader
+
+    // Add jar to current context
+    val jarURL = new java.io.File(path).toURL
+    val newClassLoader = new java.net.URLClassLoader(Array(jarURL), currentClassLoader)
+    Thread.currentThread.setContextClassLoader(newClassLoader)
+    org.apache.hadoop.hive.ql.metadata.Hive.get().getConf().setClassLoader(newClassLoader)
+
+    // Add jar to isolated hive classloader
+>>>>>>> upstream/master
     hiveContext.runSqlHive(s"ADD JAR $path")
+
+    // Add jar to executors
     hiveContext.sparkContext.addJar(path)
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
     Seq(Row(0))
   }
 }
@@ -133,6 +158,10 @@ case class CreateMetastoreDataSource(
     hiveContext.catalog.createDataSourceTable(
       tableName,
       userSpecifiedSchema,
+<<<<<<< HEAD
+=======
+      Array.empty[String],
+>>>>>>> upstream/master
       provider,
       optionsWithPath,
       isExternal)
@@ -145,6 +174,10 @@ private[hive]
 case class CreateMetastoreDataSourceAsSelect(
     tableName: String,
     provider: String,
+<<<<<<< HEAD
+=======
+    partitionColumns: Array[String],
+>>>>>>> upstream/master
     mode: SaveMode,
     options: Map[String, String],
     query: LogicalPlan) extends RunnableCommand {
@@ -176,12 +209,21 @@ case class CreateMetastoreDataSourceAsSelect(
           return Seq.empty[Row]
         case SaveMode.Append =>
           // Check if the specified data source match the data source of the existing table.
+<<<<<<< HEAD
           val resolved =
             ResolvedDataSource(sqlContext, Some(query.schema), provider, optionsWithPath)
           val createdRelation = LogicalRelation(resolved.relation)
           EliminateSubQueries(sqlContext.table(tableName).logicalPlan) match {
             case l @ LogicalRelation(i: InsertableRelation) =>
               if (i != createdRelation.relation) {
+=======
+          val resolved = ResolvedDataSource(
+            sqlContext, Some(query.schema.asNullable), partitionColumns, provider, optionsWithPath)
+          val createdRelation = LogicalRelation(resolved.relation)
+          EliminateSubQueries(sqlContext.table(tableName).logicalPlan) match {
+            case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation) =>
+              if (l.relation != createdRelation.relation) {
+>>>>>>> upstream/master
                 val errorDescription =
                   s"Cannot append to table $tableName because the resolved relation does not " +
                   s"match the existing relation of $tableName. " +
@@ -189,6 +231,7 @@ case class CreateMetastoreDataSourceAsSelect(
                   s"table $tableName and using its data source and options."
                 val errorMessage =
                   s"""
+<<<<<<< HEAD
                 |$errorDescription
                 |== Relations ==
                 |${sideBySide(
@@ -197,6 +240,15 @@ case class CreateMetastoreDataSourceAsSelect(
                 s"== Actual Relation ==" ::
                   createdRelation.toString :: Nil).mkString("\n")}
               """.stripMargin
+=======
+                     |$errorDescription
+                     |== Relations ==
+                     |${sideBySide(
+                        s"== Expected Relation ==" :: l.toString :: Nil,
+                        s"== Actual Relation ==" :: createdRelation.toString :: Nil
+                      ).mkString("\n")}
+                   """.stripMargin
+>>>>>>> upstream/master
                 throw new AnalysisException(errorMessage)
               }
               existingSchema = Some(l.schema)
@@ -221,7 +273,12 @@ case class CreateMetastoreDataSourceAsSelect(
     }
 
     // Create the relation based on the data of df.
+<<<<<<< HEAD
     val resolved = ResolvedDataSource(sqlContext, provider, mode, optionsWithPath, df)
+=======
+    val resolved =
+      ResolvedDataSource(sqlContext, provider, partitionColumns, mode, optionsWithPath, df)
+>>>>>>> upstream/master
 
     if (createMetastoreTable) {
       // We will use the schema of resolved.relation as the schema of the table (instead of
@@ -230,6 +287,10 @@ case class CreateMetastoreDataSourceAsSelect(
       hiveContext.catalog.createDataSourceTable(
         tableName,
         Some(resolved.relation.schema),
+<<<<<<< HEAD
+=======
+        partitionColumns,
+>>>>>>> upstream/master
         provider,
         optionsWithPath,
         isExternal)

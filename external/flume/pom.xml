@@ -43,6 +43,20 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+<<<<<<< HEAD
+      <groupId>org.apache.flume</groupId>
+      <artifactId>flume-ng-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.flume</groupId>
+=======
+      <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming-flume-sink_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -52,6 +66,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.flume</groupId>
+>>>>>>> upstream/master
       <artifactId>flume-ng-sdk</artifactId>
     </dependency>
     <dependency>

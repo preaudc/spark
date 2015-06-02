@@ -18,12 +18,18 @@
 package org.apache.spark.deploy.worker
 
 import akka.actor.AddressFromURIString
+<<<<<<< HEAD
 import org.apache.spark.SparkConf
 import org.apache.spark.SecurityManager
 import org.apache.spark.rpc.{RpcAddress, RpcEnv}
 import org.scalatest.FunSuite
+=======
+import org.apache.spark.{SparkConf, SparkFunSuite}
+import org.apache.spark.SecurityManager
+import org.apache.spark.rpc.{RpcAddress, RpcEnv}
+>>>>>>> upstream/master
 
-class WorkerWatcherSuite extends FunSuite {
+class WorkerWatcherSuite extends SparkFunSuite {
   test("WorkerWatcher shuts down on valid disassociation") {
     val conf = new SparkConf()
     val rpcEnv = RpcEnv.create("test", "localhost", 12345, conf, new SecurityManager(conf))

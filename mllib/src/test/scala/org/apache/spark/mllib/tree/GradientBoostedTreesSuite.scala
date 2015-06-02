@@ -17,8 +17,12 @@
 
 package org.apache.spark.mllib.tree
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
+=======
+import org.apache.spark.SparkFunSuite
+>>>>>>> upstream/master
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.configuration.Algo._
 import org.apache.spark.mllib.tree.configuration.{BoostingStrategy, Strategy}
@@ -32,7 +36,11 @@ import org.apache.spark.util.Utils
 /**
  * Test suite for [[GradientBoostedTrees]].
  */
+<<<<<<< HEAD
 class GradientBoostedTreesSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class GradientBoostedTreesSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   test("Regression with continuous features: SquaredError") {
     GradientBoostedTreesSuite.testCombinations.foreach {

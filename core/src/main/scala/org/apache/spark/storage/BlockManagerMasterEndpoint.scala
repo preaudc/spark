@@ -28,7 +28,11 @@ import org.apache.spark.{Logging, SparkConf}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.scheduler._
 import org.apache.spark.storage.BlockManagerMessages._
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
 import org.apache.spark.util.Utils
+=======
+import org.apache.spark.util.{ThreadUtils, Utils}
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
 
 /**
  * BlockManagerMasterEndpoint is an [[ThreadSafeRpcEndpoint]] on the master node to track statuses
@@ -51,7 +55,11 @@ class BlockManagerMasterEndpoint(
   // Mapping from block id to the set of block managers that have the block.
   private val blockLocations = new JHashMap[BlockId, mutable.HashSet[BlockManagerId]]
 
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
   private val askThreadPool = Utils.newDaemonCachedThreadPool("block-manager-ask-thread-pool")
+=======
+  private val askThreadPool = ThreadUtils.newDaemonCachedThreadPool("block-manager-ask-thread-pool")
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
   private implicit val askExecutionContext = ExecutionContext.fromExecutorService(askThreadPool)
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
@@ -60,9 +68,15 @@ class BlockManagerMasterEndpoint(
       context.reply(true)
 
     case UpdateBlockInfo(
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
       blockManagerId, blockId, storageLevel, deserializedSize, size, tachyonSize) =>
       context.reply(updateBlockInfo(
         blockManagerId, blockId, storageLevel, deserializedSize, size, tachyonSize))
+=======
+      blockManagerId, blockId, storageLevel, deserializedSize, size, externalBlockStoreSize) =>
+      context.reply(updateBlockInfo(
+        blockManagerId, blockId, storageLevel, deserializedSize, size, externalBlockStoreSize))
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
 
     case GetLocations(blockId) =>
       context.reply(getLocations(blockId))
@@ -132,7 +146,11 @@ class BlockManagerMasterEndpoint(
     val removeMsg = RemoveRdd(rddId)
     Future.sequence(
       blockManagerInfo.values.map { bm =>
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
         bm.slaveEndpoint.sendWithReply[Int](removeMsg)
+=======
+        bm.slaveEndpoint.ask[Int](removeMsg)
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
       }.toSeq
     )
   }
@@ -142,7 +160,11 @@ class BlockManagerMasterEndpoint(
     val removeMsg = RemoveShuffle(shuffleId)
     Future.sequence(
       blockManagerInfo.values.map { bm =>
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
         bm.slaveEndpoint.sendWithReply[Boolean](removeMsg)
+=======
+        bm.slaveEndpoint.ask[Boolean](removeMsg)
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
       }.toSeq
     )
   }
@@ -159,7 +181,11 @@ class BlockManagerMasterEndpoint(
     }
     Future.sequence(
       requiredBlockManagers.map { bm =>
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
         bm.slaveEndpoint.sendWithReply[Int](removeMsg)
+=======
+        bm.slaveEndpoint.ask[Int](removeMsg)
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
       }.toSeq
     )
   }
@@ -214,7 +240,11 @@ class BlockManagerMasterEndpoint(
           // Remove the block from the slave's BlockManager.
           // Doesn't actually wait for a confirmation and the message might get lost.
           // If message loss becomes frequent, we should add retry logic here.
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
           blockManager.get.slaveEndpoint.sendWithReply[Boolean](RemoveBlock(blockId))
+=======
+          blockManager.get.slaveEndpoint.ask[Boolean](RemoveBlock(blockId))
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
         }
       }
     }
@@ -253,7 +283,11 @@ class BlockManagerMasterEndpoint(
     blockManagerInfo.values.map { info =>
       val blockStatusFuture =
         if (askSlaves) {
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
           info.slaveEndpoint.sendWithReply[Option[BlockStatus]](getBlockStatus)
+=======
+          info.slaveEndpoint.ask[Option[BlockStatus]](getBlockStatus)
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
         } else {
           Future { info.getStatus(blockId) }
         }
@@ -277,7 +311,11 @@ class BlockManagerMasterEndpoint(
       blockManagerInfo.values.map { info =>
         val future =
           if (askSlaves) {
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
             info.slaveEndpoint.sendWithReply[Seq[BlockId]](getMatchingBlockIds)
+=======
+            info.slaveEndpoint.ask[Seq[BlockId]](getMatchingBlockIds)
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
           } else {
             Future { info.blocks.keys.filter(filter).toSeq }
           }
@@ -292,16 +330,16 @@ class BlockManagerMasterEndpoint(
       blockManagerIdByExecutor.get(id.executorId) match {
         case Some(oldId) =>
           // A block manager of the same executor already exists, so remove it (assumed dead)
-          logError("Got two different block manager registrations on same executor - " 
+          logError("Got two different block manager registrations on same executor - "
               + s" will replace old one $oldId with new one $id")
-          removeExecutor(id.executorId)  
+          removeExecutor(id.executorId)
         case None =>
       }
       logInfo("Registering block manager %s with %s RAM, %s".format(
         id.hostPort, Utils.bytesToString(maxMemSize), id))
-      
+
       blockManagerIdByExecutor(id.executorId) = id
-      
+
       blockManagerInfo(id) = new BlockManagerInfo(
         id, System.currentTimeMillis(), maxMemSize, slaveEndpoint)
     }
@@ -314,7 +352,11 @@ class BlockManagerMasterEndpoint(
       storageLevel: StorageLevel,
       memSize: Long,
       diskSize: Long,
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
       tachyonSize: Long): Boolean = {
+=======
+      externalBlockStoreSize: Long): Boolean = {
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerMasterEndpoint.scala
 
     if (!blockManagerInfo.contains(blockManagerId)) {
       if (blockManagerId.isDriver && !isLocal) {
@@ -332,7 +374,7 @@ class BlockManagerMasterEndpoint(
     }
 
     blockManagerInfo(blockManagerId).updateBlockInfo(
-      blockId, storageLevel, memSize, diskSize, tachyonSize)
+      blockId, storageLevel, memSize, diskSize, externalBlockStoreSize)
 
     var locations: mutable.HashSet[BlockManagerId] = null
     if (blockLocations.containsKey(blockId)) {
@@ -396,8 +438,8 @@ case class BlockStatus(
     storageLevel: StorageLevel,
     memSize: Long,
     diskSize: Long,
-    tachyonSize: Long) {
-  def isCached: Boolean = memSize + diskSize + tachyonSize > 0
+    externalBlockStoreSize: Long) {
+  def isCached: Boolean = memSize + diskSize + externalBlockStoreSize > 0
 }
 
 @DeveloperApi
@@ -429,7 +471,7 @@ private[spark] class BlockManagerInfo(
       storageLevel: StorageLevel,
       memSize: Long,
       diskSize: Long,
-      tachyonSize: Long) {
+      externalBlockStoreSize: Long) {
 
     updateLastSeenMs()
 
@@ -445,9 +487,9 @@ private[spark] class BlockManagerInfo(
     }
 
     if (storageLevel.isValid) {
-      /* isValid means it is either stored in-memory, on-disk or on-Tachyon.
+      /* isValid means it is either stored in-memory, on-disk or on-externalBlockStore.
        * The memSize here indicates the data size in or dropped from memory,
-       * tachyonSize here indicates the data size in or dropped from Tachyon,
+       * externalBlockStoreSize here indicates the data size in or dropped from externalBlockStore,
        * and the diskSize here indicates the data size in or dropped to disk.
        * They can be both larger than 0, when a block is dropped from memory to disk.
        * Therefore, a safe way to set BlockStatus is to set its info in accurate modes. */
@@ -464,9 +506,9 @@ private[spark] class BlockManagerInfo(
           blockId, blockManagerId.hostPort, Utils.bytesToString(diskSize)))
       }
       if (storageLevel.useOffHeap) {
-        _blocks.put(blockId, BlockStatus(storageLevel, 0, 0, tachyonSize))
-        logInfo("Added %s on tachyon on %s (size: %s)".format(
-          blockId, blockManagerId.hostPort, Utils.bytesToString(tachyonSize)))
+        _blocks.put(blockId, BlockStatus(storageLevel, 0, 0, externalBlockStoreSize))
+        logInfo("Added %s on ExternalBlockStore on %s (size: %s)".format(
+          blockId, blockManagerId.hostPort, Utils.bytesToString(externalBlockStoreSize)))
       }
     } else if (_blocks.containsKey(blockId)) {
       // If isValid is not true, drop the block.
@@ -482,8 +524,9 @@ private[spark] class BlockManagerInfo(
           blockId, blockManagerId.hostPort, Utils.bytesToString(blockStatus.diskSize)))
       }
       if (blockStatus.storageLevel.useOffHeap) {
-        logInfo("Removed %s on %s on tachyon (size: %s)".format(
-          blockId, blockManagerId.hostPort, Utils.bytesToString(blockStatus.tachyonSize)))
+        logInfo("Removed %s on %s on externalBlockStore (size: %s)".format(
+          blockId, blockManagerId.hostPort,
+          Utils.bytesToString(blockStatus.externalBlockStoreSize)))
       }
     }
   }

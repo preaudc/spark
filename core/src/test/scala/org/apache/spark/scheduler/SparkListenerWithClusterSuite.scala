@@ -18,16 +18,26 @@
 package org.apache.spark.scheduler
 
 import org.apache.spark.scheduler.cluster.ExecutorInfo
+<<<<<<< HEAD
 import org.apache.spark.{SparkContext, LocalSparkContext}
 
 import org.scalatest.{FunSuite, BeforeAndAfter, BeforeAndAfterAll}
+=======
+import org.apache.spark.{LocalSparkContext, SparkContext, SparkFunSuite}
+
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+>>>>>>> upstream/master
 
 import scala.collection.mutable
 
 /**
  * Unit tests for SparkListener that require a local cluster.
  */
+<<<<<<< HEAD
 class SparkListenerWithClusterSuite extends FunSuite with LocalSparkContext
+=======
+class SparkListenerWithClusterSuite extends SparkFunSuite with LocalSparkContext
+>>>>>>> upstream/master
   with BeforeAndAfter with BeforeAndAfterAll {
 
   /** Length of time to wait while draining listener events. */

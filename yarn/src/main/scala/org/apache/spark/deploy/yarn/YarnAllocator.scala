@@ -34,10 +34,15 @@ import org.apache.hadoop.yarn.util.RackResolver
 
 import org.apache.log4j.{Level, Logger}
 
+<<<<<<< HEAD
 import org.apache.spark.{SparkEnv, Logging, SecurityManager, SparkConf}
 import org.apache.spark.deploy.yarn.YarnSparkHadoopUtil._
 import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
 import org.apache.spark.util.AkkaUtils
+=======
+import org.apache.spark.{Logging, SecurityManager, SparkConf}
+import org.apache.spark.deploy.yarn.YarnSparkHadoopUtil._
+>>>>>>> upstream/master
 
 /**
  * YarnAllocator is charged with requesting containers from the YARN ResourceManager and deciding
@@ -53,6 +58,10 @@ import org.apache.spark.util.AkkaUtils
  * synchronized.
  */
 private[yarn] class YarnAllocator(
+<<<<<<< HEAD
+=======
+    driverUrl: String,
+>>>>>>> upstream/master
     conf: Configuration,
     sparkConf: SparkConf,
     amClient: AMRMClient[ContainerRequest],
@@ -107,6 +116,7 @@ private[yarn] class YarnAllocator(
     new ThreadFactoryBuilder().setNameFormat("ContainerLauncher #%d").setDaemon(true).build())
   launcherPool.allowCoreThreadTimeOut(true)
 
+<<<<<<< HEAD
   private val driverUrl = AkkaUtils.address(
     AkkaUtils.protocol(securityMgr.akkaSSLOptions.enabled),
     SparkEnv.driverActorSystemName,
@@ -117,6 +127,29 @@ private[yarn] class YarnAllocator(
   // For testing
   private val launchContainers = sparkConf.getBoolean("spark.yarn.launchContainers", true)
 
+=======
+  // For testing
+  private val launchContainers = sparkConf.getBoolean("spark.yarn.launchContainers", true)
+
+  private val labelExpression = sparkConf.getOption("spark.yarn.executor.nodeLabelExpression")
+
+  // ContainerRequest constructor that can take a node label expression. We grab it through
+  // reflection because it's only available in later versions of YARN.
+  private val nodeLabelConstructor = labelExpression.flatMap { expr =>
+    try {
+      Some(classOf[ContainerRequest].getConstructor(classOf[Resource],
+        classOf[Array[String]], classOf[Array[String]], classOf[Priority], classOf[Boolean],
+        classOf[String]))
+    } catch {
+      case e: NoSuchMethodException => {
+        logWarning(s"Node label expression $expr will be ignored because YARN version on" +
+          " classpath does not support it.")
+        None
+      }
+    }
+  }
+
+>>>>>>> upstream/master
   def getNumExecutorsRunning: Int = numExecutorsRunning
 
   def getNumExecutorsFailed: Int = numExecutorsFailed
@@ -211,7 +244,11 @@ private[yarn] class YarnAllocator(
         s"cores and ${resource.getMemory} MB memory including $memoryOverhead MB overhead")
 
       for (i <- 0 until missing) {
+<<<<<<< HEAD
         val request = new ContainerRequest(resource, null, null, RM_REQUEST_PRIORITY)
+=======
+        val request = createContainerRequest(resource)
+>>>>>>> upstream/master
         amClient.addContainerRequest(request)
         val nodes = request.getNodes
         val hostStr = if (nodes == null || nodes.isEmpty) "Any" else nodes.last
@@ -231,6 +268,20 @@ private[yarn] class YarnAllocator(
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Creates a container request, handling the reflection required to use YARN features that were
+   * added in recent versions.
+   */
+  private def createContainerRequest(resource: Resource): ContainerRequest = {
+    nodeLabelConstructor.map { constructor =>
+      constructor.newInstance(resource, null, null, RM_REQUEST_PRIORITY, true: java.lang.Boolean,
+        labelExpression.orNull)
+    }.getOrElse(new ContainerRequest(resource, null, null, RM_REQUEST_PRIORITY))
+  }
+
+  /**
+>>>>>>> upstream/master
    * Handle containers granted by the RM by launching executors on them.
    *
    * Due to the way the YARN allocation protocol works, certain healthy race conditions can result
@@ -373,7 +424,13 @@ private[yarn] class YarnAllocator(
         // Hadoop 2.2.X added a ContainerExitStatus we should switch to use
         // there are some exit status' we shouldn't necessarily count against us, but for
         // now I think its ok as none of the containers are expected to exit
+<<<<<<< HEAD
         if (completedContainer.getExitStatus == -103) { // vmem limit exceeded
+=======
+        if (completedContainer.getExitStatus == ContainerExitStatus.PREEMPTED) {
+          logInfo("Container preempted: " + containerId)
+        } else if (completedContainer.getExitStatus == -103) { // vmem limit exceeded
+>>>>>>> upstream/master
           logWarning(memLimitExceededLogMessage(
             completedContainer.getDiagnostics,
             VMEM_EXCEEDED_PATTERN))

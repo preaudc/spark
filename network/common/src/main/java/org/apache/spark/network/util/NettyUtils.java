@@ -98,7 +98,11 @@ public class NettyUtils {
     return new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 8, -8, 8);
   }
 
+<<<<<<< HEAD
   /** Returns the remote address on the channel or "&lt;remote address&gt;" if none exists. */
+=======
+  /** Returns the remote address on the channel or "&lt;unknown remote&gt;" if none exists. */
+>>>>>>> upstream/master
   public static String getRemoteAddress(Channel channel) {
     if (channel != null && channel.remoteAddress() != null) {
       return channel.remoteAddress().toString();

@@ -236,6 +236,10 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
     try {
       logDebug("Cleaning rdd checkpoint data " + rddId)
       RDDCheckpointData.clearRDDCheckpointData(sc, rddId)
+<<<<<<< HEAD
+=======
+      listeners.foreach(_.checkpointCleaned(rddId))
+>>>>>>> upstream/master
       logInfo("Cleaned rdd checkpoint data " + rddId)
     }
     catch {
@@ -260,4 +264,8 @@ private[spark] trait CleanerListener {
   def shuffleCleaned(shuffleId: Int)
   def broadcastCleaned(broadcastId: Long)
   def accumCleaned(accId: Long)
+<<<<<<< HEAD
+=======
+  def checkpointCleaned(rddId: Long)
+>>>>>>> upstream/master
 }

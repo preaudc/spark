@@ -90,7 +90,11 @@ class StandardScalerModel (
 
   @DeveloperApi
   def setWithMean(withMean: Boolean): this.type = {
+<<<<<<< HEAD
     require(!(withMean && this.mean == null),"cannot set withMean to true while mean is null")
+=======
+    require(!(withMean && this.mean == null), "cannot set withMean to true while mean is null")
+>>>>>>> upstream/master
     this.withMean = withMean
     this
   }

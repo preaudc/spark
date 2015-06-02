@@ -22,11 +22,19 @@ import scala.util.Random
 import kafka.serializer.StringDecoder
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import org.apache.spark._
 
 class KafkaRDDSuite extends FunSuite with BeforeAndAfterAll {
+=======
+import org.scalatest.BeforeAndAfterAll
+
+import org.apache.spark._
+
+class KafkaRDDSuite extends SparkFunSuite with BeforeAndAfterAll {
+>>>>>>> upstream/master
 
   private var kafkaTestUtils: KafkaTestUtils = _
 
@@ -53,11 +61,16 @@ class KafkaRDDSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("basic usage") {
+<<<<<<< HEAD
     val topic = "topicbasic"
+=======
+    val topic = s"topicbasic-${Random.nextInt}"
+>>>>>>> upstream/master
     kafkaTestUtils.createTopic(topic)
     val messages = Set("the", "quick", "brown", "fox")
     kafkaTestUtils.sendMessages(topic, messages.toArray)
 
+<<<<<<< HEAD
 
     val kafkaParams = Map("metadata.broker.list" -> kafkaTestUtils.brokerAddress,
       "group.id" -> s"test-consumer-${Random.nextInt(10000)}")
@@ -65,6 +78,16 @@ class KafkaRDDSuite extends FunSuite with BeforeAndAfterAll {
     val offsetRanges = Array(OffsetRange(topic, 0, 0, messages.size))
 
     val rdd =  KafkaUtils.createRDD[String, String, StringDecoder, StringDecoder](
+=======
+    val kafkaParams = Map("metadata.broker.list" -> kafkaTestUtils.brokerAddress,
+      "group.id" -> s"test-consumer-${Random.nextInt}")
+
+    kafkaTestUtils.waitUntilLeaderOffset(topic, 0, messages.size)
+
+    val offsetRanges = Array(OffsetRange(topic, 0, 0, messages.size))
+
+    val rdd = KafkaUtils.createRDD[String, String, StringDecoder, StringDecoder](
+>>>>>>> upstream/master
       sc, kafkaParams, offsetRanges)
 
     val received = rdd.map(_._2).collect.toSet
@@ -73,27 +96,58 @@ class KafkaRDDSuite extends FunSuite with BeforeAndAfterAll {
 
   test("iterator boundary conditions") {
     // the idea is to find e.g. off-by-one errors between what kafka has available and the rdd
+<<<<<<< HEAD
     val topic = "topic1"
+=======
+    val topic = s"topicboundary-${Random.nextInt}"
+>>>>>>> upstream/master
     val sent = Map("a" -> 5, "b" -> 3, "c" -> 10)
     kafkaTestUtils.createTopic(topic)
 
     val kafkaParams = Map("metadata.broker.list" -> kafkaTestUtils.brokerAddress,
+<<<<<<< HEAD
       "group.id" -> s"test-consumer-${Random.nextInt(10000)}")
+=======
+      "group.id" -> s"test-consumer-${Random.nextInt}")
+>>>>>>> upstream/master
 
     val kc = new KafkaCluster(kafkaParams)
 
     // this is the "lots of messages" case
     kafkaTestUtils.sendMessages(topic, sent)
+<<<<<<< HEAD
+=======
+    val sentCount = sent.values.sum
+    kafkaTestUtils.waitUntilLeaderOffset(topic, 0, sentCount)
+
+>>>>>>> upstream/master
     // rdd defined from leaders after sending messages, should get the number sent
     val rdd = getRdd(kc, Set(topic))
 
     assert(rdd.isDefined)
+<<<<<<< HEAD
     assert(rdd.get.count === sent.values.sum, "didn't get all sent messages")
 
     val ranges = rdd.get.asInstanceOf[HasOffsetRanges]
       .offsetRanges.map(o => TopicAndPartition(o.topic, o.partition) -> o.untilOffset).toMap
 
     kc.setConsumerOffsets(kafkaParams("group.id"), ranges)
+=======
+
+    val ranges = rdd.get.asInstanceOf[HasOffsetRanges].offsetRanges
+    val rangeCount = ranges.map(o => o.untilOffset - o.fromOffset).sum
+
+    assert(rangeCount === sentCount, "offset range didn't include all sent messages")
+    assert(rdd.get.count === sentCount, "didn't get all sent messages")
+
+    val rangesMap = ranges.map(o => TopicAndPartition(o.topic, o.partition) -> o.untilOffset).toMap
+
+    // make sure consumer offsets are committed before the next getRdd call
+    kc.setConsumerOffsets(kafkaParams("group.id"), rangesMap).fold(
+      err => throw new Exception(err.mkString("\n")),
+      _ => ()
+    )
+>>>>>>> upstream/master
 
     // this is the "0 messages" case
     val rdd2 = getRdd(kc, Set(topic))
@@ -101,6 +155,11 @@ class KafkaRDDSuite extends FunSuite with BeforeAndAfterAll {
     val sentOnlyOne = Map("d" -> 1)
 
     kafkaTestUtils.sendMessages(topic, sentOnlyOne)
+<<<<<<< HEAD
+=======
+    kafkaTestUtils.waitUntilLeaderOffset(topic, 0, sentCount + 1)
+
+>>>>>>> upstream/master
     assert(rdd2.isDefined)
     assert(rdd2.get.count === 0, "got messages when there shouldn't be any")
 

@@ -1,6 +1,10 @@
 ---
 layout: global
+<<<<<<< HEAD
 title: Naive Bayes - MLlib
+=======
+title: Isotonic regression - MLlib
+>>>>>>> upstream/master
 displayTitle: <a href="mllib-guide.html">MLlib</a> - Regression
 ---
 
@@ -60,7 +64,11 @@ Model is created using the training set and a mean squared error is calculated f
 labels and real labels in the test set.
 
 {% highlight scala %}
+<<<<<<< HEAD
 import org.apache.spark.mllib.regression.IsotonicRegression
+=======
+import org.apache.spark.mllib.regression.{IsotonicRegression, IsotonicRegressionModel}
+>>>>>>> upstream/master
 
 val data = sc.textFile("data/mllib/sample_isotonic_regression_data.txt")
 
@@ -88,6 +96,13 @@ val predictionAndLabel = test.map { point =>
 // Calculate mean squared error between predicted and real labels.
 val meanSquaredError = predictionAndLabel.map{case(p, l) => math.pow((p - l), 2)}.mean()
 println("Mean Squared Error = " + meanSquaredError)
+<<<<<<< HEAD
+=======
+
+// Save and load model
+model.save(sc, "myModelPath")
+val sameModel = IsotonicRegressionModel.load(sc, "myModelPath")
+>>>>>>> upstream/master
 {% endhighlight %}
 </div>
 
@@ -150,6 +165,16 @@ Double meanSquaredError = new JavaDoubleRDD(predictionAndLabel.map(
 ).rdd()).mean();
 
 System.out.println("Mean Squared Error = " + meanSquaredError);
+<<<<<<< HEAD
 {% endhighlight %}
 </div>
 </div>
+=======
+
+// Save and load model
+model.save(sc.sc(), "myModelPath");
+IsotonicRegressionModel sameModel = IsotonicRegressionModel.load(sc.sc(), "myModelPath");
+{% endhighlight %}
+</div>
+</div>
+>>>>>>> upstream/master

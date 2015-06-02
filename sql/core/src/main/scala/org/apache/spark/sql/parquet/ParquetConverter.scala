@@ -90,7 +90,7 @@ private[sql] object CatalystConverter {
         createConverter(field.copy(dataType = udt.sqlType), fieldIndex, parent)
       }
       // For native JVM types we use a converter with native arrays
-      case ArrayType(elementType: NativeType, false) => {
+      case ArrayType(elementType: AtomicType, false) => {
         new CatalystNativeArrayConverter(elementType, fieldIndex, parent)
       }
       // This is for other types of arrays, including those with nested fields
@@ -116,15 +116,24 @@ private[sql] object CatalystConverter {
       case StringType =>
         new CatalystPrimitiveStringConverter(parent, fieldIndex)
       case ShortType => {
+<<<<<<< HEAD
+=======
         new CatalystPrimitiveConverter(parent, fieldIndex) {
           override def addInt(value: Int): Unit =
-            parent.updateShort(fieldIndex, value.asInstanceOf[ShortType.JvmType])
+            parent.updateShort(fieldIndex, value.asInstanceOf[ShortType.InternalType])
         }
       }
       case ByteType => {
+>>>>>>> upstream/master
         new CatalystPrimitiveConverter(parent, fieldIndex) {
           override def addInt(value: Int): Unit =
-            parent.updateByte(fieldIndex, value.asInstanceOf[ByteType.JvmType])
+            parent.updateByte(fieldIndex, value.asInstanceOf[ByteType.InternalType])
+        }
+      }
+      case DateType => {
+        new CatalystPrimitiveConverter(parent, fieldIndex) {
+          override def addInt(value: Int): Unit =
+            parent.updateDate(fieldIndex, value.asInstanceOf[DateType.InternalType])
         }
       }
       case DateType => {
@@ -146,7 +155,8 @@ private[sql] object CatalystConverter {
         }
       }
       // All other primitive types use the default converter
-      case ctype: PrimitiveType => { // note: need the type tag here!
+      case ctype: DataType if ParquetTypesConverter.isPrimitiveType(ctype) => {
+        // note: need the type tag here!
         new CatalystPrimitiveConverter(parent, fieldIndex)
       }
       case _ => throw new RuntimeException(
@@ -221,10 +231,17 @@ private[parquet] abstract class CatalystConverter extends GroupConverter {
 
   protected[parquet] def updateString(fieldIndex: Int, value: Array[Byte]): Unit =
     updateField(fieldIndex, UTF8String(value))
+<<<<<<< HEAD
 
   protected[parquet] def updateTimestamp(fieldIndex: Int, value: Binary): Unit =
     updateField(fieldIndex, readTimestamp(value))
 
+=======
+
+  protected[parquet] def updateTimestamp(fieldIndex: Int, value: Binary): Unit =
+    updateField(fieldIndex, readTimestamp(value))
+
+>>>>>>> upstream/master
   protected[parquet] def updateDecimal(fieldIndex: Int, value: Binary, ctype: DecimalType): Unit =
     updateField(fieldIndex, readDecimal(new Decimal(), value, ctype))
 
@@ -242,8 +259,10 @@ private[parquet] abstract class CatalystConverter extends GroupConverter {
   /**
    * Read a decimal value from a Parquet Binary into "dest". Only supports decimals that fit in
    * a long (i.e. precision <= 18)
+   *
+   * Returned value is needed by CatalystConverter, which doesn't reuse the Decimal object.
    */
-  protected[parquet] def readDecimal(dest: Decimal, value: Binary, ctype: DecimalType): Unit = {
+  protected[parquet] def readDecimal(dest: Decimal, value: Binary, ctype: DecimalType): Decimal = {
     val precision = ctype.precisionInfo.get.precision
     val scale = ctype.precisionInfo.get.scale
     val bytes = value.getBytes
@@ -324,9 +343,9 @@ private[parquet] class CatalystGroupConverter(
 
   override def start(): Unit = {
     current = ArrayBuffer.fill(size)(null)
-    converters.foreach {
-      converter => if (!converter.isPrimitive) {
-        converter.asInstanceOf[CatalystConverter].clearBuffer
+    converters.foreach { converter =>
+      if (!converter.isPrimitive) {
+        converter.asInstanceOf[CatalystConverter].clearBuffer()
       }
     }
   }
@@ -479,7 +498,11 @@ private[parquet] class CatalystPrimitiveStringConverter(parent: CatalystConverte
 
   override def hasDictionarySupport: Boolean = true
 
+<<<<<<< HEAD
   override def setDictionary(dictionary: Dictionary):Unit =
+=======
+  override def setDictionary(dictionary: Dictionary): Unit =
+>>>>>>> upstream/master
     dict = Array.tabulate(dictionary.getMaxId + 1) { dictionary.decodeToBinary(_).getBytes }
 
   override def addValueFromDictionary(dictionaryId: Int): Unit =
@@ -590,8 +613,8 @@ private[parquet] class CatalystArrayConverter(
       CatalystConverter.ARRAY_ELEMENTS_SCHEMA_NAME,
       elementType,
       false),
-    fieldIndex=0,
-    parent=this)
+    fieldIndex = 0,
+    parent = this)
 
   override def getConverter(fieldIndex: Int): Converter = converter
 
@@ -600,7 +623,7 @@ private[parquet] class CatalystArrayConverter(
 
   override protected[parquet] def updateField(fieldIndex: Int, value: Any): Unit = {
     // fieldIndex is ignored (assumed to be zero but not checked)
-    if(value == null) {
+    if (value == null) {
       throw new IllegalArgumentException("Null values inside Parquet arrays are not supported!")
     }
     buffer += value
@@ -612,7 +635,7 @@ private[parquet] class CatalystArrayConverter(
 
   override def start(): Unit = {
     if (!converter.isPrimitive) {
-      converter.asInstanceOf[CatalystConverter].clearBuffer
+      converter.asInstanceOf[CatalystConverter].clearBuffer()
     }
   }
 
@@ -636,13 +659,13 @@ private[parquet] class CatalystArrayConverter(
  * @param capacity The (initial) capacity of the buffer
  */
 private[parquet] class CatalystNativeArrayConverter(
-    val elementType: NativeType,
+    val elementType: AtomicType,
     val index: Int,
     protected[parquet] val parent: CatalystConverter,
     protected[parquet] var capacity: Int = CatalystArrayConverter.INITIAL_ARRAY_SIZE)
   extends CatalystConverter {
 
-  type NativeType = elementType.JvmType
+  type NativeType = elementType.InternalType
 
   private var buffer: Array[NativeType] = elementType.classTag.newArray(capacity)
 
@@ -653,8 +676,8 @@ private[parquet] class CatalystNativeArrayConverter(
       CatalystConverter.ARRAY_ELEMENTS_SCHEMA_NAME,
       elementType,
       false),
-    fieldIndex=0,
-    parent=this)
+    fieldIndex = 0,
+    parent = this)
 
   override def getConverter(fieldIndex: Int): Converter = converter
 

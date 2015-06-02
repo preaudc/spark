@@ -22,7 +22,10 @@ import java.io.File
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.{FileSplit, JobConf, TextInputFormat}
+<<<<<<< HEAD
 import org.scalatest.FunSuite
+=======
+>>>>>>> upstream/master
 
 import scala.collection.Map
 import scala.language.postfixOps
@@ -32,7 +35,11 @@ import scala.util.Try
 import org.apache.spark._
 import org.apache.spark.util.Utils
 
+<<<<<<< HEAD
 class PipedRDDSuite extends FunSuite with SharedSparkContext {
+=======
+class PipedRDDSuite extends SparkFunSuite with SharedSparkContext {
+>>>>>>> upstream/master
 
   test("basic pipe") {
     if (testCommandAvailable("cat")) {
@@ -176,7 +183,11 @@ class PipedRDDSuite extends FunSuite with SharedSparkContext {
       }
       val hadoopPart1 = generateFakeHadoopPartition()
       val pipedRdd = new PipedRDD(nums, "printenv " + varName)
+<<<<<<< HEAD
       val tContext = new TaskContextImpl(0, 0, 0, 0)
+=======
+      val tContext = new TaskContextImpl(0, 0, 0, 0, null)
+>>>>>>> upstream/master
       val rddIter = pipedRdd.compute(hadoopPart1, tContext)
       val arr = rddIter.toArray
       assert(arr(0) == "/some/path")

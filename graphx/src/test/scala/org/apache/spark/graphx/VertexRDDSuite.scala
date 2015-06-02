@@ -17,6 +17,7 @@
 
 package org.apache.spark.graphx
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.{HashPartitioner, SparkContext}
@@ -24,6 +25,13 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 class VertexRDDSuite extends FunSuite with LocalSparkContext {
+=======
+import org.apache.spark.{HashPartitioner, SparkContext, SparkFunSuite}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
+
+class VertexRDDSuite extends SparkFunSuite with LocalSparkContext {
+>>>>>>> upstream/master
 
   private def vertices(sc: SparkContext, n: Int) = {
     VertexRDD(sc.parallelize((0 to n).map(x => (x.toLong, x)), 5))

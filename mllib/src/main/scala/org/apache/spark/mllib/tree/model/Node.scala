@@ -51,8 +51,13 @@ class Node (
     var stats: Option[InformationGainStats]) extends Serializable with Logging {
 
   override def toString: String = {
+<<<<<<< HEAD
     "id = " + id + ", isLeaf = " + isLeaf + ", predict = " + predict + ", " +
       "impurity =  " + impurity + "split = " + split + ", stats = " + stats
+=======
+    s"id = $id, isLeaf = $isLeaf, predict = $predict, impurity = $impurity, " +
+      s"split = $split, stats = $stats"
+>>>>>>> upstream/master
   }
 
   /**
@@ -83,7 +88,7 @@ class Node (
   def predict(features: Vector) : Double = {
     if (isLeaf) {
       predict.predict
-    } else{
+    } else {
       if (split.get.featureType == Continuous) {
         if (features(split.get.feature) <= split.get.threshold) {
           leftNode.get.predict(features)
@@ -151,9 +156,9 @@ class Node (
           s"(feature ${split.feature} > ${split.threshold})"
         }
         case Categorical => if (left) {
-          s"(feature ${split.feature} in ${split.categories.mkString("{",",","}")})"
+          s"(feature ${split.feature} in ${split.categories.mkString("{", ",", "}")})"
         } else {
-          s"(feature ${split.feature} not in ${split.categories.mkString("{",",","}")})"
+          s"(feature ${split.feature} not in ${split.categories.mkString("{", ",", "}")})"
         }
       }
     }
@@ -161,9 +166,9 @@ class Node (
     if (isLeaf) {
       prefix + s"Predict: ${predict.predict}\n"
     } else {
-      prefix + s"If ${splitToString(split.get, left=true)}\n" +
+      prefix + s"If ${splitToString(split.get, left = true)}\n" +
         leftNode.get.subtreeToString(indentFactor + 1) +
-        prefix + s"Else ${splitToString(split.get, left=false)}\n" +
+        prefix + s"Else ${splitToString(split.get, left = false)}\n" +
         rightNode.get.subtreeToString(indentFactor + 1)
     }
   }
@@ -175,7 +180,7 @@ class Node (
   }
 }
 
-private[tree] object Node {
+private[spark] object Node {
 
   /**
    * Return a node with the given node id (but nothing else set).

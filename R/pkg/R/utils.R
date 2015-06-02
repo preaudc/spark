@@ -122,13 +122,56 @@ hashCode <- function(key) {
     intBits <- packBits(rawToBits(rawVec), "integer")
     as.integer(bitwXor(intBits[2], intBits[1]))
   } else if (class(key) == "character") {
+<<<<<<< HEAD
     .Call("stringHashCode", key)
+=======
+    # TODO: SPARK-7839 means we might not have the native library available
+    if (is.loaded("stringHashCode")) {
+      .Call("stringHashCode", key)
+    } else {
+      n <- nchar(key)
+      if (n == 0) {
+        0L
+      } else {
+        asciiVals <- sapply(charToRaw(key), function(x) { strtoi(x, 16L) })
+        hashC <- 0
+        for (k in 1:length(asciiVals)) {
+          hashC <- mult31AndAdd(hashC, asciiVals[k])
+        }
+        as.integer(hashC)
+      }
+    }
+>>>>>>> upstream/master
   } else {
     warning(paste("Could not hash object, returning 0", sep = ""))
     as.integer(0)
   }
 }
 
+<<<<<<< HEAD
+=======
+# Helper function used to wrap a 'numeric' value to integer bounds.
+# Useful for implementing C-like integer arithmetic
+wrapInt <- function(value) {
+  if (value > .Machine$integer.max) {
+    value <- value - 2 * .Machine$integer.max - 2
+  } else if (value < -1 * .Machine$integer.max) {
+    value <- 2 * .Machine$integer.max + value + 2
+  }
+  value
+}
+
+# Multiply `val` by 31 and add `addVal` to the result. Ensures that
+# integer-overflows are handled at every step.
+mult31AndAdd <- function(val, addVal) {
+  vec <- c(bitwShiftL(val, c(4,3,2,1,0)), addVal)
+  Reduce(function(a, b) {
+          wrapInt(as.numeric(a) + as.numeric(b))
+         },
+         vec)
+}
+
+>>>>>>> upstream/master
 # Create a new RDD with serializedMode == "byte".
 # Return itself if already in "byte" format.
 serializeToBytes <- function(rdd) {
@@ -465,3 +508,86 @@ cleanClosure <- function(func, checkedFuncs = new.env()) {
   }
   func
 }
+<<<<<<< HEAD
+=======
+
+# Append partition lengths to each partition in two input RDDs if needed.
+# param
+#   x An RDD.
+#   Other An RDD.
+# return value
+#   A list of two result RDDs.
+appendPartitionLengths <- function(x, other) {
+  if (getSerializedMode(x) != getSerializedMode(other) || 
+      getSerializedMode(x) == "byte") {
+    # Append the number of elements in each partition to that partition so that we can later
+    # know the boundary of elements from x and other.
+    #
+    # Note that this appending also serves the purpose of reserialization, because even if 
+    # any RDD is serialized, we need to reserialize it to make sure its partitions are encoded
+    # as a single byte array. For example, partitions of an RDD generated from partitionBy()
+    # may be encoded as multiple byte arrays.          
+    appendLength <- function(part) {
+      len <- length(part)
+      part[[len + 1]] <- len + 1
+      part
+    }
+    x <- lapplyPartition(x, appendLength)
+    other <- lapplyPartition(other, appendLength)
+  }
+  list (x, other)
+}
+
+# Perform zip or cartesian between elements from two RDDs in each partition
+# param
+#   rdd An RDD.
+#   zip A boolean flag indicating this call is for zip operation or not.
+# return value
+#   A result RDD.
+mergePartitions <- function(rdd, zip) {
+  serializerMode <- getSerializedMode(rdd)
+  partitionFunc <- function(partIndex, part) {
+    len <- length(part)
+    if (len > 0) {
+      if (serializerMode == "byte") {
+        lengthOfValues <- part[[len]]
+        lengthOfKeys <- part[[len - lengthOfValues]]
+        stopifnot(len == lengthOfKeys + lengthOfValues)
+        
+        # For zip operation, check if corresponding partitions of both RDDs have the same number of elements.
+        if (zip && lengthOfKeys != lengthOfValues) {
+          stop("Can only zip RDDs with same number of elements in each pair of corresponding partitions.")
+        }
+        
+        if (lengthOfKeys > 1) {
+          keys <- part[1 : (lengthOfKeys - 1)]
+        } else {
+          keys <- list()
+        }
+        if (lengthOfValues > 1) {
+          values <- part[(lengthOfKeys + 1) : (len - 1)]                    
+        } else {
+          values <- list()
+        }
+        
+        if (!zip) {
+          return(mergeCompactLists(keys, values))
+        }
+      } else {
+        keys <- part[c(TRUE, FALSE)]
+        values <- part[c(FALSE, TRUE)]
+      }
+      mapply(
+        function(k, v) { list(k, v) },
+        keys,
+        values,
+        SIMPLIFY = FALSE,
+        USE.NAMES = FALSE)
+    } else {
+      part
+    }
+  }
+  
+  PipelinedRDD(rdd, partitionFunc)
+}
+>>>>>>> upstream/master

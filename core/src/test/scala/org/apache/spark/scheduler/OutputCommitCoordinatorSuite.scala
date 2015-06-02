@@ -24,7 +24,11 @@ import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, FunSuite}
+=======
+import org.scalatest.BeforeAndAfter
+>>>>>>> upstream/master
 
 import org.apache.hadoop.mapred.{TaskAttemptID, JobConf, TaskAttemptContext, OutputCommitter}
 
@@ -64,7 +68,11 @@ import scala.language.postfixOps
  * increments would be captured even though the commit in both tasks was executed
  * erroneously.
  */
+<<<<<<< HEAD
 class OutputCommitCoordinatorSuite extends FunSuite with BeforeAndAfter {
+=======
+class OutputCommitCoordinatorSuite extends SparkFunSuite with BeforeAndAfter {
+>>>>>>> upstream/master
 
   var outputCommitCoordinator: OutputCommitCoordinator = null
   var tempDir: File = null
@@ -81,7 +89,11 @@ class OutputCommitCoordinatorSuite extends FunSuite with BeforeAndAfter {
           conf: SparkConf,
           isLocal: Boolean,
           listenerBus: LiveListenerBus): SparkEnv = {
+<<<<<<< HEAD
         outputCommitCoordinator = spy(new OutputCommitCoordinator(conf))
+=======
+        outputCommitCoordinator = spy(new OutputCommitCoordinator(conf, isDriver = true))
+>>>>>>> upstream/master
         // Use Mockito.spy() to maintain the default infrastructure everywhere else.
         // This mocking allows us to control the coordinator responses in test cases.
         SparkEnv.createDriverEnv(conf, isLocal, listenerBus, Some(outputCommitCoordinator))

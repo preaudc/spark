@@ -19,6 +19,10 @@ package org.apache.spark.sql.parquet
 
 import org.scalatest.BeforeAndAfterAll
 
+<<<<<<< HEAD
+=======
+import org.apache.spark.sql.types._
+>>>>>>> upstream/master
 import org.apache.spark.sql.{SQLConf, QueryTest}
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.test.TestSQLContext
@@ -100,6 +104,7 @@ class ParquetQuerySuiteBase extends QueryTest with ParquetTest {
       checkAnswer(sql("SELECT _1 FROM t WHERE _1 < 10"), (1 to 9).map(Row.apply(_)))
     }
   }
+<<<<<<< HEAD
 
   test("SPARK-5309 strings stored using dictionary compression in parquet") {
     withParquetTable((0 until 1000).map(i => ("same", "run_" + i /100, 1)), "t") {
@@ -109,6 +114,29 @@ class ParquetQuerySuiteBase extends QueryTest with ParquetTest {
 
       checkAnswer(sql("SELECT _1, _2, SUM(_3) FROM t WHERE _2 = 'run_5' GROUP BY _1, _2"),
         List(Row("same", "run_5", 100)))
+=======
+
+  test("SPARK-5309 strings stored using dictionary compression in parquet") {
+    withParquetTable((0 until 1000).map(i => ("same", "run_" + i /100, 1)), "t") {
+
+      checkAnswer(sql("SELECT _1, _2, SUM(_3) FROM t GROUP BY _1, _2"),
+        (0 until 10).map(i => Row("same", "run_" + i, 100)))
+
+      checkAnswer(sql("SELECT _1, _2, SUM(_3) FROM t WHERE _2 = 'run_5' GROUP BY _1, _2"),
+        List(Row("same", "run_5", 100)))
+    }
+  }
+
+  test("SPARK-6917 DecimalType should work with non-native types") {
+    val data = (1 to 10).map(i => Row(Decimal(i, 18, 0), new java.sql.Timestamp(i)))
+    val schema = StructType(List(StructField("d", DecimalType(18, 0), false),
+      StructField("time", TimestampType, false)).toArray)
+    withTempPath { file =>
+      val df = sqlContext.createDataFrame(sparkContext.parallelize(data), schema)
+      df.write.parquet(file.getCanonicalPath)
+      val df2 = sqlContext.read.parquet(file.getCanonicalPath)
+      checkAnswer(df2, df.collect().toSeq)
+>>>>>>> upstream/master
     }
   }
 }

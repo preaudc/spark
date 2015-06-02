@@ -88,7 +88,31 @@ case class AllDataTypesScan(
 }
 
 class TableScanSuite extends DataSourceTest {
-  import caseInsensisitiveContext._
+  import caseInsensitiveContext._
+
+  var tableWithSchemaExpected = (1 to 10).map { i =>
+    Row(
+      s"str_$i",
+      s"str_$i",
+      i % 2 == 0,
+      i.toByte,
+      i.toShort,
+      i,
+      i.toLong,
+      i.toFloat,
+      i.toDouble,
+      new java.math.BigDecimal(i),
+      new java.math.BigDecimal(i),
+      new Date(1970, 1, 1),
+      new Timestamp(20000 + i),
+      s"varchar_$i",
+      Seq(i, i + 1),
+      Seq(Map(s"str_$i" -> Row(i.toLong))),
+      Map(i -> i.toString),
+      Map(Map(s"str_$i" -> i.toFloat) -> Row(i.toLong)),
+      Row(i, i.toString),
+      Row(Seq(s"str_$i", s"str_${i + 1}"), Row(Seq(new Date(1970, 1, i + 1)))))
+  }.toSeq
 
   var tableWithSchemaExpected = (1 to 10).map { i =>
     Row(

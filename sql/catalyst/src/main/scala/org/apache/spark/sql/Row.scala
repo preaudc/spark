@@ -55,6 +55,12 @@ object Row {
     // TODO: Improve the performance of this if used in performance critical part.
     new GenericRow(rows.flatMap(_.toSeq).toArray)
   }
+<<<<<<< HEAD
+=======
+
+  /** Returns an empty row. */
+  val empty = apply()
+>>>>>>> upstream/master
 }
 
 
@@ -306,6 +312,41 @@ trait Row extends Serializable {
    */
   def getAs[T](i: Int): T = apply(i).asInstanceOf[T]
 
+<<<<<<< HEAD
+=======
+  /**
+   * Returns the value of a given fieldName.
+   *
+   * @throws UnsupportedOperationException when schema is not defined.
+   * @throws IllegalArgumentException when fieldName do not exist.
+   * @throws ClassCastException when data type does not match.
+   */
+  def getAs[T](fieldName: String): T = getAs[T](fieldIndex(fieldName))
+
+  /**
+   * Returns the index of a given field name.
+   *
+   * @throws UnsupportedOperationException when schema is not defined.
+   * @throws IllegalArgumentException when fieldName do not exist.
+   */
+  def fieldIndex(name: String): Int = {
+    throw new UnsupportedOperationException("fieldIndex on a Row without schema is undefined.")
+  }
+
+  /**
+   * Returns a Map(name -> value) for the requested fieldNames
+   *
+   * @throws UnsupportedOperationException when schema is not defined.
+   * @throws IllegalArgumentException when fieldName do not exist.
+   * @throws ClassCastException when data type does not match.
+   */
+  def getValuesMap[T](fieldNames: Seq[String]): Map[String, T] = {
+    fieldNames.map { name =>
+      name -> getAs[T](name)
+    }.toMap
+  }
+
+>>>>>>> upstream/master
   override def toString(): String = s"[${this.mkString(",")}]"
 
   /**

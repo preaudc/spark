@@ -19,7 +19,10 @@ package org.apache.spark.ui.jobs
 
 import java.util.Properties
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
+=======
+>>>>>>> upstream/master
 import org.scalatest.Matchers
 
 import org.apache.spark._
@@ -28,18 +31,26 @@ import org.apache.spark.executor._
 import org.apache.spark.scheduler._
 import org.apache.spark.util.Utils
 
-class JobProgressListenerSuite extends FunSuite with LocalSparkContext with Matchers {
+class JobProgressListenerSuite extends SparkFunSuite with LocalSparkContext with Matchers {
 
   val jobSubmissionTime = 1421191042750L
   val jobCompletionTime = 1421191296660L
 
   private def createStageStartEvent(stageId: Int) = {
+<<<<<<< HEAD
     val stageInfo = new StageInfo(stageId, 0, stageId.toString, 0, null, "")
+=======
+    val stageInfo = new StageInfo(stageId, 0, stageId.toString, 0, null, null, "")
+>>>>>>> upstream/master
     SparkListenerStageSubmitted(stageInfo)
   }
 
   private def createStageEndEvent(stageId: Int, failed: Boolean = false) = {
+<<<<<<< HEAD
     val stageInfo = new StageInfo(stageId, 0, stageId.toString, 0, null, "")
+=======
+    val stageInfo = new StageInfo(stageId, 0, stageId.toString, 0, null, null, "")
+>>>>>>> upstream/master
     if (failed) {
       stageInfo.failureReason = Some("Failed!")
     }
@@ -51,7 +62,11 @@ class JobProgressListenerSuite extends FunSuite with LocalSparkContext with Matc
       stageIds: Seq[Int],
       jobGroup: Option[String] = None): SparkListenerJobStart = {
     val stageInfos = stageIds.map { stageId =>
+<<<<<<< HEAD
       new StageInfo(stageId, 0, stageId.toString, 0, null, "")
+=======
+      new StageInfo(stageId, 0, stageId.toString, 0, null, null, "")
+>>>>>>> upstream/master
     }
     val properties: Option[Properties] = jobGroup.map { groupId =>
       val props = new Properties()

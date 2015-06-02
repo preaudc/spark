@@ -17,11 +17,18 @@
 
 package org.apache.spark.sql.hive
 
+import java.io.File
+
 import org.apache.spark.sql.columnar.{InMemoryColumnarTableScan, InMemoryRelation}
 import org.apache.spark.sql.hive.test.TestHive
 import org.apache.spark.sql.hive.test.TestHive._
+<<<<<<< HEAD
 import org.apache.spark.sql.{AnalysisException, DataFrame, QueryTest}
+=======
+import org.apache.spark.sql.{SaveMode, AnalysisException, DataFrame, QueryTest}
+>>>>>>> upstream/master
 import org.apache.spark.storage.RDDBlockId
+import org.apache.spark.util.Utils
 
 class CachedTableSuite extends QueryTest {
 
@@ -54,7 +61,11 @@ class CachedTableSuite extends QueryTest {
     checkAnswer(
       sql("SELECT * FROM src s"),
       preCacheResults)
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> upstream/master
     uncacheTable("src")
     assertCached(sql("SELECT * FROM src"), 0)
   }
@@ -155,4 +166,52 @@ class CachedTableSuite extends QueryTest {
     assertCached(table("udfTest"))
     uncacheTable("udfTest")
   }
+<<<<<<< HEAD
+=======
+
+  test("REFRESH TABLE also needs to recache the data (data source tables)") {
+    val tempPath: File = Utils.createTempDir()
+    tempPath.delete()
+    table("src").write.mode(SaveMode.Overwrite).parquet(tempPath.toString)
+    sql("DROP TABLE IF EXISTS refreshTable")
+    createExternalTable("refreshTable", tempPath.toString, "parquet")
+    checkAnswer(
+      table("refreshTable"),
+      table("src").collect())
+    // Cache the table.
+    sql("CACHE TABLE refreshTable")
+    assertCached(table("refreshTable"))
+    // Append new data.
+    table("src").write.mode(SaveMode.Append).parquet(tempPath.toString)
+    // We are still using the old data.
+    assertCached(table("refreshTable"))
+    checkAnswer(
+      table("refreshTable"),
+      table("src").collect())
+    // Refresh the table.
+    sql("REFRESH TABLE refreshTable")
+    // We are using the new data.
+    assertCached(table("refreshTable"))
+    checkAnswer(
+      table("refreshTable"),
+      table("src").unionAll(table("src")).collect())
+
+    // Drop the table and create it again.
+    sql("DROP TABLE refreshTable")
+    createExternalTable("refreshTable", tempPath.toString, "parquet")
+    // It is not cached.
+    assert(!isCached("refreshTable"), "refreshTable should not be cached.")
+    // Refresh the table. REFRESH TABLE command should not make a uncached
+    // table cached.
+    sql("REFRESH TABLE refreshTable")
+    checkAnswer(
+      table("refreshTable"),
+      table("src").unionAll(table("src")).collect())
+    // It is not cached.
+    assert(!isCached("refreshTable"), "refreshTable should not be cached.")
+
+    sql("DROP TABLE refreshTable")
+    Utils.deleteRecursively(tempPath)
+  }
+>>>>>>> upstream/master
 }

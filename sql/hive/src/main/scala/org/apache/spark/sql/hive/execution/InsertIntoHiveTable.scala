@@ -106,7 +106,7 @@ case class InsertIntoHiveTable(
         }
 
         writerContainer
-          .getLocalFileWriter(row)
+          .getLocalFileWriter(row, table.schema)
           .write(serializer.serialize(outputData, standardOI))
       }
 
@@ -194,15 +194,18 @@ case class InsertIntoHiveTable(
     if (partition.nonEmpty) {
 
       // loadPartition call orders directories created on the iteration order of the this map
-      val orderedPartitionSpec = new util.LinkedHashMap[String,String]()
-      table.hiveQlTable.getPartCols().foreach{
-        entry=>
-          orderedPartitionSpec.put(entry.getName,partitionSpec.get(entry.getName).getOrElse(""))
+      val orderedPartitionSpec = new util.LinkedHashMap[String, String]()
+      table.hiveQlTable.getPartCols().foreach { entry =>
+        orderedPartitionSpec.put(entry.getName, partitionSpec.get(entry.getName).getOrElse(""))
       }
       val partVals = MetaStoreUtils.getPvals(table.hiveQlTable.getPartCols, partitionSpec)
+<<<<<<< HEAD
       catalog.synchronized {
         catalog.client.validatePartitionNameCharacters(partVals)
       }
+=======
+
+>>>>>>> upstream/master
       // inheritTableSpecs is set to true. It should be set to false for a IMPORT query
       // which is currently considered as a Hive native command.
       val inheritTableSpecs = true
@@ -211,7 +214,11 @@ case class InsertIntoHiveTable(
       if (numDynamicPartitions > 0) {
         catalog.synchronized {
           catalog.client.loadDynamicPartitions(
+<<<<<<< HEAD
             outputPath,
+=======
+            outputPath.toString,
+>>>>>>> upstream/master
             qualifiedTableName,
             orderedPartitionSpec,
             overwrite,
@@ -224,6 +231,7 @@ case class InsertIntoHiveTable(
         // ifNotExists is only valid with static partition, refer to
         // https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DML#LanguageManualDML-InsertingdataintoHiveTablesfromqueries
         // scalastyle:on
+<<<<<<< HEAD
         val oldPart = catalog.synchronized {
           catalog.client.getPartition(
             catalog.client.getTable(qualifiedTableName), partitionSpec, false)
@@ -232,12 +240,23 @@ case class InsertIntoHiveTable(
           catalog.synchronized {
             catalog.client.loadPartition(
               outputPath,
+=======
+        val oldPart =
+          catalog.client.getPartitionOption(
+            catalog.client.getTable(table.databaseName, table.tableName),
+            partitionSpec)
+
+        if (oldPart.isEmpty || !ifNotExists) {
+            catalog.client.loadPartition(
+              outputPath.toString,
+>>>>>>> upstream/master
               qualifiedTableName,
               orderedPartitionSpec,
               overwrite,
               holdDDLTime,
               inheritTableSpecs,
               isSkewedStoreAsSubdir)
+<<<<<<< HEAD
           }
         }
       }
@@ -249,6 +268,16 @@ case class InsertIntoHiveTable(
           overwrite,
           holdDDLTime)
       }
+=======
+        }
+      }
+    } else {
+      catalog.client.loadTable(
+        outputPath.toString, // TODO: URI
+        qualifiedTableName,
+        overwrite,
+        holdDDLTime)
+>>>>>>> upstream/master
     }
 
     // Invalidate the cache.
@@ -263,5 +292,11 @@ case class InsertIntoHiveTable(
 
   override def executeCollect(): Array[Row] = sideEffectResult.toArray
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = sqlContext.sparkContext.parallelize(sideEffectResult, 1)
+=======
+  protected override def doExecute(): RDD[Row] = {
+    sqlContext.sparkContext.parallelize(sideEffectResult, 1)
+  }
+>>>>>>> upstream/master
 }

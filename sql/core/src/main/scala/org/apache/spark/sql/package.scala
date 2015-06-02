@@ -44,6 +44,10 @@ package object sql {
 
   /**
    * Type alias for [[DataFrame]]. Kept here for backward source compatibility for Scala.
+<<<<<<< HEAD
+=======
+   * @deprecated As of 1.3.0, replaced by `DataFrame`.
+>>>>>>> upstream/master
    */
   @deprecated("1.3.0", "use DataFrame")
   type SchemaRDD = DataFrame

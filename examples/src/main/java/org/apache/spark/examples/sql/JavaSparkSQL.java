@@ -94,12 +94,20 @@ public class JavaSparkSQL {
 
     System.out.println("=== Data source: Parquet File ===");
     // DataFrames can be saved as parquet files, maintaining the schema information.
+<<<<<<< HEAD
     schemaPeople.saveAsParquetFile("people.parquet");
+=======
+    schemaPeople.write().parquet("people.parquet");
+>>>>>>> upstream/master
 
     // Read in the parquet file created above.
     // Parquet files are self-describing so the schema is preserved.
     // The result of loading a parquet file is also a DataFrame.
+<<<<<<< HEAD
     DataFrame parquetFile = sqlContext.parquetFile("people.parquet");
+=======
+    DataFrame parquetFile = sqlContext.read().parquet("people.parquet");
+>>>>>>> upstream/master
 
     //Parquet files can also be registered as tables and then used in SQL statements.
     parquetFile.registerTempTable("parquetFile");
@@ -120,7 +128,11 @@ public class JavaSparkSQL {
     // The path can be either a single text file or a directory storing text files.
     String path = "examples/src/main/resources/people.json";
     // Create a DataFrame from the file(s) pointed by path
+<<<<<<< HEAD
     DataFrame peopleFromJsonFile = sqlContext.jsonFile(path);
+=======
+    DataFrame peopleFromJsonFile = sqlContext.read().json(path);
+>>>>>>> upstream/master
 
     // Because the schema of a JSON dataset is automatically inferred, to write queries,
     // it is better to take a look at what is the schema.
@@ -151,7 +163,11 @@ public class JavaSparkSQL {
     List<String> jsonData = Arrays.asList(
           "{\"name\":\"Yin\",\"address\":{\"city\":\"Columbus\",\"state\":\"Ohio\"}}");
     JavaRDD<String> anotherPeopleRDD = ctx.parallelize(jsonData);
+<<<<<<< HEAD
     DataFrame peopleFromJsonRDD = sqlContext.jsonRDD(anotherPeopleRDD.rdd());
+=======
+    DataFrame peopleFromJsonRDD = sqlContext.read().json(anotherPeopleRDD.rdd());
+>>>>>>> upstream/master
 
     // Take a look at the schema of this new DataFrame.
     peopleFromJsonRDD.printSchema();

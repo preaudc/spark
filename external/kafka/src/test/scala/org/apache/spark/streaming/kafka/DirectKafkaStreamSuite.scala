@@ -18,6 +18,10 @@
 package org.apache.spark.streaming.kafka
 
 import java.io.File
+<<<<<<< HEAD
+=======
+import java.util.concurrent.atomic.AtomicLong
+>>>>>>> upstream/master
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -27,6 +31,7 @@ import scala.language.postfixOps
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSuite}
 import org.scalatest.concurrent.Eventually
 
@@ -38,6 +43,20 @@ import org.apache.spark.util.Utils
 
 class DirectKafkaStreamSuite
   extends FunSuite
+=======
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+import org.scalatest.concurrent.Eventually
+
+import org.apache.spark.{Logging, SparkConf, SparkContext, SparkFunSuite}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.{Milliseconds, StreamingContext, Time}
+import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.streaming.scheduler._
+import org.apache.spark.util.Utils
+
+class DirectKafkaStreamSuite
+  extends SparkFunSuite
+>>>>>>> upstream/master
   with BeforeAndAfter
   with BeforeAndAfterAll
   with Eventually
@@ -290,7 +309,10 @@ class DirectKafkaStreamSuite
       },
       "Recovered ranges are not the same as the ones generated"
     )
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
     // Restart context, give more data and verify the total at the end
     // If the total is write that means each records has been received only once
     ssc.start()
@@ -301,6 +323,47 @@ class DirectKafkaStreamSuite
     ssc.stop()
   }
 
+<<<<<<< HEAD
+=======
+  test("Direct Kafka stream report input information") {
+    val topic = "report-test"
+    val data = Map("a" -> 7, "b" -> 9)
+    kafkaTestUtils.createTopic(topic)
+    kafkaTestUtils.sendMessages(topic, data)
+
+    val totalSent = data.values.sum
+    val kafkaParams = Map(
+      "metadata.broker.list" -> kafkaTestUtils.brokerAddress,
+      "auto.offset.reset" -> "smallest"
+    )
+
+    import DirectKafkaStreamSuite._
+    ssc = new StreamingContext(sparkConf, Milliseconds(200))
+    val collector = new InputInfoCollector
+    ssc.addStreamingListener(collector)
+
+    val stream = withClue("Error creating direct stream") {
+      KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+        ssc, kafkaParams, Set(topic))
+    }
+
+    val allReceived = new ArrayBuffer[(String, String)]
+
+    stream.foreachRDD { rdd => allReceived ++= rdd.collect() }
+    ssc.start()
+    eventually(timeout(20000.milliseconds), interval(200.milliseconds)) {
+      assert(allReceived.size === totalSent,
+        "didn't get expected number of messages, messages:\n" + allReceived.mkString("\n"))
+
+      // Calculate all the record number collected in the StreamingListener.
+      assert(collector.numRecordsSubmitted.get() === totalSent)
+      assert(collector.numRecordsStarted.get() === totalSent)
+      assert(collector.numRecordsCompleted.get() === totalSent)
+    }
+    ssc.stop()
+  }
+
+>>>>>>> upstream/master
   /** Get the generated offset ranges from the DirectKafkaStream */
   private def getOffsetRanges[K, V](
       kafkaStream: DStream[(K, V)]): Seq[(Time, Array[OffsetRange])] = {
@@ -313,4 +376,25 @@ class DirectKafkaStreamSuite
 object DirectKafkaStreamSuite {
   val collectedData = new mutable.ArrayBuffer[String]()
   var total = -1L
+<<<<<<< HEAD
+=======
+
+  class InputInfoCollector extends StreamingListener {
+    val numRecordsSubmitted = new AtomicLong(0L)
+    val numRecordsStarted = new AtomicLong(0L)
+    val numRecordsCompleted = new AtomicLong(0L)
+
+    override def onBatchSubmitted(batchSubmitted: StreamingListenerBatchSubmitted): Unit = {
+      numRecordsSubmitted.addAndGet(batchSubmitted.batchInfo.numRecords)
+    }
+
+    override def onBatchStarted(batchStarted: StreamingListenerBatchStarted): Unit = {
+      numRecordsStarted.addAndGet(batchStarted.batchInfo.numRecords)
+    }
+
+    override def onBatchCompleted(batchCompleted: StreamingListenerBatchCompleted): Unit = {
+      numRecordsCompleted.addAndGet(batchCompleted.batchInfo.numRecords)
+    }
+  }
+>>>>>>> upstream/master
 }

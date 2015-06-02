@@ -19,83 +19,158 @@ package org.apache.spark.sql.sources
 
 /**
  * A filter predicate for data sources.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 abstract class Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a value
  * equal to `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class EqualTo(attribute: String, value: Any) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a value
  * greater than `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class GreaterThan(attribute: String, value: Any) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a value
  * greater than or equal to `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class GreaterThanOrEqual(attribute: String, value: Any) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a value
  * less than `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class LessThan(attribute: String, value: Any) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a value
  * less than or equal to `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class LessThanOrEqual(attribute: String, value: Any) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to one of the values in the array.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class In(attribute: String, values: Array[Any]) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to null.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class IsNull(attribute: String) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to a non-null value.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class IsNotNull(attribute: String) extends Filter
 
 /**
  * A filter that evaluates to `true` iff both `left` or `right` evaluate to `true`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class And(left: Filter, right: Filter) extends Filter
 
 /**
  * A filter that evaluates to `true` iff at least one of `left` or `right` evaluates to `true`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class Or(left: Filter, right: Filter) extends Filter
 
 /**
  * A filter that evaluates to `true` iff `child` is evaluated to `false`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 case class Not(child: Filter) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to
  * a string that starts with `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.1
+>>>>>>> upstream/master
  */
 case class StringStartsWith(attribute: String, value: String) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to
  * a string that starts with `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.1
+>>>>>>> upstream/master
  */
 case class StringEndsWith(attribute: String, value: String) extends Filter
 
 /**
  * A filter that evaluates to `true` iff the attribute evaluates to
  * a string that contains the string `value`.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.1
+>>>>>>> upstream/master
  */
 case class StringContains(attribute: String, value: String) extends Filter

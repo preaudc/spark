@@ -17,15 +17,20 @@
 
 package org.apache.spark.sql
 
+<<<<<<< HEAD
 import org.apache.spark.sql.execution.SparkSqlSerializer
 import org.scalatest.FunSuite
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.execution.SparkSqlSerializer
+>>>>>>> upstream/master
 
 import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, SpecificMutableRow}
 import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.test.TestSQLContext.implicits._
 import org.apache.spark.sql.types._
 
-class RowSuite extends FunSuite {
+class RowSuite extends SparkFunSuite {
 
   test("create row") {
     val expected = new GenericMutableRow(4)
@@ -62,4 +67,17 @@ class RowSuite extends FunSuite {
     val de = instance.deserialize(ser).asInstanceOf[Row]
     assert(de === row)
   }
+<<<<<<< HEAD
+=======
+
+  test("get values by field name on Row created via .toDF") {
+    val row = Seq((1, Seq(1))).toDF("a", "b").first()
+    assert(row.getAs[Int]("a") === 1)
+    assert(row.getAs[Seq[Int]]("b") === Seq(1))
+
+    intercept[IllegalArgumentException]{
+      row.getAs[Int]("c")
+    }
+  }
+>>>>>>> upstream/master
 }

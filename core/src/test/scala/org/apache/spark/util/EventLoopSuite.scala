@@ -25,9 +25,16 @@ import scala.language.postfixOps
 
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.concurrent.Timeouts
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 class EventLoopSuite extends FunSuite with Timeouts {
+=======
+
+import org.apache.spark.SparkFunSuite
+
+class EventLoopSuite extends SparkFunSuite with Timeouts {
+>>>>>>> upstream/master
 
   test("EventLoop") {
     val buffer = new mutable.ArrayBuffer[Int] with mutable.SynchronizedBuffer[Int]

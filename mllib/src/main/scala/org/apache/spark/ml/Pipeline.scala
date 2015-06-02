@@ -20,21 +20,36 @@ package org.apache.spark.ml
 import scala.collection.mutable.ListBuffer
 
 import org.apache.spark.Logging
+<<<<<<< HEAD
 import org.apache.spark.annotation.{AlphaComponent, DeveloperApi}
 import org.apache.spark.ml.param.{Param, ParamMap}
+=======
+import org.apache.spark.annotation.{DeveloperApi, Experimental}
+import org.apache.spark.ml.param.{Param, ParamMap, Params}
+import org.apache.spark.ml.util.Identifiable
+>>>>>>> upstream/master
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  * A stage in a pipeline, either an [[Estimator]] or a [[Transformer]].
  */
 @AlphaComponent
 abstract class PipelineStage extends Serializable with Logging {
+=======
+ * :: DeveloperApi ::
+ * A stage in a pipeline, either an [[Estimator]] or a [[Transformer]].
+ */
+@DeveloperApi
+abstract class PipelineStage extends Params with Logging {
+>>>>>>> upstream/master
 
   /**
    * :: DeveloperApi ::
    *
+<<<<<<< HEAD
    * Derives the output schema from the input schema and parameters.
    * The schema describes the columns and types of the data.
    *
@@ -46,28 +61,59 @@ abstract class PipelineStage extends Serializable with Logging {
   def transformSchema(schema: StructType, paramMap: ParamMap): StructType
 
   /**
+=======
+   * Derives the output schema from the input schema.
+   */
+  @DeveloperApi
+  def transformSchema(schema: StructType): StructType
+
+  /**
+   * :: DeveloperApi ::
+   *
+>>>>>>> upstream/master
    * Derives the output schema from the input schema and parameters, optionally with logging.
    *
    * This should be optimistic.  If it is unclear whether the schema will be valid, then it should
    * be assumed valid until proven otherwise.
    */
+<<<<<<< HEAD
   protected def transformSchema(
       schema: StructType,
       paramMap: ParamMap,
+=======
+  @DeveloperApi
+  protected def transformSchema(
+      schema: StructType,
+>>>>>>> upstream/master
       logging: Boolean): StructType = {
     if (logging) {
       logDebug(s"Input schema: ${schema.json}")
     }
+<<<<<<< HEAD
     val outputSchema = transformSchema(schema, paramMap)
+=======
+    val outputSchema = transformSchema(schema)
+>>>>>>> upstream/master
     if (logging) {
       logDebug(s"Expected output schema: ${outputSchema.json}")
     }
     outputSchema
   }
+<<<<<<< HEAD
 }
 
 /**
  * :: AlphaComponent ::
+=======
+
+  override def copy(extra: ParamMap): PipelineStage = {
+    super.copy(extra).asInstanceOf[PipelineStage]
+  }
+}
+
+/**
+ * :: Experimental ::
+>>>>>>> upstream/master
  * A simple pipeline, which acts as an estimator. A Pipeline consists of a sequence of stages, each
  * of which is either an [[Estimator]] or a [[Transformer]]. When [[Pipeline#fit]] is called, the
  * stages are executed in order. If a stage is an [[Estimator]], its [[Estimator#fit]] method will
@@ -78,6 +124,7 @@ abstract class PipelineStage extends Serializable with Logging {
  * transformers, corresponding to the pipeline stages. If there are no stages, the pipeline acts as
  * an identity transformer.
  */
+<<<<<<< HEAD
 @AlphaComponent
 class Pipeline extends Estimator[PipelineModel] {
 
@@ -85,6 +132,29 @@ class Pipeline extends Estimator[PipelineModel] {
   val stages: Param[Array[PipelineStage]] = new Param(this, "stages", "stages of the pipeline")
   def setStages(value: Array[PipelineStage]): this.type = { set(stages, value); this }
   def getStages: Array[PipelineStage] = getOrDefault(stages)
+=======
+@Experimental
+class Pipeline(override val uid: String) extends Estimator[PipelineModel] {
+
+  def this() = this(Identifiable.randomUID("pipeline"))
+
+  /**
+   * param for pipeline stages
+   * @group param
+   */
+  val stages: Param[Array[PipelineStage]] = new Param(this, "stages", "stages of the pipeline")
+
+  /** @group setParam */
+  def setStages(value: Array[PipelineStage]): this.type = { set(stages, value); this }
+
+  /** @group getParam */
+  def getStages: Array[PipelineStage] = $(stages).clone()
+
+  override def validateParams(): Unit = {
+    super.validateParams()
+    $(stages).foreach(_.validateParams())
+  }
+>>>>>>> upstream/master
 
   /**
    * Fits the pipeline to the input dataset with additional parameters. If a stage is an
@@ -96,6 +166,7 @@ class Pipeline extends Estimator[PipelineModel] {
    * pipeline stages. If there are no stages, the output model acts as an identity transformer.
    *
    * @param dataset input dataset
+<<<<<<< HEAD
    * @param paramMap parameter map
    * @return fitted pipeline
    */
@@ -103,6 +174,13 @@ class Pipeline extends Estimator[PipelineModel] {
     transformSchema(dataset.schema, paramMap, logging = true)
     val map = extractParamMap(paramMap)
     val theStages = map(stages)
+=======
+   * @return fitted pipeline
+   */
+  override def fit(dataset: DataFrame): PipelineModel = {
+    transformSchema(dataset.schema, logging = true)
+    val theStages = $(stages)
+>>>>>>> upstream/master
     // Search for the last estimator.
     var indexOfLastEstimator = -1
     theStages.view.zipWithIndex.foreach { case (stage, index) =>
@@ -118,7 +196,11 @@ class Pipeline extends Estimator[PipelineModel] {
       if (index <= indexOfLastEstimator) {
         val transformer = stage match {
           case estimator: Estimator[_] =>
+<<<<<<< HEAD
             estimator.fit(curDataset, paramMap)
+=======
+            estimator.fit(curDataset)
+>>>>>>> upstream/master
           case t: Transformer =>
             t
           case _ =>
@@ -126,7 +208,11 @@ class Pipeline extends Estimator[PipelineModel] {
               s"Do not support stage $stage of type ${stage.getClass}")
         }
         if (index < indexOfLastEstimator) {
+<<<<<<< HEAD
           curDataset = transformer.transform(curDataset, paramMap)
+=======
+          curDataset = transformer.transform(curDataset)
+>>>>>>> upstream/master
         }
         transformers += transformer
       } else {
@@ -134,6 +220,7 @@ class Pipeline extends Estimator[PipelineModel] {
       }
     }
 
+<<<<<<< HEAD
     new PipelineModel(this, map, transformers.toArray)
   }
 
@@ -143,10 +230,27 @@ class Pipeline extends Estimator[PipelineModel] {
     require(theStages.toSet.size == theStages.size,
       "Cannot have duplicate components in a pipeline.")
     theStages.foldLeft(schema)((cur, stage) => stage.transformSchema(cur, paramMap))
+=======
+    new PipelineModel(uid, transformers.toArray).setParent(this)
+  }
+
+  override def copy(extra: ParamMap): Pipeline = {
+    val map = extractParamMap(extra)
+    val newStages = map(stages).map(_.copy(extra))
+    new Pipeline().setStages(newStages)
+  }
+
+  override def transformSchema(schema: StructType): StructType = {
+    val theStages = $(stages)
+    require(theStages.toSet.size == theStages.length,
+      "Cannot have duplicate components in a pipeline.")
+    theStages.foldLeft(schema)((cur, stage) => stage.transformSchema(cur))
+>>>>>>> upstream/master
   }
 }
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  * Represents a compiled pipeline.
  */
@@ -186,5 +290,32 @@ class PipelineModel private[ml] (
     // Precedence of ParamMaps: paramMap > this.paramMap > fittingParamMap
     val map = fittingParamMap ++ extractParamMap(paramMap)
     stages.foldLeft(schema)((cur, transformer) => transformer.transformSchema(cur, map))
+=======
+ * :: Experimental ::
+ * Represents a fitted pipeline.
+ */
+@Experimental
+class PipelineModel private[ml] (
+    override val uid: String,
+    val stages: Array[Transformer])
+  extends Model[PipelineModel] with Logging {
+
+  override def validateParams(): Unit = {
+    super.validateParams()
+    stages.foreach(_.validateParams())
+  }
+
+  override def transform(dataset: DataFrame): DataFrame = {
+    transformSchema(dataset.schema, logging = true)
+    stages.foldLeft(dataset)((cur, transformer) => transformer.transform(cur))
+  }
+
+  override def transformSchema(schema: StructType): StructType = {
+    stages.foldLeft(schema)((cur, transformer) => transformer.transformSchema(cur))
+  }
+
+  override def copy(extra: ParamMap): PipelineModel = {
+    new PipelineModel(uid, stages)
+>>>>>>> upstream/master
   }
 }

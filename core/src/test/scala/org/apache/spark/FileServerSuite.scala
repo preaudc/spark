@@ -22,16 +22,25 @@ import java.net.URI
 import java.util.jar.{JarEntry, JarOutputStream}
 import javax.net.ssl.SSLException
 
+<<<<<<< HEAD
 import com.google.common.io.ByteStreams
 import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.commons.lang3.RandomUtils
 import org.scalatest.FunSuite
+=======
+import com.google.common.io.{ByteStreams, Files}
+import org.apache.commons.lang3.RandomUtils
+>>>>>>> upstream/master
 
 import org.apache.spark.util.Utils
 
 import SSLSampleConfigs._
 
+<<<<<<< HEAD
 class FileServerSuite extends FunSuite with LocalSparkContext {
+=======
+class FileServerSuite extends SparkFunSuite with LocalSparkContext {
+>>>>>>> upstream/master
 
   @transient var tmpDir: File = _
   @transient var tmpFile: File = _
@@ -82,7 +91,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
   test("Distributing files locally") {
     sc = new SparkContext("local[4]", "test", newConf)
     sc.addFile(tmpFile.toString)
-    val testData = Array((1,1), (1,1), (2,1), (3,5), (2,2), (3,0))
+    val testData = Array((1, 1), (1, 1), (2, 1), (3, 5), (2, 2), (3, 0))
     val result = sc.parallelize(testData).reduceByKey {
       val path = SparkFiles.get("FileServerSuite.txt")
       val in = new BufferedReader(new FileReader(path))
@@ -90,7 +99,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
       in.close()
       _ * fileVal + _ * fileVal
     }.collect()
-    assert(result.toSet === Set((1,200), (2,300), (3,500)))
+    assert(result.toSet === Set((1, 200), (2, 300), (3, 500)))
   }
 
   test("Distributing files locally security On") {
@@ -101,7 +110,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
 
     sc.addFile(tmpFile.toString)
     assert(sc.env.securityManager.isAuthenticationEnabled() === true)
-    val testData = Array((1,1), (1,1), (2,1), (3,5), (2,2), (3,0))
+    val testData = Array((1, 1), (1, 1), (2, 1), (3, 5), (2, 2), (3, 0))
     val result = sc.parallelize(testData).reduceByKey {
       val path = SparkFiles.get("FileServerSuite.txt")
       val in = new BufferedReader(new FileReader(path))
@@ -109,14 +118,14 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
       in.close()
       _ * fileVal + _ * fileVal
     }.collect()
-    assert(result.toSet === Set((1,200), (2,300), (3,500)))
+    assert(result.toSet === Set((1, 200), (2, 300), (3, 500)))
   }
 
   test("Distributing files locally using URL as input") {
     // addFile("file:///....")
     sc = new SparkContext("local[4]", "test", newConf)
     sc.addFile(new File(tmpFile.toString).toURI.toString)
-    val testData = Array((1,1), (1,1), (2,1), (3,5), (2,2), (3,0))
+    val testData = Array((1, 1), (1, 1), (2, 1), (3, 5), (2, 2), (3, 0))
     val result = sc.parallelize(testData).reduceByKey {
       val path = SparkFiles.get("FileServerSuite.txt")
       val in = new BufferedReader(new FileReader(path))
@@ -124,7 +133,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
       in.close()
       _ * fileVal + _ * fileVal
     }.collect()
-    assert(result.toSet === Set((1,200), (2,300), (3,500)))
+    assert(result.toSet === Set((1, 200), (2, 300), (3, 500)))
   }
 
   test ("Dynamically adding JARS locally") {
@@ -141,7 +150,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
   test("Distributing files on a standalone cluster") {
     sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
     sc.addFile(tmpFile.toString)
-    val testData = Array((1,1), (1,1), (2,1), (3,5), (2,2), (3,0))
+    val testData = Array((1, 1), (1, 1), (2, 1), (3, 5), (2, 2), (3, 0))
     val result = sc.parallelize(testData).reduceByKey {
       val path = SparkFiles.get("FileServerSuite.txt")
       val in = new BufferedReader(new FileReader(path))
@@ -149,13 +158,13 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
       in.close()
       _ * fileVal + _ * fileVal
     }.collect()
-    assert(result.toSet === Set((1,200), (2,300), (3,500)))
+    assert(result.toSet === Set((1, 200), (2, 300), (3, 500)))
   }
 
   test ("Dynamically adding JARS on a standalone cluster") {
     sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
     sc.addJar(tmpJarUrl)
-    val testData = Array((1,1))
+    val testData = Array((1, 1))
     sc.parallelize(testData).foreach { x =>
       if (Thread.currentThread.getContextClassLoader.getResource("FileServerSuite.txt") == null) {
         throw new SparkException("jar not added")
@@ -166,7 +175,7 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
   test ("Dynamically adding JARS on a standalone cluster using local: URL") {
     sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
     sc.addJar(tmpJarUrl.replace("file", "local"))
-    val testData = Array((1,1))
+    val testData = Array((1, 1))
     sc.parallelize(testData).foreach { x =>
       if (Thread.currentThread.getContextClassLoader.getResource("FileServerSuite.txt") == null) {
         throw new SparkException("jar not added")
@@ -239,7 +248,11 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
   def fileTransferTest(server: HttpFileServer, sm: SecurityManager = null): Unit = {
     val randomContent = RandomUtils.nextBytes(100)
     val file = File.createTempFile("FileServerSuite", "sslTests", tmpDir)
+<<<<<<< HEAD
     FileUtils.writeByteArrayToFile(file, randomContent)
+=======
+    Files.write(randomContent, file)
+>>>>>>> upstream/master
     server.addFile(file)
 
     val uri = new URI(server.serverUri + "/files/" + file.getName)
@@ -254,7 +267,11 @@ class FileServerSuite extends FunSuite with LocalSparkContext {
       Utils.setupSecureURLConnection(connection, sm)
     }
 
+<<<<<<< HEAD
     val buf = IOUtils.toByteArray(connection.getInputStream)
+=======
+    val buf = ByteStreams.toByteArray(connection.getInputStream)
+>>>>>>> upstream/master
     assert(buf === randomContent)
   }
 

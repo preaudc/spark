@@ -19,11 +19,18 @@ package org.apache.spark.mllib.fpm
 
 import scala.language.existentials
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 
 class FPTreeSuite extends FunSuite with MLlibTestSparkContext {
+=======
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.mllib.util.MLlibTestSparkContext
+
+class FPTreeSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   test("add transaction") {
     val tree = new FPTree[String]

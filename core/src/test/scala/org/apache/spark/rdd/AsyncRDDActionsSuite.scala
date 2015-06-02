@@ -23,13 +23,17 @@ import scala.concurrent.{Await, TimeoutException}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.time.SpanSugar._
 
+<<<<<<< HEAD
 import org.apache.spark.{SparkContext, SparkException, LocalSparkContext}
+=======
+import org.apache.spark.{LocalSparkContext, SparkContext, SparkException, SparkFunSuite}
+>>>>>>> upstream/master
 
-class AsyncRDDActionsSuite extends FunSuite with BeforeAndAfterAll with Timeouts {
+class AsyncRDDActionsSuite extends SparkFunSuite with BeforeAndAfterAll with Timeouts {
 
   @transient private var sc: SparkContext = _
 

@@ -17,14 +17,22 @@
 
 package org.apache.spark.mllib.feature
 
-import org.scalatest.FunSuite
+import org.apache.spark.SparkFunSuite
+import org.apache.spark.mllib.util.MLlibTestSparkContext
 
+<<<<<<< HEAD
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
 
 class Word2VecSuite extends FunSuite with MLlibTestSparkContext {
+=======
+import org.apache.spark.mllib.util.TestingUtils._
+import org.apache.spark.util.Utils
+
+class Word2VecSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   // TODO: add more tests
 

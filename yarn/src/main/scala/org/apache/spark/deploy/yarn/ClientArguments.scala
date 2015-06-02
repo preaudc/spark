@@ -42,6 +42,11 @@ private[spark] class ClientArguments(args: Array[String], sparkConf: SparkConf) 
   var amCores: Int = 1
   var appName: String = "Spark"
   var priority = 0
+<<<<<<< HEAD:yarn/src/main/scala/org/apache/spark/deploy/yarn/ClientArguments.scala
+=======
+  var principal: String = null
+  var keytab: String = null
+>>>>>>> upstream/master:yarn/src/main/scala/org/apache/spark/deploy/yarn/ClientArguments.scala
   def isClusterMode: Boolean = userClass != null
 
   private var driverMemory: Int = 512 // MB
@@ -96,6 +101,12 @@ private[spark] class ClientArguments(args: Array[String], sparkConf: SparkConf) 
 
       numExecutors = initialNumExecutors
     }
+    principal = Option(principal)
+      .orElse(sparkConf.getOption("spark.yarn.principal"))
+      .orNull
+    keytab = Option(keytab)
+      .orElse(sparkConf.getOption("spark.yarn.keytab"))
+      .orNull
   }
 
   /**
@@ -103,9 +114,38 @@ private[spark] class ClientArguments(args: Array[String], sparkConf: SparkConf) 
    * This is intended to be called only after the provided arguments have been parsed.
    */
   private def validateArgs(): Unit = {
-    if (numExecutors <= 0) {
+    if (numExecutors < 0 || (!isDynamicAllocationEnabled && numExecutors == 0)) {
       throw new IllegalArgumentException(
-        "You must specify at least 1 executor!\n" + getUsageMessage())
+        s"""
+           |Number of executors was $numExecutors, but must be at least 1
+           |(or 0 if dynamic executor allocation is enabled).
+           |${getUsageMessage()}
+         """.stripMargin)
+    }
+    if (executorCores < sparkConf.getInt("spark.task.cpus", 1)) {
+      throw new SparkException("Executor cores must not be less than " +
+        "spark.task.cpus.")
+    }
+    if (isClusterMode) {
+      for (key <- Seq(amMemKey, amMemOverheadKey, amCoresKey)) {
+        if (sparkConf.contains(key)) {
+          println(s"$key is set but does not apply in cluster mode.")
+        }
+      }
+      amMemory = driverMemory
+      amCores = driverCores
+    } else {
+      for (key <- Seq(driverMemOverheadKey, driverCoresKey)) {
+        if (sparkConf.contains(key)) {
+          println(s"$key is set but does not apply in client mode.")
+        }
+      }
+      sparkConf.getOption(amMemKey)
+        .map(Utils.memoryStringToMb)
+        .foreach { mem => amMemory = mem }
+      sparkConf.getOption(amCoresKey)
+        .map(_.toInt)
+        .foreach { cores => amCores = cores }
     }
     if (executorCores < sparkConf.getInt("spark.task.cpus", 1)) {
       throw new SparkException("Executor cores must not be less than " +
@@ -225,6 +265,14 @@ private[spark] class ClientArguments(args: Array[String], sparkConf: SparkConf) 
 
         case ("--archives") :: value :: tail =>
           archives = value
+          args = tail
+
+        case ("--principal") :: value :: tail =>
+          principal = value
+          args = tail
+
+        case ("--keytab") :: value :: tail =>
+          keytab = value
           args = tail
 
         case Nil =>

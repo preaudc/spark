@@ -26,7 +26,11 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat}
 
+<<<<<<< HEAD
 import org.apache.spark.SerializableWritable
+=======
+import org.apache.spark.{SparkConf, SerializableWritable}
+>>>>>>> upstream/master
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.streaming._
 import org.apache.spark.util.{TimeStampedHashMap, Utils}
@@ -63,13 +67,21 @@ import org.apache.spark.util.{TimeStampedHashMap, Utils}
  *   the streaming app.
  * - If a file is to be visible in the directory listings, it must be visible within a certain
  *   duration of the mod time of the file. This duration is the "remember window", which is set to
+<<<<<<< HEAD
  *   1 minute (see `FileInputDStream.MIN_REMEMBER_DURATION`). Otherwise, the file will never be
+=======
+ *   1 minute (see `FileInputDStream.minRememberDuration`). Otherwise, the file will never be
+>>>>>>> upstream/master
  *   selected as the mod time will be less than the ignore threshold when it becomes visible.
  * - Once a file is visible, the mod time cannot change. If it does due to appends, then the
  *   processing semantics are undefined.
  */
 private[streaming]
+<<<<<<< HEAD
 class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
+=======
+class FileInputDStream[K, V, F <: NewInputFormat[K, V]](
+>>>>>>> upstream/master
     @transient ssc_ : StreamingContext,
     directory: String,
     filter: Path => Boolean = FileInputDStream.defaultFilter,
@@ -80,6 +92,18 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
 
   private val serializableConfOpt = conf.map(new SerializableWritable(_))
 
+<<<<<<< HEAD
+=======
+  /**
+   * Minimum duration of remembering the information of selected files. Defaults to 60 seconds.
+   *
+   * Files with mod times older than this "window" of remembering will be ignored. So if new
+   * files are visible within this window, then the file will get selected in the next batch.
+   */
+  private val minRememberDurationS =
+    Seconds(ssc.conf.getTimeAsSeconds("spark.streaming.minRememberDuration", "60s"))
+
+>>>>>>> upstream/master
   // This is a def so that it works during checkpoint recovery:
   private def clock = ssc.scheduler.clock
 
@@ -89,6 +113,7 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
   // Initial ignore threshold based on which old, existing files in the directory (at the time of
   // starting the streaming application) will be ignored or considered
   private val initialModTimeIgnoreThreshold = if (newFilesOnly) clock.getTimeMillis() else 0L
+<<<<<<< HEAD
 
   /*
    * Make sure that the information of files selected in the last few batches are remembered.
@@ -107,6 +132,27 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
   // Set of files that were selected in the remembered batches
   @transient private var recentlySelectedFiles = new mutable.HashSet[String]()
 
+=======
+
+  /*
+   * Make sure that the information of files selected in the last few batches are remembered.
+   * This would allow us to filter away not-too-old files which have already been recently
+   * selected and processed.
+   */
+  private val numBatchesToRemember = FileInputDStream
+    .calculateNumBatchesToRemember(slideDuration, minRememberDurationS)
+  private val durationToRemember = slideDuration * numBatchesToRemember
+  remember(durationToRemember)
+
+  // Map of batch-time to selected file info for the remembered batches
+  // This is a concurrent map because it's also accessed in unit tests
+  @transient private[streaming] var batchTimeToSelectedFiles =
+    new mutable.HashMap[Time, Array[String]] with mutable.SynchronizedMap[Time, Array[String]]
+
+  // Set of files that were selected in the remembered batches
+  @transient private var recentlySelectedFiles = new mutable.HashSet[String]()
+
+>>>>>>> upstream/master
   // Read-through cache of file mod times, used to speed up mod time lookups
   @transient private var fileToModTime = new TimeStampedHashMap[String, Long](true)
 
@@ -190,6 +236,7 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
         logWarning("Error finding new files", e)
         reset()
         Array.empty
+<<<<<<< HEAD
     }
   }
 
@@ -230,6 +277,48 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
       logDebug(s"$pathStr not selected as mod time $modTime > current time $currentTime")
       return false
     }
+=======
+    }
+  }
+
+  /**
+   * Identify whether the given `path` is a new file for the batch of `currentTime`. For it to be
+   * accepted, it has to pass the following criteria.
+   * - It must pass the user-provided file filter.
+   * - It must be newer than the ignore threshold. It is assumed that files older than the ignore
+   *   threshold have already been considered or are existing files before start
+   *   (when newFileOnly = true).
+   * - It must not be present in the recently selected files that this class remembers.
+   * - It must not be newer than the time of the batch (i.e. `currentTime` for which this
+   *   file is being tested. This can occur if the driver was recovered, and the missing batches
+   *   (during downtime) are being generated. In that case, a batch of time T may be generated
+   *   at time T+x. Say x = 5. If that batch T contains file of mod time T+5, then bad things can
+   *   happen. Let's say the selected files are remembered for 60 seconds.  At time t+61,
+   *   the batch of time t is forgotten, and the ignore threshold is still T+1.
+   *   The files with mod time T+5 are not remembered and cannot be ignored (since, t+5 > t+1).
+   *   Hence they can get selected as new files again. To prevent this, files whose mod time is more
+   *   than current batch time are not considered.
+   */
+  private def isNewFile(path: Path, currentTime: Long, modTimeIgnoreThreshold: Long): Boolean = {
+    val pathStr = path.toString
+    // Reject file if it does not satisfy filter
+    if (!filter(path)) {
+      logDebug(s"$pathStr rejected by filter")
+      return false
+    }
+    // Reject file if it was created before the ignore time
+    val modTime = getFileModTime(path)
+    if (modTime <= modTimeIgnoreThreshold) {
+      // Use <= instead of < to avoid SPARK-4518
+      logDebug(s"$pathStr ignored as mod time $modTime <= ignore time $modTimeIgnoreThreshold")
+      return false
+    }
+    // Reject file if mod time > current batch time
+    if (modTime > currentTime) {
+      logDebug(s"$pathStr not selected as mod time $modTime > current time $currentTime")
+      return false
+    }
+>>>>>>> upstream/master
     // Reject file if it was considered earlier
     if (recentlySelectedFiles.contains(pathStr)) {
       logDebug(s"$pathStr already considered")
@@ -241,7 +330,11 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
 
   /** Generate one RDD from an array of files */
   private def filesToRDD(files: Seq[String]): RDD[(K, V)] = {
+<<<<<<< HEAD
     val fileRDDs = files.map(file =>{
+=======
+    val fileRDDs = files.map { file =>
+>>>>>>> upstream/master
       val rdd = serializableConfOpt.map(_.value) match {
         case Some(config) => context.sparkContext.newAPIHadoopFile(
           file,
@@ -257,7 +350,11 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
           "Refer to the streaming programming guide for more details.")
       }
       rdd
+<<<<<<< HEAD
     })
+=======
+    }
+>>>>>>> upstream/master
     new UnionRDD(context.sparkContext, fileRDDs)
   }
 
@@ -284,7 +381,11 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
   private def readObject(ois: ObjectInputStream): Unit = Utils.tryOrIOException {
     logDebug(this.getClass().getSimpleName + ".readObject used")
     ois.defaultReadObject()
+<<<<<<< HEAD
     generatedRDDs = new mutable.HashMap[Time, RDD[(K,V)]] ()
+=======
+    generatedRDDs = new mutable.HashMap[Time, RDD[(K, V)]]()
+>>>>>>> upstream/master
     batchTimeToSelectedFiles =
       new mutable.HashMap[Time, Array[String]] with mutable.SynchronizedMap[Time, Array[String]]
     recentlySelectedFiles = new mutable.HashSet[String]()
@@ -325,6 +426,7 @@ class FileInputDStream[K, V, F <: NewInputFormat[K,V]](
         hadoopFiles.map(p => (p._1, p._2.mkString(", "))).mkString("\n") + "\n]"
     }
   }
+<<<<<<< HEAD
 }
 
 private[streaming]
@@ -347,3 +449,21 @@ object FileInputDStream {
     math.ceil(MIN_REMEMBER_DURATION.milliseconds.toDouble / batchDuration.milliseconds).toInt
   }
 }
+=======
+}
+
+private[streaming]
+object FileInputDStream {
+
+  def defaultFilter(path: Path): Boolean = !path.getName().startsWith(".")
+
+  /**
+   * Calculate the number of last batches to remember, such that all the files selected in
+   * at least last minRememberDurationS duration can be remembered.
+   */
+  def calculateNumBatchesToRemember(batchDuration: Duration,
+                                    minRememberDurationS: Duration): Int = {
+    math.ceil(minRememberDurationS.milliseconds.toDouble / batchDuration.milliseconds).toInt
+  }
+}
+>>>>>>> upstream/master

@@ -23,17 +23,30 @@ import java.util.concurrent.TimeUnit
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+<<<<<<< HEAD
+=======
+import scala.io.Source
+>>>>>>> upstream/master
 
 import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.server.MiniYARNCluster
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 
 import org.apache.spark.{Logging, SparkConf, SparkContext, SparkException, TestUtils}
 import org.apache.spark.scheduler.cluster.ExecutorInfo
 import org.apache.spark.scheduler.{SparkListenerJobStart, SparkListener, SparkListenerExecutorAdded}
+=======
+import org.scalatest.{BeforeAndAfterAll, Matchers}
+
+import org.apache.spark._
+import org.apache.spark.scheduler.cluster.ExecutorInfo
+import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationStart,
+  SparkListenerExecutorAdded}
+>>>>>>> upstream/master
 import org.apache.spark.util.Utils
 
 /**
@@ -41,7 +54,11 @@ import org.apache.spark.util.Utils
  * applications, and require the Spark assembly to be built before they can be successfully
  * run.
  */
+<<<<<<< HEAD
 class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers with Logging {
+=======
+class YarnClusterSuite extends SparkFunSuite with BeforeAndAfterAll with Matchers with Logging {
+>>>>>>> upstream/master
 
   // log4j configuration for the YARN containers, so that their output is collected
   // by YARN instead of trying to overwrite unit-tests.log.
@@ -77,6 +94,10 @@ class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers wit
   private var yarnCluster: MiniYARNCluster = _
   private var tempDir: File = _
   private var fakeSparkJar: File = _
+<<<<<<< HEAD
+=======
+  private var hadoopConfDir: File = _
+>>>>>>> upstream/master
   private var logConfDir: File = _
 
   override def beforeAll() {
@@ -85,6 +106,10 @@ class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers wit
     tempDir = Utils.createTempDir()
     logConfDir = new File(tempDir, "log4j")
     logConfDir.mkdir()
+<<<<<<< HEAD
+=======
+    System.setProperty("SPARK_YARN_MODE", "true")
+>>>>>>> upstream/master
 
     val logConfFile = new File(logConfDir, "log4j.properties")
     Files.write(LOG4J_CONF, logConfFile, UTF_8)
@@ -120,10 +145,20 @@ class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers wit
     logInfo(s"RM address in configuration is ${config.get(YarnConfiguration.RM_ADDRESS)}")
 
     fakeSparkJar = File.createTempFile("sparkJar", null, tempDir)
+<<<<<<< HEAD
+=======
+    hadoopConfDir = new File(tempDir, Client.LOCALIZED_HADOOP_CONF_DIR)
+    assert(hadoopConfDir.mkdir())
+    File.createTempFile("token", ".txt", hadoopConfDir)
+>>>>>>> upstream/master
   }
 
   override def afterAll() {
     yarnCluster.stop()
+<<<<<<< HEAD
+=======
+    System.clearProperty("SPARK_YARN_MODE")
+>>>>>>> upstream/master
     super.afterAll()
   }
 
@@ -258,7 +293,11 @@ class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers wit
       appArgs
 
     Utils.executeAndGetOutput(argv,
+<<<<<<< HEAD
       extraEnvironment = Map("YARN_CONF_DIR" -> tempDir.getAbsolutePath()))
+=======
+      extraEnvironment = Map("YARN_CONF_DIR" -> hadoopConfDir.getAbsolutePath()))
+>>>>>>> upstream/master
   }
 
   /**
@@ -284,10 +323,21 @@ class YarnClusterSuite extends FunSuite with BeforeAndAfterAll with Matchers wit
 
 private[spark] class SaveExecutorInfo extends SparkListener {
   val addedExecutorInfos = mutable.Map[String, ExecutorInfo]()
+<<<<<<< HEAD
+=======
+  var driverLogs: Option[collection.Map[String, String]] = None
+>>>>>>> upstream/master
 
   override def onExecutorAdded(executor: SparkListenerExecutorAdded) {
     addedExecutorInfos(executor.executorId) = executor.executorInfo
   }
+<<<<<<< HEAD
+=======
+
+  override def onApplicationStart(appStart: SparkListenerApplicationStart): Unit = {
+    driverLogs = appStart.driverLogs
+  }
+>>>>>>> upstream/master
 }
 
 private object YarnClusterDriver extends Logging with Matchers {
@@ -308,6 +358,10 @@ private object YarnClusterDriver extends Logging with Matchers {
     val sc = new SparkContext(new SparkConf()
       .set("spark.extraListeners", classOf[SaveExecutorInfo].getName)
       .setAppName("yarn \"test app\" 'with quotes' and \\back\\slashes and $dollarSigns"))
+<<<<<<< HEAD
+=======
+    val conf = sc.getConf
+>>>>>>> upstream/master
     val status = new File(args(0))
     var result = "failure"
     try {
@@ -329,6 +383,23 @@ private object YarnClusterDriver extends Logging with Matchers {
     executorInfos.foreach { info =>
       assert(info.logUrlMap.nonEmpty)
     }
+<<<<<<< HEAD
+=======
+
+    // If we are running in yarn-cluster mode, verify that driver logs are downloadable.
+    if (conf.get("spark.master") == "yarn-cluster") {
+      assert(listener.driverLogs.nonEmpty)
+      val driverLogs = listener.driverLogs.get
+      assert(driverLogs.size === 2)
+      assert(driverLogs.containsKey("stderr"))
+      assert(driverLogs.containsKey("stdout"))
+      val stderr = driverLogs("stderr") // YARN puts everything in stderr.
+      val lines = Source.fromURL(stderr).getLines()
+      // Look for a line that contains YarnClusterSchedulerBackend, since that is guaranteed in
+      // cluster mode.
+      assert(lines.exists(_.contains("YarnClusterSchedulerBackend")))
+    }
+>>>>>>> upstream/master
   }
 
 }

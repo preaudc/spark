@@ -98,6 +98,7 @@
       </exclusions>
     </dependency>
     <dependency>
+<<<<<<< HEAD
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-testing-util</artifactId>
       <version>${hbase.version}</version>
@@ -125,6 +126,17 @@
       <artifactId>hbase-common</artifactId>
       <version>${hbase.version}</version>
       <scope>${hbase.deps.scope}</scope>
+=======
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming-kafka_${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-testing-util</artifactId>
+      <version>${hbase.version}</version>
+      <scope>${hbase.deps.scope}</scope>
+>>>>>>> upstream/master
       <exclusions>
         <exclusion>
           <!-- SPARK-4455 -->
@@ -140,6 +152,60 @@
       <scope>${hbase.deps.scope}</scope>
       <exclusions>
         <exclusion>
+<<<<<<< HEAD
+          <!-- SPARK-4455 -->
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-annotations</artifactId>
+        </exclusion>
+       <exclusion>
+        <groupId>io.netty</groupId>
+        <artifactId>netty</artifactId>
+       </exclusion>
+     </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-server</artifactId>
+=======
+          <groupId>org.jruby</groupId>
+          <artifactId>jruby-complete</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-protocol</artifactId>
+      <version>${hbase.version}</version>
+      <scope>${hbase.deps.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+>>>>>>> upstream/master
+      <version>${hbase.version}</version>
+      <scope>${hbase.deps.scope}</scope>
+      <exclusions>
+        <exclusion>
+          <!-- SPARK-4455 -->
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase.version}</version>
+      <scope>${hbase.deps.scope}</scope>
+      <exclusions>
+        <exclusion>
+<<<<<<< HEAD
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+=======
           <!-- SPARK-4455 -->
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-annotations</artifactId>
@@ -167,6 +233,7 @@
         </exclusion>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
+>>>>>>> upstream/master
           <artifactId>hadoop-client</artifactId>
         </exclusion>
         <exclusion>
@@ -245,7 +312,11 @@
     <dependency>
       <groupId>com.twitter</groupId>
       <artifactId>algebird-core_${scala.binary.version}</artifactId>
+<<<<<<< HEAD
       <version>0.8.1</version>
+=======
+      <version>0.9.0</version>
+>>>>>>> upstream/master
     </dependency>
     <dependency>
       <groupId>org.scalacheck</groupId>
@@ -390,6 +461,7 @@
           <artifactId>spark-streaming-kinesis-asl_${scala.binary.version}</artifactId>
           <version>${project.version}</version>
         </dependency>
+<<<<<<< HEAD
         <dependency>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
@@ -435,6 +507,9 @@
           </plugin>
         </plugins>
       </build>
+=======
+      </dependencies>
+>>>>>>> upstream/master
     </profile>
 
     <!-- Profiles that disable inclusion of certain dependencies. -->

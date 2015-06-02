@@ -210,7 +210,11 @@ object SVDPlusPlus {
   /**
    * Forces materialization of a Graph by count()ing its RDDs.
    */
+<<<<<<< HEAD
   private def materialize(g: Graph[_,_]): Unit = {
+=======
+  private def materialize(g: Graph[_, _]): Unit = {
+>>>>>>> upstream/master
     g.vertices.count()
     g.edges.count()
   }

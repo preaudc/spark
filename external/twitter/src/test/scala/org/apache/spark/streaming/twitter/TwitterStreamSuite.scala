@@ -18,16 +18,28 @@
 package org.apache.spark.streaming.twitter
 
 
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import twitter4j.Status
 import twitter4j.auth.{NullAuthorization, Authorization}
 
 import org.apache.spark.Logging
+=======
+import org.scalatest.BeforeAndAfter
+import twitter4j.Status
+import twitter4j.auth.{NullAuthorization, Authorization}
+
+import org.apache.spark.{Logging, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.dstream.ReceiverInputDStream
 
+<<<<<<< HEAD
 class TwitterStreamSuite extends FunSuite with BeforeAndAfter with Logging {
+=======
+class TwitterStreamSuite extends SparkFunSuite with BeforeAndAfter with Logging {
+>>>>>>> upstream/master
 
   val batchDuration = Seconds(1)
 

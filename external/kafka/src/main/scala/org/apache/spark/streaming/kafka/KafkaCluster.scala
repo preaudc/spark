@@ -20,9 +20,16 @@ package org.apache.spark.streaming.kafka
 import scala.util.control.NonFatal
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
+<<<<<<< HEAD
 import java.util.Properties
 import kafka.api._
 import kafka.common.{ErrorMapping, OffsetMetadataAndError, TopicAndPartition}
+=======
+import scala.collection.JavaConverters._
+import java.util.Properties
+import kafka.api._
+import kafka.common.{ErrorMapping, OffsetAndMetadata, OffsetMetadataAndError, TopicAndPartition}
+>>>>>>> upstream/master
 import kafka.consumer.{ConsumerConfig, SimpleConsumer}
 import org.apache.spark.SparkException
 
@@ -112,7 +119,11 @@ class KafkaCluster(val kafkaParams: Map[String, String]) extends Serializable {
       r.flatMap { tm: TopicMetadata =>
         tm.partitionsMetadata.map { pm: PartitionMetadata =>
           TopicAndPartition(tm.topic, pm.partitionId)
+<<<<<<< HEAD
         }    
+=======
+        }
+>>>>>>> upstream/master
       }
     }
   }
@@ -220,12 +231,30 @@ class KafkaCluster(val kafkaParams: Map[String, String]) extends Serializable {
   // https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-OffsetCommit/FetchAPI
   // scalastyle:on
 
+<<<<<<< HEAD
+=======
+  // this 0 here indicates api version, in this case the original ZK backed api.
+  private def defaultConsumerApiVersion: Short = 0
+
+>>>>>>> upstream/master
   /** Requires Kafka >= 0.8.1.1 */
   def getConsumerOffsets(
       groupId: String,
       topicAndPartitions: Set[TopicAndPartition]
+<<<<<<< HEAD
     ): Either[Err, Map[TopicAndPartition, Long]] = {
     getConsumerOffsetMetadata(groupId, topicAndPartitions).right.map { r =>
+=======
+    ): Either[Err, Map[TopicAndPartition, Long]] =
+    getConsumerOffsets(groupId, topicAndPartitions, defaultConsumerApiVersion)
+
+  def getConsumerOffsets(
+      groupId: String,
+      topicAndPartitions: Set[TopicAndPartition],
+      consumerApiVersion: Short
+    ): Either[Err, Map[TopicAndPartition, Long]] = {
+    getConsumerOffsetMetadata(groupId, topicAndPartitions, consumerApiVersion).right.map { r =>
+>>>>>>> upstream/master
       r.map { kv =>
         kv._1 -> kv._2.offset
       }
@@ -236,9 +265,22 @@ class KafkaCluster(val kafkaParams: Map[String, String]) extends Serializable {
   def getConsumerOffsetMetadata(
       groupId: String,
       topicAndPartitions: Set[TopicAndPartition]
+<<<<<<< HEAD
     ): Either[Err, Map[TopicAndPartition, OffsetMetadataAndError]] = {
     var result = Map[TopicAndPartition, OffsetMetadataAndError]()
     val req = OffsetFetchRequest(groupId, topicAndPartitions.toSeq)
+=======
+    ): Either[Err, Map[TopicAndPartition, OffsetMetadataAndError]] =
+    getConsumerOffsetMetadata(groupId, topicAndPartitions, defaultConsumerApiVersion)
+
+  def getConsumerOffsetMetadata(
+      groupId: String,
+      topicAndPartitions: Set[TopicAndPartition],
+      consumerApiVersion: Short
+    ): Either[Err, Map[TopicAndPartition, OffsetMetadataAndError]] = {
+    var result = Map[TopicAndPartition, OffsetMetadataAndError]()
+    val req = OffsetFetchRequest(groupId, topicAndPartitions.toSeq, consumerApiVersion)
+>>>>>>> upstream/master
     val errs = new Err
     withBrokers(Random.shuffle(config.seedBrokers), errs) { consumer =>
       val resp = consumer.fetchOffsets(req)
@@ -266,24 +308,57 @@ class KafkaCluster(val kafkaParams: Map[String, String]) extends Serializable {
   def setConsumerOffsets(
       groupId: String,
       offsets: Map[TopicAndPartition, Long]
+<<<<<<< HEAD
     ): Either[Err, Map[TopicAndPartition, Short]] = {
     setConsumerOffsetMetadata(groupId, offsets.map { kv =>
       kv._1 -> OffsetMetadataAndError(kv._2)
     })
+=======
+    ): Either[Err, Map[TopicAndPartition, Short]] =
+    setConsumerOffsets(groupId, offsets, defaultConsumerApiVersion)
+
+  def setConsumerOffsets(
+      groupId: String,
+      offsets: Map[TopicAndPartition, Long],
+      consumerApiVersion: Short
+    ): Either[Err, Map[TopicAndPartition, Short]] = {
+    val meta = offsets.map { kv =>
+      kv._1 -> OffsetAndMetadata(kv._2)
+    }
+    setConsumerOffsetMetadata(groupId, meta, consumerApiVersion)
+>>>>>>> upstream/master
   }
 
   /** Requires Kafka >= 0.8.1.1 */
   def setConsumerOffsetMetadata(
       groupId: String,
+<<<<<<< HEAD
       metadata: Map[TopicAndPartition, OffsetMetadataAndError]
     ): Either[Err, Map[TopicAndPartition, Short]] = {
     var result = Map[TopicAndPartition, Short]()
     val req = OffsetCommitRequest(groupId, metadata)
+=======
+      metadata: Map[TopicAndPartition, OffsetAndMetadata]
+    ): Either[Err, Map[TopicAndPartition, Short]] =
+    setConsumerOffsetMetadata(groupId, metadata, defaultConsumerApiVersion)
+
+  def setConsumerOffsetMetadata(
+      groupId: String,
+      metadata: Map[TopicAndPartition, OffsetAndMetadata],
+      consumerApiVersion: Short
+    ): Either[Err, Map[TopicAndPartition, Short]] = {
+    var result = Map[TopicAndPartition, Short]()
+    val req = OffsetCommitRequest(groupId, metadata, consumerApiVersion)
+>>>>>>> upstream/master
     val errs = new Err
     val topicAndPartitions = metadata.keySet
     withBrokers(Random.shuffle(config.seedBrokers), errs) { consumer =>
       val resp = consumer.commitOffsets(req)
+<<<<<<< HEAD
       val respMap = resp.requestInfo
+=======
+      val respMap = resp.commitStatus
+>>>>>>> upstream/master
       val needed = topicAndPartitions.diff(result.keySet)
       needed.foreach { tp: TopicAndPartition =>
         respMap.get(tp).foreach { err: Short =>

@@ -18,7 +18,11 @@
 package org.apache.spark
 
 /**
+<<<<<<< HEAD
  * Spark ML is an ALPHA component that adds a new set of machine learning APIs to let users quickly
+=======
+ * Spark ML is a BETA component that adds a new set of machine learning APIs to let users quickly
+>>>>>>> upstream/master
  * assemble and configure practical machine learning pipelines.
  *
  * @groupname param Parameters
@@ -32,6 +36,21 @@ package org.apache.spark
  * @groupname getParam Parameter getters
  * @groupprio getParam 6
  *
+<<<<<<< HEAD
+=======
+ * @groupname expertParam (expert-only) Parameters
+ * @groupdesc expertParam A list of advanced, expert-only (hyper-)parameter keys this algorithm can
+ *            take. Users can set and get the parameter values through setters and getters,
+ *            respectively.
+ * @groupprio expertParam 7
+ *
+ * @groupname expertSetParam (expert-only) Parameter setters
+ * @groupprio expertSetParam 8
+ *
+ * @groupname expertGetParam (expert-only) Parameter getters
+ * @groupprio expertGetParam 9
+ *
+>>>>>>> upstream/master
  * @groupname Ungrouped Members
  * @groupprio Ungrouped 0
  */

@@ -121,7 +121,11 @@ case class Aggregate(
     }
   }
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = attachTree(this, "execute") {
+=======
+  protected override def doExecute(): RDD[Row] = attachTree(this, "execute") {
+>>>>>>> upstream/master
     if (groupingExpressions.isEmpty) {
       child.execute().mapPartitions { iter =>
         val buffer = newAggregateBuffer()

@@ -85,6 +85,7 @@ private[spark] object SerDe {
     in.readDouble()
   }
 
+<<<<<<< HEAD
   def readString(in: DataInputStream): String = {
     val len = in.readInt()
     val asciiBytes = new Array[Byte](len)
@@ -92,6 +93,19 @@ private[spark] object SerDe {
     assert(asciiBytes(len - 1) == 0)
     val str = new String(asciiBytes.dropRight(1).map(_.toChar))
     str
+=======
+  def readStringBytes(in: DataInputStream, len: Int): String = {
+    val bytes = new Array[Byte](len)
+    in.readFully(bytes)
+    assert(bytes(len - 1) == 0)
+    val str = new String(bytes.dropRight(1), "UTF-8")
+    str
+  }
+
+  def readString(in: DataInputStream): String = {
+    val len = in.readInt()
+    readStringBytes(in, len)
+>>>>>>> upstream/master
   }
 
   def readBoolean(in: DataInputStream): Boolean = {
@@ -153,9 +167,17 @@ private[spark] object SerDe {
       val keysLen = readInt(in)
       val keys = (0 until keysLen).map(_ => readTypedObject(in, keysType))
 
+<<<<<<< HEAD
       val valuesType = readObjectType(in)
       val valuesLen = readInt(in)
       val values = (0 until valuesLen).map(_ => readTypedObject(in, valuesType))
+=======
+      val valuesLen = readInt(in)
+      val values = (0 until valuesLen).map(_ => {
+        val valueType = readObjectType(in)
+        readTypedObject(in, valueType)
+      })
+>>>>>>> upstream/master
       mapAsJavaMap(keys.zip(values).toMap)
     } else {
       new java.util.HashMap[Object, Object]()

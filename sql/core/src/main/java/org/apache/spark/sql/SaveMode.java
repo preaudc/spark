@@ -18,28 +18,53 @@ package org.apache.spark.sql;
 
 /**
  * SaveMode is used to specify the expected behavior of saving a DataFrame to a data source.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.0
+>>>>>>> upstream/master
  */
 public enum SaveMode {
   /**
    * Append mode means that when saving a DataFrame to a data source, if data/table already exists,
    * contents of the DataFrame are expected to be appended to existing data.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.0
+>>>>>>> upstream/master
    */
   Append,
   /**
    * Overwrite mode means that when saving a DataFrame to a data source,
    * if data/table already exists, existing data is expected to be overwritten by the contents of
    * the DataFrame.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.0
+>>>>>>> upstream/master
    */
   Overwrite,
   /**
    * ErrorIfExists mode means that when saving a DataFrame to a data source, if data already exists,
    * an exception is expected to be thrown.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.0
+>>>>>>> upstream/master
    */
   ErrorIfExists,
   /**
    * Ignore mode means that when saving a DataFrame to a data source, if data already exists,
    * the save operation is expected to not save the contents of the DataFrame and to not
    * change the existing data.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.0
+>>>>>>> upstream/master
    */
   Ignore
 }

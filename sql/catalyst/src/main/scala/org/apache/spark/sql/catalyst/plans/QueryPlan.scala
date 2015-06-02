@@ -84,7 +84,11 @@ abstract class QueryPlan[PlanType <: TreeNode[PlanType]] extends TreeNode[PlanTy
     val newArgs = productIterator.map {
       case e: Expression => transformExpressionDown(e)
       case Some(e: Expression) => Some(transformExpressionDown(e))
+<<<<<<< HEAD
       case m: Map[_,_] => m
+=======
+      case m: Map[_, _] => m
+>>>>>>> upstream/master
       case d: DataType => d // Avoid unpacking Structs
       case seq: Traversable[_] => seq.map {
         case e: Expression => transformExpressionDown(e)
@@ -117,7 +121,11 @@ abstract class QueryPlan[PlanType <: TreeNode[PlanType]] extends TreeNode[PlanTy
     val newArgs = productIterator.map {
       case e: Expression => transformExpressionUp(e)
       case Some(e: Expression) => Some(transformExpressionUp(e))
+<<<<<<< HEAD
       case m: Map[_,_] => m
+=======
+      case m: Map[_, _] => m
+>>>>>>> upstream/master
       case d: DataType => d // Avoid unpacking Structs
       case seq: Traversable[_] => seq.map {
         case e: Expression => transformExpressionUp(e)

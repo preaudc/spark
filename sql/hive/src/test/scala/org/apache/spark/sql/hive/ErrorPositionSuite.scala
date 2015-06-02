@@ -17,12 +17,19 @@
 
 package org.apache.spark.sql.hive
 
+<<<<<<< HEAD
 import java.io.{OutputStream, PrintStream}
 
+=======
+>>>>>>> upstream/master
 import scala.util.Try
 
 import org.scalatest.BeforeAndAfter
 
+<<<<<<< HEAD
+=======
+import org.apache.spark.sql.catalyst.util.quietly
+>>>>>>> upstream/master
 import org.apache.spark.sql.hive.test.TestHive._
 import org.apache.spark.sql.hive.test.TestHive.implicits._
 import org.apache.spark.sql.{AnalysisException, QueryTest}
@@ -109,6 +116,7 @@ class ErrorPositionSuite extends QueryTest with BeforeAndAfter {
       "SELECT 1 + array(1)", "1 + array")
   }
 
+<<<<<<< HEAD
   /** Hive can be very noisy, messing up the output of our tests. */
   private def quietly[A](f: => A): A = {
     val origErr = System.err
@@ -128,6 +136,8 @@ class ErrorPositionSuite extends QueryTest with BeforeAndAfter {
     }
   }
 
+=======
+>>>>>>> upstream/master
   /**
    * Creates a test that checks to see if the error thrown when analyzing a given query includes
    * the location of the given token in the query string.

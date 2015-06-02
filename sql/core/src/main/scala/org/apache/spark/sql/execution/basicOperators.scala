@@ -37,7 +37,11 @@ case class Project(projectList: Seq[NamedExpression], child: SparkPlan) extends 
 
   @transient lazy val buildProjection = newMutableProjection(projectList, child.output)
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = child.execute().mapPartitions { iter =>
+=======
+  protected override def doExecute(): RDD[Row] = child.execute().mapPartitions { iter =>
+>>>>>>> upstream/master
     val resuableProjection = buildProjection()
     iter.map(resuableProjection)
   }
@@ -54,7 +58,11 @@ case class Filter(condition: Expression, child: SparkPlan) extends UnaryNode {
 
   @transient lazy val conditionEvaluator: (Row) => Boolean = newPredicate(condition, child.output)
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = child.execute().mapPartitions { iter =>
+=======
+  protected override def doExecute(): RDD[Row] = child.execute().mapPartitions { iter =>
+>>>>>>> upstream/master
     iter.filter(conditionEvaluator)
   }
 
@@ -63,16 +71,37 @@ case class Filter(condition: Expression, child: SparkPlan) extends UnaryNode {
 
 /**
  * :: DeveloperApi ::
+ * Sample the dataset.
+ * @param lowerBound Lower-bound of the sampling probability (usually 0.0)
+ * @param upperBound Upper-bound of the sampling probability. The expected fraction sampled
+ *                   will be ub - lb.
+ * @param withReplacement Whether to sample with replacement.
+ * @param seed the random seed
+ * @param child the QueryPlan
  */
 @DeveloperApi
-case class Sample(fraction: Double, withReplacement: Boolean, seed: Long, child: SparkPlan)
+case class Sample(
+    lowerBound: Double,
+    upperBound: Double,
+    withReplacement: Boolean,
+    seed: Long,
+    child: SparkPlan)
   extends UnaryNode
 {
   override def output: Seq[Attribute] = child.output
 
   // TODO: How to pick seed?
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
     child.execute().map(_.copy()).sample(withReplacement, fraction, seed)
+=======
+  protected override def doExecute(): RDD[Row] = {
+    if (withReplacement) {
+      child.execute().map(_.copy()).sample(withReplacement, upperBound - lowerBound, seed)
+    } else {
+      child.execute().map(_.copy()).randomSampleWithRange(lowerBound, upperBound, seed)
+    }
+>>>>>>> upstream/master
   }
 }
 
@@ -83,7 +112,11 @@ case class Sample(fraction: Double, withReplacement: Boolean, seed: Long, child:
 case class Union(children: Seq[SparkPlan]) extends SparkPlan {
   // TODO: attributes output by union should be distinct for nullability purposes
   override def output: Seq[Attribute] = children.head.output
+<<<<<<< HEAD
   override def execute(): RDD[Row] = sparkContext.union(children.map(_.execute()))
+=======
+  protected override def doExecute(): RDD[Row] = sparkContext.union(children.map(_.execute()))
+>>>>>>> upstream/master
 }
 
 /**
@@ -108,7 +141,11 @@ case class Limit(limit: Int, child: SparkPlan)
 
   override def executeCollect(): Array[Row] = child.executeTake(limit)
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     val rdd: RDD[_ <: Product2[Boolean, Row]] = if (sortBasedShuffleOn) {
       child.execute().mapPartitions { iter =>
         iter.take(limit).map(row => (false, row.copy()))
@@ -138,11 +175,19 @@ case class TakeOrdered(limit: Int, sortOrder: Seq[SortOrder], child: SparkPlan) 
   override def output: Seq[Attribute] = child.output
 
   override def outputPartitioning: Partitioning = SinglePartition
+<<<<<<< HEAD
 
   private val ord: RowOrdering = new RowOrdering(sortOrder, child.output)
 
   private def collectData(): Array[Row] = child.execute().map(_.copy()).takeOrdered(limit)(ord)
 
+=======
+
+  private val ord: RowOrdering = new RowOrdering(sortOrder, child.output)
+
+  private def collectData(): Array[Row] = child.execute().map(_.copy()).takeOrdered(limit)(ord)
+
+>>>>>>> upstream/master
   override def executeCollect(): Array[Row] = {
     val converter = CatalystTypeConverters.createToScalaConverter(schema)
     collectData().map(converter(_).asInstanceOf[Row])
@@ -150,7 +195,11 @@ case class TakeOrdered(limit: Int, sortOrder: Seq[SortOrder], child: SparkPlan) 
 
   // TODO: Terminal split should be implemented differently from non-terminal split.
   // TODO: Pick num splits based on |limit|.
+<<<<<<< HEAD
   override def execute(): RDD[Row] = sparkContext.makeRDD(collectData(), 1)
+=======
+  protected override def doExecute(): RDD[Row] = sparkContext.makeRDD(collectData(), 1)
+>>>>>>> upstream/master
 
   override def outputOrdering: Seq[SortOrder] = sortOrder
 }
@@ -170,7 +219,11 @@ case class Sort(
   override def requiredChildDistribution: Seq[Distribution] =
     if (global) OrderedDistribution(sortOrder) :: Nil else UnspecifiedDistribution :: Nil
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = attachTree(this, "sort") {
+=======
+  protected override def doExecute(): RDD[Row] = attachTree(this, "sort") {
+>>>>>>> upstream/master
     child.execute().mapPartitions( { iterator =>
       val ordering = newOrdering(sortOrder, child.output)
       iterator.map(_.copy()).toArray.sorted(ordering).iterator
@@ -178,6 +231,7 @@ case class Sort(
   }
 
   override def output: Seq[Attribute] = child.output
+<<<<<<< HEAD
 
   override def outputOrdering: Seq[SortOrder] = sortOrder
 }
@@ -199,6 +253,29 @@ case class ExternalSort(
     if (global) OrderedDistribution(sortOrder) :: Nil else UnspecifiedDistribution :: Nil
 
   override def execute(): RDD[Row] = attachTree(this, "sort") {
+=======
+
+  override def outputOrdering: Seq[SortOrder] = sortOrder
+}
+
+/**
+ * :: DeveloperApi ::
+ * Performs a sort, spilling to disk as needed.
+ * @param global when true performs a global sort of all partitions by shuffling the data first
+ *               if necessary.
+ */
+@DeveloperApi
+case class ExternalSort(
+    sortOrder: Seq[SortOrder],
+    global: Boolean,
+    child: SparkPlan)
+  extends UnaryNode {
+
+  override def requiredChildDistribution: Seq[Distribution] =
+    if (global) OrderedDistribution(sortOrder) :: Nil else UnspecifiedDistribution :: Nil
+
+  protected override def doExecute(): RDD[Row] = attachTree(this, "sort") {
+>>>>>>> upstream/master
     child.execute().mapPartitions( { iterator =>
       val ordering = newOrdering(sortOrder, child.output)
       val sorter = new ExternalSorter[Row, Null, Row](ordering = Some(ordering))
@@ -228,7 +305,11 @@ case class Distinct(partial: Boolean, child: SparkPlan) extends UnaryNode {
   override def requiredChildDistribution: Seq[Distribution] =
     if (partial) UnspecifiedDistribution :: Nil else ClusteredDistribution(child.output) :: Nil
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     child.execute().mapPartitions { iter =>
       val hashSet = new scala.collection.mutable.HashSet[Row]()
 
@@ -245,6 +326,20 @@ case class Distinct(partial: Boolean, child: SparkPlan) extends UnaryNode {
   }
 }
 
+/**
+ * :: DeveloperApi ::
+ * Return a new RDD that has exactly `numPartitions` partitions.
+ */
+@DeveloperApi
+case class Repartition(numPartitions: Int, shuffle: Boolean, child: SparkPlan)
+  extends UnaryNode {
+  override def output: Seq[Attribute] = child.output
+
+  protected override def doExecute(): RDD[Row] = {
+    child.execute().map(_.copy()).coalesce(numPartitions, shuffle)
+  }
+}
+
 
 /**
  * :: DeveloperApi ::
@@ -255,7 +350,11 @@ case class Distinct(partial: Boolean, child: SparkPlan) extends UnaryNode {
 case class Except(left: SparkPlan, right: SparkPlan) extends BinaryNode {
   override def output: Seq[Attribute] = left.output
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     left.execute().map(_.copy()).subtract(right.execute().map(_.copy()))
   }
 }
@@ -269,7 +368,11 @@ case class Except(left: SparkPlan, right: SparkPlan) extends BinaryNode {
 case class Intersect(left: SparkPlan, right: SparkPlan) extends BinaryNode {
   override def output: Seq[Attribute] = children.head.output
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     left.execute().map(_.copy()).intersection(right.execute().map(_.copy()))
   }
 }
@@ -284,5 +387,9 @@ case class Intersect(left: SparkPlan, right: SparkPlan) extends BinaryNode {
 case class OutputFaker(output: Seq[Attribute], child: SparkPlan) extends SparkPlan {
   def children: Seq[SparkPlan] = child :: Nil
 
+<<<<<<< HEAD
   def execute(): RDD[Row] = child.execute()
+=======
+  protected override def doExecute(): RDD[Row] = child.execute()
+>>>>>>> upstream/master
 }

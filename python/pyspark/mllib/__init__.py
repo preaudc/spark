@@ -28,6 +28,7 @@ if numpy.version.version < '1.4':
 
 __all__ = ['classification', 'clustering', 'feature', 'fpm', 'linalg', 'random',
            'recommendation', 'regression', 'stat', 'tree', 'util']
+<<<<<<< HEAD
 
 import sys
 from . import rand as random
@@ -36,3 +37,5 @@ random.__name__ = modname
 random.RandomRDDs.__module__ = modname
 sys.modules[modname] = random
 del modname, sys
+=======
+>>>>>>> upstream/master

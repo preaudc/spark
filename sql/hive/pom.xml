@@ -43,6 +43,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -58,6 +65,14 @@
     <dependency>
       <groupId>${hive.group}</groupId>
       <artifactId>hive-exec</artifactId>
+<<<<<<< HEAD
+=======
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>${commons.httpclient.version}</version>
+>>>>>>> upstream/master
     </dependency>
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
@@ -131,6 +146,7 @@
         </plugins>
       </build>
     </profile>
+<<<<<<< HEAD
     <profile>
       <id>hive-0.12.0</id>
       <dependencies>
@@ -141,6 +157,8 @@
         </dependency>
       </dependencies>
     </profile>
+=======
+>>>>>>> upstream/master
   </profiles>
 
   <build>
@@ -178,7 +196,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.4</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

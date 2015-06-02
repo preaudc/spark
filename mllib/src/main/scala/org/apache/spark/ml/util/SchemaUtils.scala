@@ -17,6 +17,7 @@
 
 package org.apache.spark.ml.util
 
+<<<<<<< HEAD
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.types.{DataType, StructField, StructType}
 
@@ -26,6 +27,15 @@ import org.apache.spark.sql.types.{DataType, StructField, StructType}
  */
 @DeveloperApi
 object SchemaUtils {
+=======
+import org.apache.spark.sql.types.{DataType, StructField, StructType}
+
+
+/**
+ * Utils for handling schemas.
+ */
+private[spark] object SchemaUtils {
+>>>>>>> upstream/master
 
   // TODO: Move the utility methods to SQL.
 
@@ -58,4 +68,18 @@ object SchemaUtils {
     val outputFields = schema.fields :+ StructField(colName, dataType, nullable = false)
     StructType(outputFields)
   }
+<<<<<<< HEAD
+=======
+
+  /**
+   * Appends a new column to the input schema. This fails if the given output column already exists.
+   * @param schema input schema
+   * @param col New column schema
+   * @return new schema with the input column appended
+   */
+  def appendColumn(schema: StructType, col: StructField): StructType = {
+    require(!schema.fieldNames.contains(col.name), s"Column ${col.name} already exists.")
+    StructType(schema.fields :+ col)
+  }
+>>>>>>> upstream/master
 }

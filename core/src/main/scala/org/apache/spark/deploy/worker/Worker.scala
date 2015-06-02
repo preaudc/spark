@@ -34,6 +34,7 @@ import akka.remote.{DisassociatedEvent, RemotingLifecycleEvent}
 import org.apache.spark.{Logging, SecurityManager, SparkConf}
 import org.apache.spark.deploy.{Command, ExecutorDescription, ExecutorState}
 import org.apache.spark.deploy.DeployMessages._
+import org.apache.spark.deploy.ExternalShuffleService
 import org.apache.spark.deploy.master.{DriverState, Master}
 import org.apache.spark.deploy.worker.ui.WorkerWebUI
 import org.apache.spark.metrics.MetricsSystem
@@ -61,7 +62,11 @@ private[worker] class Worker(
   assert (port > 0)
 
   // For worker and executor IDs
+<<<<<<< HEAD
   private def createDateFormat = new SimpleDateFormat("yyyyMMddHHmmss")  
+=======
+  private def createDateFormat = new SimpleDateFormat("yyyyMMddHHmmss")
+>>>>>>> upstream/master
 
   // Send a heartbeat every (heartbeat timeout) / 4 milliseconds
   private val HEARTBEAT_MILLIS = conf.getLong("spark.worker.timeout", 60) * 1000 / 4
@@ -85,10 +90,17 @@ private[worker] class Worker(
 
   private val CLEANUP_ENABLED = conf.getBoolean("spark.worker.cleanup.enabled", false)
   // How often worker will clean up old app folders
+<<<<<<< HEAD
   private val CLEANUP_INTERVAL_MILLIS = 
     conf.getLong("spark.worker.cleanup.interval", 60 * 30) * 1000
   // TTL for app folders/data;  after TTL expires it will be cleaned up
   private val APP_DATA_RETENTION_SECS = 
+=======
+  private val CLEANUP_INTERVAL_MILLIS =
+    conf.getLong("spark.worker.cleanup.interval", 60 * 30) * 1000
+  // TTL for app folders/data;  after TTL expires it will be cleaned up
+  private val APP_DATA_RETENTION_SECS =
+>>>>>>> upstream/master
     conf.getLong("spark.worker.cleanup.appDataTtl", 7 * 24 * 3600)
 
   private val testing: Boolean = sys.props.contains("spark.testing")
@@ -112,7 +124,11 @@ private[worker] class Worker(
     } else {
       new File(sys.env.get("SPARK_HOME").getOrElse("."))
     }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> upstream/master
   var workDir: File = null
   val finishedExecutors = new HashMap[String, ExecutorRunner]
   val drivers = new HashMap[String, DriverRunner]
@@ -122,7 +138,11 @@ private[worker] class Worker(
   val finishedApps = new HashSet[String]
 
   // The shuffle service is not actually started unless configured.
+<<<<<<< HEAD
   private val shuffleService = new StandaloneWorkerShuffleService(conf, securityMgr)
+=======
+  private val shuffleService = new ExternalShuffleService(conf, securityMgr)
+>>>>>>> upstream/master
 
   private val publicAddress = {
     val envVar = conf.getenv("SPARK_PUBLIC_DNS")
@@ -131,10 +151,17 @@ private[worker] class Worker(
   private var webUi: WorkerWebUI = null
 
   private var connectionAttemptCount = 0
+<<<<<<< HEAD
 
   private val metricsSystem = MetricsSystem.createMetricsSystem("worker", conf, securityMgr)
   private val workerSource = new WorkerSource(this)
   
+=======
+
+  private val metricsSystem = MetricsSystem.createMetricsSystem("worker", conf, securityMgr)
+  private val workerSource = new WorkerSource(this)
+
+>>>>>>> upstream/master
   private var registrationRetryTimer: Option[Cancellable] = None
 
   var coresUsed = 0
@@ -322,9 +349,6 @@ private[worker] class Worker(
       val execs = executors.values.
         map(e => new ExecutorDescription(e.appId, e.execId, e.cores, e.state))
       sender ! WorkerSchedulerStateResponse(workerId, execs.toList, drivers.keys.toSeq)
-
-    case Heartbeat =>
-      logInfo(s"Received heartbeat from driver ${sender.path}")
 
     case RegisterWorkerFailed(message) =>
       if (!registered) {
@@ -556,7 +580,11 @@ private[deploy] object Worker extends Logging {
       conf = conf, securityManager = securityMgr)
     val masterAkkaUrls = masterUrls.map(Master.toAkkaUrl(_, AkkaUtils.protocol(actorSystem)))
     actorSystem.actorOf(Props(classOf[Worker], host, boundPort, webUiPort, cores, memory,
+<<<<<<< HEAD
       masterAkkaUrls, systemName, actorName,  workDir, conf, securityMgr), name = actorName)
+=======
+      masterAkkaUrls, systemName, actorName, workDir, conf, securityMgr), name = actorName)
+>>>>>>> upstream/master
     (actorSystem, boundPort)
   }
 

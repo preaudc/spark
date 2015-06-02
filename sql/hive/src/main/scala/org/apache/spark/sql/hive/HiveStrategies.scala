@@ -119,9 +119,15 @@ private[hive] trait HiveStrategies {
             val inputData = new GenericMutableRow(relation.partitionKeys.size)
             val pruningCondition =
               if (codegenEnabled) {
+<<<<<<< HEAD
                 GeneratePredicate(castedPredicate)
               } else {
                 InterpretedPredicate(castedPredicate)
+=======
+                GeneratePredicate.generate(castedPredicate)
+              } else {
+                InterpretedPredicate.create(castedPredicate)
+>>>>>>> upstream/master
               }
 
             val partitions = relation.hiveQlPartitions.filter { part =>
@@ -140,7 +146,11 @@ private[hive] trait HiveStrategies {
               PhysicalRDD(plan.output, sparkContext.emptyRDD[Row]) :: Nil
             } else {
               hiveContext
+<<<<<<< HEAD
                 .parquetFile(partitionLocations: _*)
+=======
+                .read.parquet(partitionLocations: _*)
+>>>>>>> upstream/master
                 .addPartitioningAttributes(relation.partitionKeys)
                 .lowerCase
                 .where(unresolvedOtherPredicates)
@@ -152,7 +162,11 @@ private[hive] trait HiveStrategies {
 
           } else {
             hiveContext
+<<<<<<< HEAD
               .parquetFile(relation.hiveQlTable.getDataLocation.toString)
+=======
+              .read.parquet(relation.hiveQlTable.getDataLocation.toString)
+>>>>>>> upstream/master
               .lowerCase
               .where(unresolvedOtherPredicates)
               .select(unresolvedProjection: _*)
@@ -221,14 +235,24 @@ private[hive] trait HiveStrategies {
   object HiveDDLStrategy extends Strategy {
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
       case CreateTableUsing(
+<<<<<<< HEAD
       tableName, userSpecifiedSchema, provider, false, opts, allowExisting, managedIfNoPath) =>
+=======
+          tableName, userSpecifiedSchema, provider, false, opts, allowExisting, managedIfNoPath) =>
+>>>>>>> upstream/master
         ExecutedCommand(
           CreateMetastoreDataSource(
             tableName, userSpecifiedSchema, provider, opts, allowExisting, managedIfNoPath)) :: Nil
 
+<<<<<<< HEAD
       case CreateTableUsingAsSelect(tableName, provider, false, mode, opts, query) =>
         val cmd =
           CreateMetastoreDataSourceAsSelect(tableName, provider, mode, opts, query)
+=======
+      case CreateTableUsingAsSelect(tableName, provider, false, partitionCols, mode, opts, query) =>
+        val cmd =
+          CreateMetastoreDataSourceAsSelect(tableName, provider, partitionCols, mode, opts, query)
+>>>>>>> upstream/master
         ExecutedCommand(cmd) :: Nil
 
       case _ => Nil

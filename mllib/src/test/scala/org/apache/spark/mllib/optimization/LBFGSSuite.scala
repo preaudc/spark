@@ -19,14 +19,19 @@ package org.apache.spark.mllib.optimization
 
 import scala.util.Random
 
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.Matchers
 
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.util.{LocalClusterSparkContext, MLlibTestSparkContext}
 import org.apache.spark.mllib.util.TestingUtils._
 
+<<<<<<< HEAD
 class LBFGSSuite extends FunSuite with MLlibTestSparkContext with Matchers {
+=======
+class LBFGSSuite extends SparkFunSuite with MLlibTestSparkContext with Matchers {
+>>>>>>> upstream/master
 
   val nPoints = 10000
   val A = 2.0
@@ -89,7 +94,7 @@ class LBFGSSuite extends FunSuite with MLlibTestSparkContext with Matchers {
     // it requires 90 iterations in GD. No matter how hard we increase
     // the number of iterations in GD here, the lossGD will be always
     // larger than lossLBFGS. This is based on observation, no theoretically guaranteed
-    assert(Math.abs((lossGD.last - loss.last) / loss.last) < 0.02,
+    assert(math.abs((lossGD.last - loss.last) / loss.last) < 0.02,
       "LBFGS should match GD result within 2% difference.")
   }
 
@@ -229,7 +234,7 @@ class LBFGSSuite extends FunSuite with MLlibTestSparkContext with Matchers {
   }
 }
 
-class LBFGSClusterSuite extends FunSuite with LocalClusterSparkContext {
+class LBFGSClusterSuite extends SparkFunSuite with LocalClusterSparkContext {
 
   test("task size should be small") {
     val m = 10

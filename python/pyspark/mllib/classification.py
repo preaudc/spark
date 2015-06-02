@@ -86,7 +86,11 @@ class LogisticRegressionModel(LinearClassificationModel):
     ...     LabeledPoint(0.0, [0.0, 1.0]),
     ...     LabeledPoint(1.0, [1.0, 0.0]),
     ... ]
+<<<<<<< HEAD
     >>> lrm = LogisticRegressionWithSGD.train(sc.parallelize(data))
+=======
+    >>> lrm = LogisticRegressionWithSGD.train(sc.parallelize(data), iterations=10)
+>>>>>>> upstream/master
     >>> lrm.predict([1.0, 0.0])
     1
     >>> lrm.predict([0.0, 1.0])
@@ -95,7 +99,11 @@ class LogisticRegressionModel(LinearClassificationModel):
     [1, 0]
     >>> lrm.clearThreshold()
     >>> lrm.predict([0.0, 1.0])
+<<<<<<< HEAD
     0.123...
+=======
+    0.279...
+>>>>>>> upstream/master
 
     >>> sparse_data = [
     ...     LabeledPoint(0.0, SparseVector(2, {0: 0.0})),
@@ -103,7 +111,11 @@ class LogisticRegressionModel(LinearClassificationModel):
     ...     LabeledPoint(0.0, SparseVector(2, {0: 1.0})),
     ...     LabeledPoint(1.0, SparseVector(2, {1: 2.0}))
     ... ]
+<<<<<<< HEAD
     >>> lrm = LogisticRegressionWithSGD.train(sc.parallelize(sparse_data))
+=======
+    >>> lrm = LogisticRegressionWithSGD.train(sc.parallelize(sparse_data), iterations=10)
+>>>>>>> upstream/master
     >>> lrm.predict(array([0.0, 1.0]))
     1
     >>> lrm.predict(array([1.0, 0.0]))
@@ -129,7 +141,12 @@ class LogisticRegressionModel(LinearClassificationModel):
     ...     LabeledPoint(1.0, [1.0, 0.0, 0.0]),
     ...     LabeledPoint(2.0, [0.0, 0.0, 1.0])
     ... ]
+<<<<<<< HEAD
     >>> mcm = LogisticRegressionWithLBFGS.train(data=sc.parallelize(multi_class_data), numClasses=3)
+=======
+    >>> data = sc.parallelize(multi_class_data)
+    >>> mcm = LogisticRegressionWithLBFGS.train(data, iterations=10, numClasses=3)
+>>>>>>> upstream/master
     >>> mcm.predict([0.0, 0.5, 0.0])
     0
     >>> mcm.predict([0.8, 0.0, 0.0])
@@ -298,7 +315,11 @@ class LogisticRegressionWithLBFGS(object):
         ...     LabeledPoint(0.0, [0.0, 1.0]),
         ...     LabeledPoint(1.0, [1.0, 0.0]),
         ... ]
+<<<<<<< HEAD
         >>> lrm = LogisticRegressionWithLBFGS.train(sc.parallelize(data))
+=======
+        >>> lrm = LogisticRegressionWithLBFGS.train(sc.parallelize(data), iterations=10)
+>>>>>>> upstream/master
         >>> lrm.predict([1.0, 0.0])
         1
         >>> lrm.predict([0.0, 1.0])
@@ -330,14 +351,22 @@ class SVMModel(LinearClassificationModel):
     ...     LabeledPoint(1.0, [2.0]),
     ...     LabeledPoint(1.0, [3.0])
     ... ]
+<<<<<<< HEAD
     >>> svm = SVMWithSGD.train(sc.parallelize(data))
+=======
+    >>> svm = SVMWithSGD.train(sc.parallelize(data), iterations=10)
+>>>>>>> upstream/master
     >>> svm.predict([1.0])
     1
     >>> svm.predict(sc.parallelize([[1.0]])).collect()
     [1]
     >>> svm.clearThreshold()
     >>> svm.predict(array([1.0]))
+<<<<<<< HEAD
     1.25...
+=======
+    1.44...
+>>>>>>> upstream/master
 
     >>> sparse_data = [
     ...     LabeledPoint(0.0, SparseVector(2, {0: -1.0})),
@@ -345,7 +374,11 @@ class SVMModel(LinearClassificationModel):
     ...     LabeledPoint(0.0, SparseVector(2, {0: 0.0})),
     ...     LabeledPoint(1.0, SparseVector(2, {1: 2.0}))
     ... ]
+<<<<<<< HEAD
     >>> svm = SVMWithSGD.train(sc.parallelize(sparse_data))
+=======
+    >>> svm = SVMWithSGD.train(sc.parallelize(sparse_data), iterations=10)
+>>>>>>> upstream/master
     >>> svm.predict(SparseVector(2, {1: 1.0}))
     1
     >>> svm.predict(SparseVector(2, {0: -1.0}))

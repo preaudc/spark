@@ -17,17 +17,25 @@
 
 package org.apache.spark.ml.evaluation
 
+<<<<<<< HEAD
 import org.apache.spark.annotation.AlphaComponent
 import org.apache.spark.ml.Evaluator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.param.shared._
 import org.apache.spark.ml.util.SchemaUtils
+=======
+import org.apache.spark.annotation.Experimental
+import org.apache.spark.ml.param._
+import org.apache.spark.ml.param.shared._
+import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
+>>>>>>> upstream/master
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.linalg.{Vector, VectorUDT}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.DoubleType
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  *
  * Evaluator for binary classification, which expects two input columns: score and label.
@@ -35,6 +43,16 @@ import org.apache.spark.sql.types.DoubleType
 @AlphaComponent
 class BinaryClassificationEvaluator extends Evaluator with Params
   with HasRawPredictionCol with HasLabelCol {
+=======
+ * :: Experimental ::
+ * Evaluator for binary classification, which expects two input columns: score and label.
+ */
+@Experimental
+class BinaryClassificationEvaluator(override val uid: String)
+  extends Evaluator with HasRawPredictionCol with HasLabelCol {
+
+  def this() = this(Identifiable.randomUID("binEval"))
+>>>>>>> upstream/master
 
   /**
    * param for metric name in evaluation
@@ -44,7 +62,11 @@ class BinaryClassificationEvaluator extends Evaluator with Params
     "metric name in evaluation (areaUnderROC|areaUnderPR)")
 
   /** @group getParam */
+<<<<<<< HEAD
   def getMetricName: String = getOrDefault(metricName)
+=======
+  def getMetricName: String = $(metricName)
+>>>>>>> upstream/master
 
   /** @group setParam */
   def setMetricName(value: String): this.type = set(metricName, value)
@@ -57,6 +79,7 @@ class BinaryClassificationEvaluator extends Evaluator with Params
 
   setDefault(metricName -> "areaUnderROC")
 
+<<<<<<< HEAD
   override def evaluate(dataset: DataFrame, paramMap: ParamMap): Double = {
     val map = extractParamMap(paramMap)
 
@@ -66,11 +89,24 @@ class BinaryClassificationEvaluator extends Evaluator with Params
 
     // TODO: When dataset metadata has been implemented, check rawPredictionCol vector length = 2.
     val scoreAndLabels = dataset.select(map(rawPredictionCol), map(labelCol))
+=======
+  override def evaluate(dataset: DataFrame): Double = {
+    val schema = dataset.schema
+    SchemaUtils.checkColumnType(schema, $(rawPredictionCol), new VectorUDT)
+    SchemaUtils.checkColumnType(schema, $(labelCol), DoubleType)
+
+    // TODO: When dataset metadata has been implemented, check rawPredictionCol vector length = 2.
+    val scoreAndLabels = dataset.select($(rawPredictionCol), $(labelCol))
+>>>>>>> upstream/master
       .map { case Row(rawPrediction: Vector, label: Double) =>
         (rawPrediction(1), label)
       }
     val metrics = new BinaryClassificationMetrics(scoreAndLabels)
+<<<<<<< HEAD
     val metric = map(metricName) match {
+=======
+    val metric = $(metricName) match {
+>>>>>>> upstream/master
       case "areaUnderROC" =>
         metrics.areaUnderROC()
       case "areaUnderPR" =>

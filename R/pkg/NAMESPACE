@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #exportPattern("^[[:alpha:]]+")
 exportClasses("RDD")
 exportClasses("Broadcast")
@@ -97,11 +98,43 @@ exportMethods("columns",
               "dtypes",
               "explain",
               "filter",
+=======
+# Imports from base R
+importFrom(methods, setGeneric, setMethod, setOldClass)
+
+# Disable native libraries till we figure out how to package it
+# See SPARKR-7839
+#useDynLib(SparkR, stringHashCode)
+
+# S3 methods exported
+export("sparkR.init")
+export("sparkR.stop")
+export("print.jobj")
+
+exportClasses("DataFrame")
+
+exportMethods("arrange",
+              "cache",
+              "collect",
+              "columns",
+              "count",
+              "describe",
+              "distinct",
+              "dropna",
+              "dtypes",
+              "except",
+              "explain",
+              "fillna",
+              "filter",
+              "first",
+              "group_by",
+>>>>>>> upstream/master
               "groupBy",
               "head",
               "insertInto",
               "intersect",
               "isLocal",
+<<<<<<< HEAD
               "limit",
               "orderBy",
               "names",
@@ -109,6 +142,20 @@ exportMethods("columns",
               "registerTempTable",
               "repartition",
               "sampleDF",
+=======
+              "join",
+              "limit",
+              "orderBy",
+              "mutate",
+              "names",
+              "persist",
+              "printSchema",
+              "registerTempTable",
+              "rename",
+              "repartition",
+              "sample",
+              "sample_frac",
+>>>>>>> upstream/master
               "saveAsParquetFile",
               "saveAsTable",
               "saveDF",
@@ -117,6 +164,7 @@ exportMethods("columns",
               "selectExpr",
               "show",
               "showDF",
+<<<<<<< HEAD
               "sortDF",
               "subtract",
               "toJSON",
@@ -125,10 +173,21 @@ exportMethods("columns",
               "where",
               "withColumn",
               "withColumnRenamed")
+=======
+              "summarize",
+              "take",
+              "unionAll",
+              "unpersist",
+              "where",
+              "withColumn",
+              "withColumnRenamed",
+              "write.df")
+>>>>>>> upstream/master
 
 exportClasses("Column")
 
 exportMethods("abs",
+<<<<<<< HEAD
               "alias",
               "approxCountDistinct",
               "asc",
@@ -140,20 +199,68 @@ exportMethods("abs",
               "endsWith",
               "getField",
               "getItem",
+=======
+              "acos",
+              "alias",
+              "approxCountDistinct",
+              "asc",
+              "asin",
+              "atan",
+              "atan2",
+              "avg",
+              "cast",
+              "cbrt",
+              "ceiling",
+              "contains",
+              "cos",
+              "cosh",
+              "countDistinct",
+              "desc",
+              "endsWith",
+              "exp",
+              "expm1",
+              "floor",
+              "getField",
+              "getItem",
+              "hypot",
+>>>>>>> upstream/master
               "isNotNull",
               "isNull",
               "last",
               "like",
+<<<<<<< HEAD
+=======
+              "log",
+              "log10",
+              "log1p",
+>>>>>>> upstream/master
               "lower",
               "max",
               "mean",
               "min",
+<<<<<<< HEAD
               "rlike",
+=======
+              "n",
+              "n_distinct",
+              "rint",
+              "rlike",
+              "sign",
+              "sin",
+              "sinh",
+>>>>>>> upstream/master
               "sqrt",
               "startsWith",
               "substr",
               "sum",
               "sumDistinct",
+<<<<<<< HEAD
+=======
+              "tan",
+              "tanh",
+              "toDegrees",
+              "toRadians",
+>>>>>>> upstream/master
               "upper")
 
 exportClasses("GroupedData")
@@ -168,15 +275,34 @@ export("cacheTable",
        "createExternalTable",
        "dropTempTable",
        "jsonFile",
+<<<<<<< HEAD
        "jsonRDD",
        "loadDF",
        "parquetFile",
+=======
+       "loadDF",
+       "parquetFile",
+       "read.df",
+>>>>>>> upstream/master
        "sql",
        "table",
        "tableNames",
        "tables",
+<<<<<<< HEAD
        "toDF",
        "uncacheTable")
 
 export("print.structType",
        "print.structField")
+=======
+       "uncacheTable")
+
+export("structField",
+       "structField.jobj",
+       "structField.character",
+       "print.structField",
+       "structType",
+       "structType.jobj",
+       "structType.structField",
+       "print.structType")
+>>>>>>> upstream/master

@@ -20,12 +20,49 @@ package org.apache.spark.rpc
 import java.net.URI
 
 import scala.concurrent.{Await, Future}
+<<<<<<< HEAD
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 import org.apache.spark.{Logging, SparkException, SecurityManager, SparkConf}
 import org.apache.spark.util.{AkkaUtils, Utils}
+=======
+import scala.language.postfixOps
+
+import org.apache.spark.{SecurityManager, SparkConf}
+import org.apache.spark.util.{RpcUtils, Utils}
+
+
+/**
+ * A RpcEnv implementation must have a [[RpcEnvFactory]] implementation with an empty constructor
+ * so that it can be created via Reflection.
+ */
+private[spark] object RpcEnv {
+
+  private def getRpcEnvFactory(conf: SparkConf): RpcEnvFactory = {
+    // Add more RpcEnv implementations here
+    val rpcEnvNames = Map("akka" -> "org.apache.spark.rpc.akka.AkkaRpcEnvFactory")
+    val rpcEnvName = conf.get("spark.rpc", "akka")
+    val rpcEnvFactoryClassName = rpcEnvNames.getOrElse(rpcEnvName.toLowerCase, rpcEnvName)
+    Class.forName(rpcEnvFactoryClassName, true, Utils.getContextOrSparkClassLoader).
+      newInstance().asInstanceOf[RpcEnvFactory]
+  }
+
+  def create(
+      name: String,
+      host: String,
+      port: Int,
+      conf: SparkConf,
+      securityManager: SecurityManager): RpcEnv = {
+    // Using Reflection to create the RpcEnv to avoid to depend on Akka directly
+    val config = RpcEnvConfig(conf, name, host, port, securityManager)
+    getRpcEnvFactory(conf).create(config)
+  }
+
+}
+
+>>>>>>> upstream/master
 
 /**
  * An RPC environment. [[RpcEndpoint]]s need to register itself with a name to [[RpcEnv]] to
@@ -38,7 +75,11 @@ import org.apache.spark.util.{AkkaUtils, Utils}
  */
 private[spark] abstract class RpcEnv(conf: SparkConf) {
 
+<<<<<<< HEAD
   private[spark] val defaultLookupTimeout = AkkaUtils.lookupTimeout(conf)
+=======
+  private[spark] val defaultLookupTimeout = RpcUtils.lookupTimeout(conf)
+>>>>>>> upstream/master
 
   /**
    * Return RpcEndpointRef of the registered [[RpcEndpoint]]. Will be used to implement
@@ -112,6 +153,10 @@ private[spark] abstract class RpcEnv(conf: SparkConf) {
   def uriOf(systemName: String, address: RpcAddress, endpointName: String): String
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
 private[spark] case class RpcEnvConfig(
     conf: SparkConf,
     name: String,
@@ -119,6 +164,7 @@ private[spark] case class RpcEnvConfig(
     port: Int,
     securityManager: SecurityManager)
 
+<<<<<<< HEAD
 /**
  * A RpcEnv implementation must have a [[RpcEnvFactory]] implementation with an empty constructor
  * so that it can be created via Reflection.
@@ -374,6 +420,11 @@ private[spark] abstract class RpcEndpointRef(@transient conf: SparkConf)
 
 /**
  * Represent a host with a port
+=======
+
+/**
+ * Represents a host and port.
+>>>>>>> upstream/master
  */
 private[spark] case class RpcAddress(host: String, port: Int) {
   // TODO do we need to add the type of RpcEnv in the address?
@@ -383,6 +434,10 @@ private[spark] case class RpcAddress(host: String, port: Int) {
   override val toString: String = hostPort
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
 private[spark] object RpcAddress {
 
   /**
@@ -404,6 +459,7 @@ private[spark] object RpcAddress {
     RpcAddress(host, port)
   }
 }
+<<<<<<< HEAD
 
 /**
  * A callback that [[RpcEndpoint]] can use it to send back a message or failure. It's thread-safe
@@ -427,3 +483,5 @@ private[spark] trait RpcCallContext {
    */
   def sender: RpcEndpointRef
 }
+=======
+>>>>>>> upstream/master

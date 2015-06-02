@@ -20,6 +20,11 @@ package org.apache.spark.deploy.yarn
 import java.io.File
 import java.net.URI
 
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{ HashMap => MutableHashMap }
+import scala.reflect.ClassTag
+import scala.util.Try
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.MRJobConfig
@@ -28,22 +33,30 @@ import org.apache.hadoop.yarn.api.records._
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.mockito.Matchers._
 import org.mockito.Mockito._
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+=======
+import org.scalatest.{BeforeAndAfterAll, Matchers}
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.{ HashMap => MutableHashMap }
-import scala.reflect.ClassTag
-import scala.util.Try
-
-import org.apache.spark.{SparkException, SparkConf}
+import org.apache.spark.{SparkConf, SparkException, SparkFunSuite}
 import org.apache.spark.util.Utils
 
+class ClientSuite extends SparkFunSuite with Matchers with BeforeAndAfterAll {
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
+
+  override def beforeAll(): Unit = {
+    System.setProperty("SPARK_YARN_MODE", "true")
+  }
+
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
 class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     System.setProperty("SPARK_YARN_MODE", "true")
   }
 
+=======
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
   override def afterAll(): Unit = {
     System.clearProperty("SPARK_YARN_MODE")
   }
@@ -93,7 +106,11 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
     val env = new MutableHashMap[String, String]()
     val args = new ClientArguments(Array("--jar", USER, "--addJars", ADDED), sparkConf)
 
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
     Client.populateClasspath(args, conf, sparkConf, env)
+=======
+    Client.populateClasspath(args, conf, sparkConf, env, true)
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
 
     val cp = env("CLASSPATH").split(":|;|<CPS>")
     s"$SPARK,$USER,$ADDED".split(",").foreach({ entry =>
@@ -104,6 +121,7 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
         cp should not contain (uri.getPath())
       }
     })
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
     if (classOf[Environment].getMethods().exists(_.getName == "$$")) {
       cp should contain("{{PWD}}")
     } else if (Utils.isWindows) {
@@ -111,6 +129,18 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
     } else {
       cp should contain(Environment.PWD.$())
     }
+=======
+    val pwdVar =
+      if (classOf[Environment].getMethods().exists(_.getName == "$$")) {
+        "{{PWD}}"
+      } else if (Utils.isWindows) {
+        "%PWD%"
+      } else {
+        Environment.PWD.$()
+      }
+    cp should contain(pwdVar)
+    cp should contain (s"$pwdVar${Path.SEPARATOR}${Client.LOCALIZED_HADOOP_CONF_DIR}")
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
     cp should not contain (Client.SPARK_JAR)
     cp should not contain (Client.APP_JAR)
   }
@@ -148,6 +178,7 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
     }
   }
 
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
   test("check access nns empty") {
     val sparkConf = new SparkConf()
     sparkConf.set("spark.yarn.access.namenodes", "")
@@ -199,6 +230,8 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
     assert(caught.getMessage === "Can't get Master Kerberos principal for use as renewer")
   }
 
+=======
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
   object Fixtures {
 
     val knownDefYarnAppCP: Seq[String] =
@@ -251,7 +284,11 @@ class ClientSuite extends FunSuite with Matchers with BeforeAndAfterAll {
   def getFieldValue2[A: ClassTag, A1: ClassTag, B](
         clazz: Class[_],
         field: String,
+<<<<<<< HEAD:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
         defaults: => B)(mapTo:  A => B)(mapTo1: A1 => B): B = {
+=======
+        defaults: => B)(mapTo: A => B)(mapTo1: A1 => B): B = {
+>>>>>>> upstream/master:yarn/src/test/scala/org/apache/spark/deploy/yarn/ClientSuite.scala
     Try(clazz.getField(field)).map(_.get(null)).map {
       case v: A => mapTo(v)
       case v1: A1 => mapTo1(v1)

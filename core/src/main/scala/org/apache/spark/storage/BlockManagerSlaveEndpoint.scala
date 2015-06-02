@@ -20,7 +20,11 @@ package org.apache.spark.storage
 import scala.concurrent.{ExecutionContext, Future}
 
 import org.apache.spark.rpc.{RpcEnv, RpcCallContext, RpcEndpoint}
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerSlaveEndpoint.scala
 import org.apache.spark.util.Utils
+=======
+import org.apache.spark.util.ThreadUtils
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerSlaveEndpoint.scala
 import org.apache.spark.{Logging, MapOutputTracker, SparkEnv}
 import org.apache.spark.storage.BlockManagerMessages._
 
@@ -36,11 +40,19 @@ class BlockManagerSlaveEndpoint(
   extends RpcEndpoint with Logging {
 
   private val asyncThreadPool =
+<<<<<<< HEAD:core/src/main/scala/org/apache/spark/storage/BlockManagerSlaveEndpoint.scala
     Utils.newDaemonCachedThreadPool("block-manager-slave-async-thread-pool")
   private implicit val asyncExecutionContext = ExecutionContext.fromExecutorService(asyncThreadPool)
 
   // Operations that involve removing blocks may be slow and should be done asynchronously
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit]  = {
+=======
+    ThreadUtils.newDaemonCachedThreadPool("block-manager-slave-async-thread-pool")
+  private implicit val asyncExecutionContext = ExecutionContext.fromExecutorService(asyncThreadPool)
+
+  // Operations that involve removing blocks may be slow and should be done asynchronously
+  override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
+>>>>>>> upstream/master:core/src/main/scala/org/apache/spark/storage/BlockManagerSlaveEndpoint.scala
     case RemoveBlock(blockId) =>
       doAsync[Boolean]("removing block " + blockId, context) {
         blockManager.removeBlock(blockId)

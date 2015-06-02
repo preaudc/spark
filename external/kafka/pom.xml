@@ -40,11 +40,25 @@
       <artifactId>spark-streaming_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
+<<<<<<< HEAD
+=======
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+>>>>>>> upstream/master
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_${scala.binary.version}</artifactId>
+<<<<<<< HEAD
       <version>0.8.1.1</version>
+=======
+      <version>0.8.2.1</version>
+>>>>>>> upstream/master
       <exclusions>
         <exclusion>
           <groupId>com.sun.jmx</groupId>

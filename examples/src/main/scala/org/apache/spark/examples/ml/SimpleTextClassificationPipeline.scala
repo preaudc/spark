@@ -64,7 +64,11 @@ object SimpleTextClassificationPipeline {
       .setOutputCol("features")
     val lr = new LogisticRegression()
       .setMaxIter(10)
+<<<<<<< HEAD
       .setRegParam(0.01)
+=======
+      .setRegParam(0.001)
+>>>>>>> upstream/master
     val pipeline = new Pipeline()
       .setStages(Array(tokenizer, hashingTF, lr))
 
@@ -75,7 +79,11 @@ object SimpleTextClassificationPipeline {
     val test = sc.parallelize(Seq(
       Document(4L, "spark i j k"),
       Document(5L, "l m n"),
+<<<<<<< HEAD
       Document(6L, "mapreduce spark"),
+=======
+      Document(6L, "spark hadoop spark"),
+>>>>>>> upstream/master
       Document(7L, "apache hadoop")))
 
     // Make predictions on test documents.

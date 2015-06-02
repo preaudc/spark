@@ -17,6 +17,26 @@
 
 # Worker class
 
+<<<<<<< HEAD
+=======
+# Get current system time
+currentTimeSecs <- function() {
+  as.numeric(Sys.time())
+}
+
+# Get elapsed time
+elapsedSecs <- function() {
+  proc.time()[3]
+}
+
+# Constants
+specialLengths <- list(END_OF_STERAM = 0L, TIMING_DATA = -1L)
+
+# Timing R process boot
+bootTime <- currentTimeSecs()
+bootElap <- elapsedSecs()
+
+>>>>>>> upstream/master
 rLibDir <- Sys.getenv("SPARKR_RLIBDIR")
 # Set libPaths to include SparkR package as loadNamespace needs this
 # TODO: Figure out if we can avoid this by not loading any objects that require
@@ -37,7 +57,11 @@ serializer <- SparkR:::readString(inputCon)
 # Include packages as required
 packageNames <- unserialize(SparkR:::readRaw(inputCon))
 for (pkg in packageNames) {
+<<<<<<< HEAD
   suppressPackageStartupMessages(require(as.character(pkg), character.only=TRUE))
+=======
+  suppressPackageStartupMessages(library(as.character(pkg), character.only=TRUE))
+>>>>>>> upstream/master
 }
 
 # read function dependencies
@@ -46,16 +70,32 @@ computeFunc <- unserialize(SparkR:::readRawLen(inputCon, funcLen))
 env <- environment(computeFunc)
 parent.env(env) <- .GlobalEnv  # Attach under global environment.
 
+<<<<<<< HEAD
+=======
+# Timing init envs for computing
+initElap <- elapsedSecs()
+
+>>>>>>> upstream/master
 # Read and set broadcast variables
 numBroadcastVars <- SparkR:::readInt(inputCon)
 if (numBroadcastVars > 0) {
   for (bcast in seq(1:numBroadcastVars)) {
     bcastId <- SparkR:::readInt(inputCon)
     value <- unserialize(SparkR:::readRaw(inputCon))
+<<<<<<< HEAD
     setBroadcastValue(bcastId, value)
   }
 }
 
+=======
+    SparkR:::setBroadcastValue(bcastId, value)
+  }
+}
+
+# Timing broadcast
+broadcastElap <- elapsedSecs()
+
+>>>>>>> upstream/master
 # If -1: read as normal RDD; if >= 0, treat as pairwise RDD and treat the int
 # as number of partitions to create.
 numPartitions <- SparkR:::readInt(inputCon)
@@ -73,14 +113,32 @@ if (isEmpty != 0) {
     } else if (deserializer == "row") {
       data <- SparkR:::readDeserializeRows(inputCon)
     }
+<<<<<<< HEAD
     output <- computeFunc(partition, data)
+=======
+    # Timing reading input data for execution
+    inputElap <- elapsedSecs()
+
+    output <- computeFunc(partition, data)
+    # Timing computing
+    computeElap <- elapsedSecs()
+
+>>>>>>> upstream/master
     if (serializer == "byte") {
       SparkR:::writeRawSerialize(outputCon, output)
     } else if (serializer == "row") {
       SparkR:::writeRowSerialize(outputCon, output)
     } else {
+<<<<<<< HEAD
       SparkR:::writeStrings(outputCon, output)
     }
+=======
+      # write lines one-by-one with flag
+      lapply(output, function(line) SparkR:::writeString(outputCon, line))
+    }
+    # Timing output
+    outputElap <- elapsedSecs()
+>>>>>>> upstream/master
   } else {
     if (deserializer == "byte") {
       # Now read as many characters as described in funcLen
@@ -90,6 +148,11 @@ if (isEmpty != 0) {
     } else if (deserializer == "row") {
       data <- SparkR:::readDeserializeRows(inputCon)
     }
+<<<<<<< HEAD
+=======
+    # Timing reading input data for execution
+    inputElap <- elapsedSecs()
+>>>>>>> upstream/master
 
     res <- new.env()
 
@@ -107,6 +170,11 @@ if (isEmpty != 0) {
       res[[bucket]] <- acc
     }
     invisible(lapply(data, hashTupleToEnvir))
+<<<<<<< HEAD
+=======
+    # Timing computing
+    computeElap <- elapsedSecs()
+>>>>>>> upstream/master
 
     # Step 2: write out all of the environment as key-value pairs.
     for (name in ls(res)) {
@@ -116,6 +184,7 @@ if (isEmpty != 0) {
       length(res[[name]]$data) <- res[[name]]$counter
       SparkR:::writeRawSerialize(outputCon, res[[name]]$data)
     }
+<<<<<<< HEAD
   }
 }
 
@@ -123,6 +192,28 @@ if (isEmpty != 0) {
 if (serializer %in% c("byte", "row")) {
   SparkR:::writeInt(outputCon, 0L)
 }
+=======
+    # Timing output
+    outputElap <- elapsedSecs()
+  }
+} else {
+  inputElap <- broadcastElap
+  computeElap <- broadcastElap
+  outputElap <- broadcastElap
+}
+
+# Report timing
+SparkR:::writeInt(outputCon, specialLengths$TIMING_DATA)
+SparkR:::writeDouble(outputCon, bootTime)
+SparkR:::writeDouble(outputCon, initElap - bootElap)        # init
+SparkR:::writeDouble(outputCon, broadcastElap - initElap)   # broadcast
+SparkR:::writeDouble(outputCon, inputElap - broadcastElap)  # input
+SparkR:::writeDouble(outputCon, computeElap - inputElap)    # compute
+SparkR:::writeDouble(outputCon, outputElap - computeElap)   # output
+
+# End of output
+SparkR:::writeInt(outputCon, specialLengths$END_OF_STERAM)
+>>>>>>> upstream/master
 
 close(outputCon)
 close(inputCon)

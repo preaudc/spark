@@ -30,12 +30,22 @@ import org.apache.spark.sql.types._
 /**
  * :: Experimental ::
  * Functionality for working with missing data in [[DataFrame]]s.
+<<<<<<< HEAD
+=======
+ *
+ * @since 1.3.1
+>>>>>>> upstream/master
  */
 @Experimental
 final class DataFrameNaFunctions private[sql](df: DataFrame) {
 
   /**
    * Returns a new [[DataFrame]] that drops rows containing any null values.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(): DataFrame = drop("any", df.columns)
 
@@ -44,18 +54,33 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * If `how` is "any", then drop rows containing any null values.
    * If `how` is "all", then drop rows only if every column is null for that row.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(how: String): DataFrame = drop(how, df.columns)
 
   /**
    * Returns a new [[DataFrame]] that drops rows containing any null values
    * in the specified columns.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(cols: Array[String]): DataFrame = drop(cols.toSeq)
 
   /**
    * (Scala-specific) Returns a new [[DataFrame ]] that drops rows containing any null values
    * in the specified columns.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(cols: Seq[String]): DataFrame = drop(cols.size, cols)
 
@@ -65,6 +90,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * If `how` is "any", then drop rows containing any null values in the specified columns.
    * If `how` is "all", then drop rows only if every specified column is null for that row.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(how: String, cols: Array[String]): DataFrame = drop(how, cols.toSeq)
 
@@ -74,6 +104,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * If `how` is "any", then drop rows containing any null values in the specified columns.
    * If `how` is "all", then drop rows only if every specified column is null for that row.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(how: String, cols: Seq[String]): DataFrame = {
     how.toLowerCase match {
@@ -85,18 +120,33 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
 
   /**
    * Returns a new [[DataFrame]] that drops rows containing less than `minNonNulls` non-null values.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(minNonNulls: Int): DataFrame = drop(minNonNulls, df.columns)
 
   /**
    * Returns a new [[DataFrame]] that drops rows containing less than `minNonNulls` non-null
    * values in the specified columns.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(minNonNulls: Int, cols: Array[String]): DataFrame = drop(minNonNulls, cols.toSeq)
 
   /**
    * (Scala-specific) Returns a new [[DataFrame]] that drops rows containing less than
    * `minNonNulls` non-null values in the specified columns.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def drop(minNonNulls: Int, cols: Seq[String]): DataFrame = {
     // Filtering condition -- only keep the row if it has at least `minNonNulls` non-null values.
@@ -106,23 +156,43 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
 
   /**
    * Returns a new [[DataFrame]] that replaces null values in numeric columns with `value`.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: Double): DataFrame = fill(value, df.columns)
 
   /**
    * Returns a new [[DataFrame ]] that replaces null values in string columns with `value`.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: String): DataFrame = fill(value, df.columns)
 
   /**
    * Returns a new [[DataFrame]] that replaces null values in specified numeric columns.
    * If a specified column is not a numeric column, it is ignored.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: Double, cols: Array[String]): DataFrame = fill(value, cols.toSeq)
 
   /**
    * (Scala-specific) Returns a new [[DataFrame]] that replaces null values in specified
    * numeric columns. If a specified column is not a numeric column, it is ignored.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: Double, cols: Seq[String]): DataFrame = {
     val columnEquals = df.sqlContext.analyzer.resolver
@@ -140,12 +210,22 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
   /**
    * Returns a new [[DataFrame]] that replaces null values in specified string columns.
    * If a specified column is not a string column, it is ignored.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: String, cols: Array[String]): DataFrame = fill(value, cols.toSeq)
 
   /**
    * (Scala-specific) Returns a new [[DataFrame]] that replaces null values in
    * specified string columns. If a specified column is not a string column, it is ignored.
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(value: String, cols: Seq[String]): DataFrame = {
     val columnEquals = df.sqlContext.analyzer.resolver
@@ -172,6 +252,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *   import com.google.common.collect.ImmutableMap;
    *   df.na.fill(ImmutableMap.of("A", "unknown", "B", 1.0));
    * }}}
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(valueMap: java.util.Map[String, Any]): DataFrame = fill0(valueMap.toSeq)
 
@@ -189,6 +274,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *     "B" -> 1.0
    *   ))
    * }}}
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def fill(valueMap: Map[String, Any]): DataFrame = fill0(valueMap.toSeq)
 
@@ -212,6 +302,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * @param col name of the column to apply the value replacement
    * @param replacement value replacement map, as explained above
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def replace[T](col: String, replacement: java.util.Map[T, T]): DataFrame = {
     replace[T](col, replacement.toMap : Map[T, T])
@@ -233,6 +328,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * @param cols list of columns to apply the value replacement
    * @param replacement value replacement map, as explained above
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def replace[T](cols: Array[String], replacement: java.util.Map[T, T]): DataFrame = {
     replace(cols.toSeq, replacement.toMap)
@@ -256,6 +356,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * @param col name of the column to apply the value replacement
    * @param replacement value replacement map, as explained above
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def replace[T](col: String, replacement: Map[T, T]): DataFrame = {
     if (col == "*") {
@@ -279,6 +384,11 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    *
    * @param cols list of columns to apply the value replacement
    * @param replacement value replacement map, as explained above
+<<<<<<< HEAD
+=======
+   *
+   * @since 1.3.1
+>>>>>>> upstream/master
    */
   def replace[T](cols: Seq[String], replacement: Map[T, T]): DataFrame = replace0(cols, replacement)
 
@@ -357,11 +467,20 @@ final class DataFrameNaFunctions private[sql](df: DataFrame) {
    * TODO: This can be optimized to use broadcast join when replacementMap is large.
    */
   private def replaceCol(col: StructField, replacementMap: Map[_, _]): Column = {
+<<<<<<< HEAD
     val branches: Seq[Expression] = replacementMap.flatMap { case (source, target) =>
       df.col(col.name).equalTo(lit(source).cast(col.dataType)).expr ::
         lit(target).cast(col.dataType).expr :: Nil
     }.toSeq
     new Column(CaseWhen(branches ++ Seq(df.col(col.name).expr))).as(col.name)
+=======
+    val keyExpr = df.col(col.name).expr
+    def buildExpr(v: Any) = Cast(Literal(v), keyExpr.dataType)
+    val branches = replacementMap.flatMap { case (source, target) =>
+      Seq(buildExpr(source), buildExpr(target))
+    }.toSeq
+    new Column(CaseKeyWhen(keyExpr, branches :+ keyExpr)).as(col.name)
+>>>>>>> upstream/master
   }
 
   private def convertToDouble(v: Any): Double = v match {

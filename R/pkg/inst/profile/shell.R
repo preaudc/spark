@@ -20,6 +20,7 @@
   .libPaths(c(file.path(home, "R", "lib"), .libPaths()))
   Sys.setenv(NOAWT=1)
 
+<<<<<<< HEAD
   library(utils)
   library(SparkR)
   sc <- sparkR.init(Sys.getenv("MASTER", unset = ""))
@@ -28,4 +29,16 @@
   assign("sqlCtx", sqlCtx, envir=.GlobalEnv)
   cat("\n Welcome to SparkR!")
   cat("\n Spark context is available as sc, SQL context is available as sqlCtx\n")
+=======
+  # Make sure SparkR package is the last loaded one
+  old <- getOption("defaultPackages")
+  options(defaultPackages = c(old, "SparkR"))
+
+  sc <- SparkR::sparkR.init(Sys.getenv("MASTER", unset = ""))
+  assign("sc", sc, envir=.GlobalEnv)
+  sqlContext <- SparkR::sparkRSQL.init(sc)
+  assign("sqlContext", sqlContext, envir=.GlobalEnv)
+  cat("\n Welcome to SparkR!")
+  cat("\n Spark context is available as sc, SQL context is available as sqlContext\n")
+>>>>>>> upstream/master
 }

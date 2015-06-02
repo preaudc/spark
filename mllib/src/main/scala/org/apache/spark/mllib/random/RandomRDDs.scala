@@ -52,7 +52,7 @@ object RandomRDDs {
       numPartitions: Int = 0,
       seed: Long = Utils.random.nextLong()): RDD[Double] = {
     val uniform = new UniformGenerator()
-    randomRDD(sc, uniform,  size, numPartitionsOrDefault(sc, numPartitions), seed)
+    randomRDD(sc, uniform, size, numPartitionsOrDefault(sc, numPartitions), seed)
   }
 
   /**
@@ -234,7 +234,11 @@ object RandomRDDs {
    *
    * @param sc SparkContext used to create the RDD.
    * @param shape shape parameter (> 0) for the gamma distribution
+<<<<<<< HEAD
    * @param scale scale parameter (> 0) for the gamma distribution  
+=======
+   * @param scale scale parameter (> 0) for the gamma distribution
+>>>>>>> upstream/master
    * @param size Size of the RDD.
    * @param numPartitions Number of partitions in the RDD (default: `sc.defaultParallelism`).
    * @param seed Random seed (default: a random long integer).
@@ -293,7 +297,11 @@ object RandomRDDs {
    *
    * @param sc SparkContext used to create the RDD.
    * @param mean mean for the log normal distribution
+<<<<<<< HEAD
    * @param std standard deviation for the log normal distribution  
+=======
+   * @param std standard deviation for the log normal distribution
+>>>>>>> upstream/master
    * @param size Size of the RDD.
    * @param numPartitions Number of partitions in the RDD (default: `sc.defaultParallelism`).
    * @param seed Random seed (default: a random long integer).
@@ -671,7 +679,11 @@ object RandomRDDs {
    *
    * @param sc SparkContext used to create the RDD.
    * @param shape shape parameter (> 0) for the gamma distribution.
+<<<<<<< HEAD
    * @param scale scale parameter (> 0) for the gamma distribution. 
+=======
+   * @param scale scale parameter (> 0) for the gamma distribution.
+>>>>>>> upstream/master
    * @param numRows Number of Vectors in the RDD.
    * @param numCols Number of elements in each Vector.
    * @param numPartitions Number of partitions in the RDD (default: `sc.defaultParallelism`)

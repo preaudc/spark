@@ -430,9 +430,14 @@ class CheckpointSuite extends TestSuiteBase {
           assert(recordedFiles(ssc) === Seq(1, 2, 3) && batchCounter.getNumStartedBatches === 3)
         }
         // Wait for a checkpoint to be written
+<<<<<<< HEAD
         val fs = new Path(checkpointDir).getFileSystem(ssc.sc.hadoopConfiguration)
         eventually(eventuallyTimeout) {
           assert(Checkpoint.getCheckpointFiles(checkpointDir, fs).size === 6)
+=======
+        eventually(eventuallyTimeout) {
+          assert(Checkpoint.getCheckpointFiles(checkpointDir).size === 6)
+>>>>>>> upstream/master
         }
         ssc.stop()
         // Check that we shut down while the third batch was being processed

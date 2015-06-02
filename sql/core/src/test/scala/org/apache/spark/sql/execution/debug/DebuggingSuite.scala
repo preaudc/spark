@@ -17,12 +17,15 @@
 
 package org.apache.spark.sql.execution.debug
 
-import org.scalatest.FunSuite
-
+import org.apache.spark.SparkFunSuite
 import org.apache.spark.sql.TestData._
 import org.apache.spark.sql.test.TestSQLContext._
 
+<<<<<<< HEAD
 class DebuggingSuite extends FunSuite {
+=======
+class DebuggingSuite extends SparkFunSuite {
+>>>>>>> upstream/master
   test("DataFrame.debug()") {
     testData.debug()
   }

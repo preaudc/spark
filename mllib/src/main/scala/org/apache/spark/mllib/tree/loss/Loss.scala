@@ -22,6 +22,7 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.model.TreeEnsembleModel
 import org.apache.spark.rdd.RDD
 
+
 /**
  * :: DeveloperApi ::
  * Trait for adding "pluggable" loss functions for the gradient boosting algorithm.
@@ -44,6 +45,7 @@ trait Loss extends Serializable {
    * @param model Model of the weak learner.
    * @param data Training dataset: RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
    * @return Measure of model error on data
+<<<<<<< HEAD
    */
   def computeError(model: TreeEnsembleModel, data: RDD[LabeledPoint]): Double = {
     data.map(point => computeError(model.predict(point.features), point.label)).mean()
@@ -58,5 +60,20 @@ trait Loss extends Serializable {
    * @return Measure of model error on datapoint.
    */
   def computeError(prediction: Double, label: Double): Double
+=======
+   */
+  def computeError(model: TreeEnsembleModel, data: RDD[LabeledPoint]): Double = {
+    data.map(point => computeError(model.predict(point.features), point.label)).mean()
+  }
+>>>>>>> upstream/master
 
+  /**
+   * Method to calculate loss when the predictions are already known.
+   * Note: This method is used in the method evaluateEachIteration to avoid recomputing the
+   * predicted values from previously fit trees.
+   * @param prediction Predicted label.
+   * @param label True label.
+   * @return Measure of model error on datapoint.
+   */
+  private[mllib] def computeError(prediction: Double, label: Double): Double
 }

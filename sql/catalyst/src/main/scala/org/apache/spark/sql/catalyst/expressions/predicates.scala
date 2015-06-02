@@ -20,13 +20,17 @@ package org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.analysis.UnresolvedException
 import org.apache.spark.sql.catalyst.errors.TreeNodeException
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+<<<<<<< HEAD
 import org.apache.spark.sql.types.{DataType, BinaryType, BooleanType, NativeType}
+=======
+import org.apache.spark.sql.types.{DataType, BinaryType, BooleanType, AtomicType}
+>>>>>>> upstream/master
 
 object InterpretedPredicate {
-  def apply(expression: Expression, inputSchema: Seq[Attribute]): (Row => Boolean) =
-    apply(BindReferences.bindReference(expression, inputSchema))
+  def create(expression: Expression, inputSchema: Seq[Attribute]): (Row => Boolean) =
+    create(BindReferences.bindReference(expression, inputSchema))
 
-  def apply(expression: Expression): (Row => Boolean) = {
+  def create(expression: Expression): (Row => Boolean) = {
     (r: Row) => expression.eval(r).asInstanceOf[Boolean]
   }
 }
@@ -35,8 +39,11 @@ trait Predicate extends Expression {
   self: Product =>
 
   override def dataType: DataType = BooleanType
+<<<<<<< HEAD
 
   type EvaluatedType = Any
+=======
+>>>>>>> upstream/master
 }
 
 trait PredicateHelper {
@@ -70,6 +77,7 @@ trait PredicateHelper {
     expr.references.subsetOf(plan.outputSet)
 }
 
+<<<<<<< HEAD
 abstract class BinaryPredicate extends BinaryExpression with Predicate {
   self: Product =>
   override def nullable: Boolean = left.nullable || right.nullable
@@ -79,6 +87,15 @@ case class Not(child: Expression) extends UnaryExpression with Predicate {
   override def foldable: Boolean = child.foldable
   override def nullable: Boolean = child.nullable
   override def toString: String = s"NOT $child"
+=======
+
+case class Not(child: Expression) extends UnaryExpression with Predicate with ExpectsInputTypes {
+  override def foldable: Boolean = child.foldable
+  override def nullable: Boolean = child.nullable
+  override def toString: String = s"NOT $child"
+
+  override def expectedChildTypes: Seq[DataType] = Seq(BooleanType)
+>>>>>>> upstream/master
 
   override def eval(input: Row): Any = {
     child.eval(input) match {
@@ -112,6 +129,10 @@ case class InSet(value: Expression, hset: Set[Any])
 
   override def children: Seq[Expression] = value :: Nil
 
+<<<<<<< HEAD
+=======
+  override def foldable: Boolean = value.foldable
+>>>>>>> upstream/master
   override def nullable: Boolean = true // TODO: Figure out correct nullability semantics of IN.
   override def toString: String = s"$value INSET ${hset.mkString("(", ",", ")")}"
 
@@ -120,7 +141,15 @@ case class InSet(value: Expression, hset: Set[Any])
   }
 }
 
+<<<<<<< HEAD
 case class And(left: Expression, right: Expression) extends BinaryPredicate {
+=======
+case class And(left: Expression, right: Expression)
+  extends BinaryExpression with Predicate with ExpectsInputTypes {
+
+  override def expectedChildTypes: Seq[DataType] = Seq(BooleanType, BooleanType)
+
+>>>>>>> upstream/master
   override def symbol: String = "&&"
 
   override def eval(input: Row): Any = {
@@ -142,7 +171,15 @@ case class And(left: Expression, right: Expression) extends BinaryPredicate {
   }
 }
 
+<<<<<<< HEAD
 case class Or(left: Expression, right: Expression) extends BinaryPredicate {
+=======
+case class Or(left: Expression, right: Expression)
+  extends BinaryExpression with Predicate with ExpectsInputTypes {
+
+  override def expectedChildTypes: Seq[DataType] = Seq(BooleanType, BooleanType)
+
+>>>>>>> upstream/master
   override def symbol: String = "||"
 
   override def eval(input: Row): Any = {
@@ -164,7 +201,7 @@ case class Or(left: Expression, right: Expression) extends BinaryPredicate {
   }
 }
 
-abstract class BinaryComparison extends BinaryPredicate {
+abstract class BinaryComparison extends BinaryExpression with Predicate {
   self: Product =>
 }
 
@@ -211,7 +248,11 @@ case class LessThan(left: Expression, right: Expression) extends BinaryCompariso
         s"Types do not match ${left.dataType} != ${right.dataType}")
     }
     left.dataType match {
+<<<<<<< HEAD
       case i: NativeType => i.ordering.asInstanceOf[Ordering[Any]]
+=======
+      case i: AtomicType => i.ordering.asInstanceOf[Ordering[Any]]
+>>>>>>> upstream/master
       case other => sys.error(s"Type $other does not support ordered operations")
     }
   }
@@ -240,7 +281,11 @@ case class LessThanOrEqual(left: Expression, right: Expression) extends BinaryCo
         s"Types do not match ${left.dataType} != ${right.dataType}")
     }
     left.dataType match {
+<<<<<<< HEAD
       case i: NativeType => i.ordering.asInstanceOf[Ordering[Any]]
+=======
+      case i: AtomicType => i.ordering.asInstanceOf[Ordering[Any]]
+>>>>>>> upstream/master
       case other => sys.error(s"Type $other does not support ordered operations")
     }
   }
@@ -269,7 +314,11 @@ case class GreaterThan(left: Expression, right: Expression) extends BinaryCompar
         s"Types do not match ${left.dataType} != ${right.dataType}")
     }
     left.dataType match {
+<<<<<<< HEAD
       case i: NativeType => i.ordering.asInstanceOf[Ordering[Any]]
+=======
+      case i: AtomicType => i.ordering.asInstanceOf[Ordering[Any]]
+>>>>>>> upstream/master
       case other => sys.error(s"Type $other does not support ordered operations")
     }
   }
@@ -298,7 +347,11 @@ case class GreaterThanOrEqual(left: Expression, right: Expression) extends Binar
         s"Types do not match ${left.dataType} != ${right.dataType}")
     }
     left.dataType match {
+<<<<<<< HEAD
       case i: NativeType => i.ordering.asInstanceOf[Ordering[Any]]
+=======
+      case i: AtomicType => i.ordering.asInstanceOf[Ordering[Any]]
+>>>>>>> upstream/master
       case other => sys.error(s"Type $other does not support ordered operations")
     }
   }
@@ -334,8 +387,6 @@ case class If(predicate: Expression, trueValue: Expression, falseValue: Expressi
     trueValue.dataType
   }
 
-  type EvaluatedType = Any
-
   override def eval(input: Row): Any = {
     if (true == predicate.eval(input)) {
       trueValue.eval(input)
@@ -345,6 +396,40 @@ case class If(predicate: Expression, trueValue: Expression, falseValue: Expressi
   }
 
   override def toString: String = s"if ($predicate) $trueValue else $falseValue"
+<<<<<<< HEAD
+=======
+}
+
+trait CaseWhenLike extends Expression {
+  self: Product =>
+
+  // Note that `branches` are considered in consecutive pairs (cond, val), and the optional last
+  // element is the value for the default catch-all case (if provided).
+  // Hence, `branches` consists of at least two elements, and can have an odd or even length.
+  def branches: Seq[Expression]
+
+  @transient lazy val whenList =
+    branches.sliding(2, 2).collect { case Seq(whenExpr, _) => whenExpr }.toSeq
+  @transient lazy val thenList =
+    branches.sliding(2, 2).collect { case Seq(_, thenExpr) => thenExpr }.toSeq
+  val elseValue = if (branches.length % 2 == 0) None else Option(branches.last)
+
+  // both then and else val should be considered.
+  def valueTypes: Seq[DataType] = (thenList ++ elseValue).map(_.dataType)
+  def valueTypesEqual: Boolean = valueTypes.distinct.size == 1
+
+  override def dataType: DataType = {
+    if (!resolved) {
+      throw new UnresolvedException(this, "cannot resolve due to differing types in some branches")
+    }
+    valueTypes.head
+  }
+
+  override def nullable: Boolean = {
+    // If no value is nullable and no elseValue is provided, the whole statement defaults to null.
+    thenList.exists(_.nullable) || (elseValue.map(_.nullable).getOrElse(true))
+  }
+>>>>>>> upstream/master
 }
 
 // scalastyle:off
@@ -352,16 +437,9 @@ case class If(predicate: Expression, trueValue: Expression, falseValue: Expressi
  * Case statements of the form "CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END".
  * Refer to this link for the corresponding semantics:
  * https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-ConditionalFunctions
- *
- * The other form of case statements "CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END" gets
- * translated to this form at parsing time.  Namely, such a statement gets translated to
- * "CASE WHEN a=b THEN c [WHEN a=d THEN e]* [ELSE f] END".
- *
- * Note that `branches` are considered in consecutive pairs (cond, val), and the optional last
- * element is the value for the default catch-all case (if provided). Hence, `branches` consists of
- * at least two elements, and can have an odd or even length.
  */
 // scalastyle:on
+<<<<<<< HEAD
 case class CaseWhen(branches: Seq[Expression]) extends Expression {
   type EvaluatedType = Any
 
@@ -370,10 +448,40 @@ case class CaseWhen(branches: Seq[Expression]) extends Expression {
   override def dataType: DataType = {
     if (!resolved) {
       throw new UnresolvedException(this, "cannot resolve due to differing types in some branches")
+=======
+case class CaseWhen(branches: Seq[Expression]) extends CaseWhenLike {
+
+  // Use private[this] Array to speed up evaluation.
+  @transient private[this] lazy val branchesArr = branches.toArray
+
+  override def children: Seq[Expression] = branches
+
+  override lazy val resolved: Boolean =
+    childrenResolved &&
+    whenList.forall(_.dataType == BooleanType) &&
+    valueTypesEqual
+
+  /** Written in imperative fashion for performance considerations. */
+  override def eval(input: Row): Any = {
+    val len = branchesArr.length
+    var i = 0
+    // If all branches fail and an elseVal is not provided, the whole statement
+    // defaults to null, according to Hive's semantics.
+    while (i < len - 1) {
+      if (branchesArr(i).eval(input) == true) {
+        return branchesArr(i + 1).eval(input)
+      }
+      i += 2
     }
-    branches(1).dataType
+    var res: Any = null
+    if (i == len - 1) {
+      res = branchesArr(i).eval(input)
+>>>>>>> upstream/master
+    }
+    return res
   }
 
+<<<<<<< HEAD
   @transient private[this] lazy val branchesArr = branches.toArray
   @transient private[this] lazy val predicates =
     branches.sliding(2, 2).collect { case Seq(cond, _) => cond }.toSeq
@@ -385,8 +493,17 @@ case class CaseWhen(branches: Seq[Expression]) extends Expression {
   override def nullable: Boolean = {
     // If no value is nullable and no elseValue is provided, the whole statement defaults to null.
     values.exists(_.nullable) || (elseValue.map(_.nullable).getOrElse(true))
+=======
+  override def toString: String = {
+    "CASE" + branches.sliding(2, 2).map {
+      case Seq(cond, value) => s" WHEN $cond THEN $value"
+      case Seq(elseValue) => s" ELSE $elseValue"
+    }.mkString
+>>>>>>> upstream/master
   }
+}
 
+<<<<<<< HEAD
   override lazy val resolved: Boolean = {
     if (!childrenResolved) {
       false
@@ -397,29 +514,63 @@ case class CaseWhen(branches: Seq[Expression]) extends Expression {
       allCondBooleans && dataTypesEqual
     }
   }
+=======
+// scalastyle:off
+/**
+ * Case statements of the form "CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END".
+ * Refer to this link for the corresponding semantics:
+ * https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-ConditionalFunctions
+ */
+// scalastyle:on
+case class CaseKeyWhen(key: Expression, branches: Seq[Expression]) extends CaseWhenLike {
+
+  // Use private[this] Array to speed up evaluation.
+  @transient private[this] lazy val branchesArr = branches.toArray
+
+  override def children: Seq[Expression] = key +: branches
+
+  override lazy val resolved: Boolean =
+    childrenResolved && valueTypesEqual &&
+    (key +: whenList).map(_.dataType).distinct.size == 1
+>>>>>>> upstream/master
 
   /** Written in imperative fashion for performance considerations. */
   override def eval(input: Row): Any = {
+    val evaluatedKey = key.eval(input)
     val len = branchesArr.length
     var i = 0
     // If all branches fail and an elseVal is not provided, the whole statement
     // defaults to null, according to Hive's semantics.
-    var res: Any = null
     while (i < len - 1) {
-      if (branchesArr(i).eval(input) == true) {
-        res = branchesArr(i + 1).eval(input)
-        return res
+      if (equalNullSafe(evaluatedKey, branchesArr(i).eval(input))) {
+        return branchesArr(i + 1).eval(input)
       }
       i += 2
     }
+    var res: Any = null
     if (i == len - 1) {
       res = branchesArr(i).eval(input)
     }
-    res
+    return res
+  }
+
+<<<<<<< HEAD
+  override def toString: String = {
+    "CASE" + branches.sliding(2, 2).map {
+=======
+  private def equalNullSafe(l: Any, r: Any) = {
+    if (l == null && r == null) {
+      true
+    } else if (l == null || r == null) {
+      false
+    } else {
+      l == r
+    }
   }
 
   override def toString: String = {
-    "CASE" + branches.sliding(2, 2).map {
+    s"CASE $key" + branches.sliding(2, 2).map {
+>>>>>>> upstream/master
       case Seq(cond, value) => s" WHEN $cond THEN $value"
       case Seq(elseValue) => s" ELSE $elseValue"
     }.mkString

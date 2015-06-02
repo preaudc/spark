@@ -62,7 +62,11 @@ TESTS_TIMEOUT="150m" # format: http://linux.die.net/man/1/timeout
 PR_TESTS=(
   "pr_merge_ability"
   "pr_public_classes"
+<<<<<<< HEAD
   "pr_new_dependencies"
+=======
+# DISABLED (pwendell) "pr_new_dependencies"
+>>>>>>> upstream/master
 )
 
 function post_message () {
@@ -185,6 +189,8 @@ done
 
 # run tests
 {
+  # Marks this build is a pull request build.
+  export AMP_JENKINS_PRB=true
   timeout "${TESTS_TIMEOUT}" ./dev/run-tests
   test_result="$?"
 

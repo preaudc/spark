@@ -20,9 +20,17 @@ package org.apache.spark.ml.tuning
 import com.github.fommil.netlib.F2jBLAS
 
 import org.apache.spark.Logging
+<<<<<<< HEAD
 import org.apache.spark.annotation.AlphaComponent
 import org.apache.spark.ml._
 import org.apache.spark.ml.param.{IntParam, Param, ParamMap, Params}
+=======
+import org.apache.spark.annotation.Experimental
+import org.apache.spark.ml._
+import org.apache.spark.ml.evaluation.Evaluator
+import org.apache.spark.ml.param._
+import org.apache.spark.ml.util.Identifiable
+>>>>>>> upstream/master
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
@@ -39,7 +47,11 @@ private[ml] trait CrossValidatorParams extends Params {
   val estimator: Param[Estimator[_]] = new Param(this, "estimator", "estimator for selection")
 
   /** @group getParam */
+<<<<<<< HEAD
   def getEstimator: Estimator[_] = getOrDefault(estimator)
+=======
+  def getEstimator: Estimator[_] = $(estimator)
+>>>>>>> upstream/master
 
   /**
    * param for estimator param maps
@@ -49,6 +61,7 @@ private[ml] trait CrossValidatorParams extends Params {
     new Param(this, "estimatorParamMaps", "param maps for the estimator")
 
   /** @group getParam */
+<<<<<<< HEAD
   def getEstimatorParamMaps: Array[ParamMap] = getOrDefault(estimatorParamMaps)
 
   /**
@@ -68,16 +81,52 @@ private[ml] trait CrossValidatorParams extends Params {
 
   /** @group getParam */
   def getNumFolds: Int = getOrDefault(numFolds)
+=======
+  def getEstimatorParamMaps: Array[ParamMap] = $(estimatorParamMaps)
+
+  /**
+   * param for the evaluator used to select hyper-parameters that maximize the cross-validated
+   * metric
+   * @group param
+   */
+  val evaluator: Param[Evaluator] = new Param(this, "evaluator",
+    "evaluator used to select hyper-parameters that maximize the cross-validated metric")
+
+  /** @group getParam */
+  def getEvaluator: Evaluator = $(evaluator)
+
+  /**
+   * Param for number of folds for cross validation.  Must be >= 2.
+   * Default: 3
+   * @group param
+   */
+  val numFolds: IntParam = new IntParam(this, "numFolds",
+    "number of folds for cross validation (>= 2)", ParamValidators.gtEq(2))
+
+  /** @group getParam */
+  def getNumFolds: Int = $(numFolds)
+>>>>>>> upstream/master
 
   setDefault(numFolds -> 3)
 }
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  * K-fold cross validation.
  */
 @AlphaComponent
 class CrossValidator extends Estimator[CrossValidatorModel] with CrossValidatorParams with Logging {
+=======
+ * :: Experimental ::
+ * K-fold cross validation.
+ */
+@Experimental
+class CrossValidator(override val uid: String) extends Estimator[CrossValidatorModel]
+  with CrossValidatorParams with Logging {
+
+  def this() = this(Identifiable.randomUID("cv"))
+>>>>>>> upstream/master
 
   private val f2jBLAS = new F2jBLAS
 
@@ -93,6 +142,7 @@ class CrossValidator extends Estimator[CrossValidatorModel] with CrossValidatorP
   /** @group setParam */
   def setNumFolds(value: Int): this.type = set(numFolds, value)
 
+<<<<<<< HEAD
   override def fit(dataset: DataFrame, paramMap: ParamMap): CrossValidatorModel = {
     val map = extractParamMap(paramMap)
     val schema = dataset.schema
@@ -104,6 +154,18 @@ class CrossValidator extends Estimator[CrossValidatorModel] with CrossValidatorP
     val numModels = epm.size
     val metrics = new Array[Double](epm.size)
     val splits = MLUtils.kFold(dataset.rdd, map(numFolds), 0)
+=======
+  override def fit(dataset: DataFrame): CrossValidatorModel = {
+    val schema = dataset.schema
+    transformSchema(schema, logging = true)
+    val sqlCtx = dataset.sqlContext
+    val est = $(estimator)
+    val eval = $(evaluator)
+    val epm = $(estimatorParamMaps)
+    val numModels = epm.length
+    val metrics = new Array[Double](epm.length)
+    val splits = MLUtils.kFold(dataset.rdd, $(numFolds), 0)
+>>>>>>> upstream/master
     splits.zipWithIndex.foreach { case ((training, validation), splitIndex) =>
       val trainingDataset = sqlCtx.createDataFrame(training, schema).cache()
       val validationDataset = sqlCtx.createDataFrame(validation, schema).cache()
@@ -113,19 +175,29 @@ class CrossValidator extends Estimator[CrossValidatorModel] with CrossValidatorP
       trainingDataset.unpersist()
       var i = 0
       while (i < numModels) {
+<<<<<<< HEAD
         val metric = eval.evaluate(models(i).transform(validationDataset, epm(i)), map)
+=======
+        // TODO: duplicate evaluator to take extra params from input
+        val metric = eval.evaluate(models(i).transform(validationDataset, epm(i)))
+>>>>>>> upstream/master
         logDebug(s"Got metric $metric for model trained with ${epm(i)}.")
         metrics(i) += metric
         i += 1
       }
       validationDataset.unpersist()
     }
+<<<<<<< HEAD
     f2jBLAS.dscal(numModels, 1.0 / map(numFolds), metrics, 1)
+=======
+    f2jBLAS.dscal(numModels, 1.0 / $(numFolds), metrics, 1)
+>>>>>>> upstream/master
     logInfo(s"Average cross-validation metrics: ${metrics.toSeq}")
     val (bestMetric, bestIndex) = metrics.zipWithIndex.maxBy(_._1)
     logInfo(s"Best set of parameters:\n${epm(bestIndex)}")
     logInfo(s"Best cross-validation metric: $bestMetric.")
     val bestModel = est.fit(dataset, epm(bestIndex)).asInstanceOf[Model[_]]
+<<<<<<< HEAD
     val cvModel = new CrossValidatorModel(this, map, bestModel)
     Params.inheritValues(map, this, cvModel)
     cvModel
@@ -134,10 +206,26 @@ class CrossValidator extends Estimator[CrossValidatorModel] with CrossValidatorP
   override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = {
     val map = extractParamMap(paramMap)
     map(estimator).transformSchema(schema, paramMap)
+=======
+    copyValues(new CrossValidatorModel(uid, bestModel).setParent(this))
+  }
+
+  override def transformSchema(schema: StructType): StructType = {
+    $(estimator).transformSchema(schema)
+  }
+
+  override def validateParams(): Unit = {
+    super.validateParams()
+    val est = $(estimator)
+    for (paramMap <- $(estimatorParamMaps)) {
+      est.copy(paramMap).validateParams()
+    }
+>>>>>>> upstream/master
   }
 }
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  * Model from k-fold cross validation.
  */
@@ -154,5 +242,32 @@ class CrossValidatorModel private[ml] (
 
   override def transformSchema(schema: StructType, paramMap: ParamMap): StructType = {
     bestModel.transformSchema(schema, paramMap)
+=======
+ * :: Experimental ::
+ * Model from k-fold cross validation.
+ */
+@Experimental
+class CrossValidatorModel private[ml] (
+    override val uid: String,
+    val bestModel: Model[_])
+  extends Model[CrossValidatorModel] with CrossValidatorParams {
+
+  override def validateParams(): Unit = {
+    bestModel.validateParams()
+  }
+
+  override def transform(dataset: DataFrame): DataFrame = {
+    transformSchema(dataset.schema, logging = true)
+    bestModel.transform(dataset)
+  }
+
+  override def transformSchema(schema: StructType): StructType = {
+    bestModel.transformSchema(schema)
+  }
+
+  override def copy(extra: ParamMap): CrossValidatorModel = {
+    val copied = new CrossValidatorModel(uid, bestModel.copy(extra).asInstanceOf[Model[_]])
+    copyValues(copied, extra)
+>>>>>>> upstream/master
   }
 }

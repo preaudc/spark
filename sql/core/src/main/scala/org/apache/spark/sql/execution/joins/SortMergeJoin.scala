@@ -60,7 +60,11 @@ case class SortMergeJoin(
   private def requiredOrders(keys: Seq[Expression]): Seq[SortOrder] =
     keys.map(SortOrder(_, Ascending))
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     val leftResults = left.execute().map(_.copy())
     val rightResults = right.execute().map(_.copy())
 

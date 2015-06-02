@@ -15,6 +15,13 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
+=======
+import numpy
+from numpy import array
+from collections import namedtuple
+
+>>>>>>> upstream/master
 from pyspark import SparkContext
 from pyspark.rdd import ignore_unicode_prefix
 from pyspark.mllib.common import JavaModelWrapper, callMLlibFunc, inherit_doc
@@ -36,14 +43,24 @@ class FPGrowthModel(JavaModelWrapper):
     >>> rdd = sc.parallelize(data, 2)
     >>> model = FPGrowth.train(rdd, 0.6, 2)
     >>> sorted(model.freqItemsets().collect())
+<<<<<<< HEAD
     [([u'a'], 4), ([u'c'], 3), ([u'c', u'a'], 3)]
+=======
+    [FreqItemset(items=[u'a'], freq=4), FreqItemset(items=[u'c'], freq=3), ...
+>>>>>>> upstream/master
     """
 
     def freqItemsets(self):
         """
+<<<<<<< HEAD
         Get the frequent itemsets of this model
         """
         return self.call("getFreqItemsets")
+=======
+        Returns the frequent itemsets of this model.
+        """
+        return self.call("getFreqItemsets").map(lambda x: (FPGrowth.FreqItemset(x[0], x[1])))
+>>>>>>> upstream/master
 
 
 class FPGrowth(object):
@@ -57,16 +74,33 @@ class FPGrowth(object):
     def train(cls, data, minSupport=0.3, numPartitions=-1):
         """
         Computes an FP-Growth model that contains frequent itemsets.
+<<<<<<< HEAD
         :param data:            The input data set, each element
                                 contains a transaction.
         :param minSupport:      The minimal support level
                                 (default: `0.3`).
         :param numPartitions:   The number of partitions used by parallel
                                 FP-growth (default: same as input data).
+=======
+
+        :param data: The input data set, each element contains a
+            transaction.
+        :param minSupport: The minimal support level (default: `0.3`).
+        :param numPartitions: The number of partitions used by
+            parallel FP-growth (default: same as input data).
+>>>>>>> upstream/master
         """
         model = callMLlibFunc("trainFPGrowthModel", data, float(minSupport), int(numPartitions))
         return FPGrowthModel(model)
 
+<<<<<<< HEAD
+=======
+    class FreqItemset(namedtuple("FreqItemset", ["items", "freq"])):
+        """
+        Represents an (items, freq) tuple.
+        """
+
+>>>>>>> upstream/master
 
 def _test():
     import doctest

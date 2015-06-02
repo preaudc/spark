@@ -20,10 +20,15 @@ package org.apache.spark.network;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+<<<<<<< HEAD
 import java.util.NoSuchElementException;
+=======
+import java.util.Map;
+>>>>>>> upstream/master
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Maps;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,9 +41,14 @@ import org.apache.spark.network.client.TransportClientFactory;
 import org.apache.spark.network.server.NoOpRpcHandler;
 import org.apache.spark.network.server.RpcHandler;
 import org.apache.spark.network.server.TransportServer;
+<<<<<<< HEAD
 import org.apache.spark.network.util.ConfigProvider;
 import org.apache.spark.network.util.JavaUtils;
+=======
+>>>>>>> upstream/master
 import org.apache.spark.network.util.SystemPropertyConfigProvider;
+import org.apache.spark.network.util.JavaUtils;
+import org.apache.spark.network.util.MapConfigProvider;
 import org.apache.spark.network.util.TransportConf;
 
 public class TransportClientFactorySuite {
@@ -70,6 +80,7 @@ public class TransportClientFactorySuite {
    */
   private void testClientReuse(final int maxConnections, boolean concurrent)
     throws IOException, InterruptedException {
+<<<<<<< HEAD
     TransportConf conf = new TransportConf(new ConfigProvider() {
       @Override
       public String get(String name) {
@@ -80,6 +91,12 @@ public class TransportClientFactorySuite {
         }
       }
     });
+=======
+
+    Map<String, String> configMap = Maps.newHashMap();
+    configMap.put("spark.shuffle.io.numConnectionsPerPeer", Integer.toString(maxConnections));
+    TransportConf conf = new TransportConf(new MapConfigProvider(configMap));
+>>>>>>> upstream/master
 
     RpcHandler rpcHandler = new NoOpRpcHandler();
     TransportContext context = new TransportContext(conf, rpcHandler);

@@ -21,7 +21,11 @@ import java.io.{File, FileWriter, PrintWriter}
 
 import scala.collection.mutable.ArrayBuffer
 
+<<<<<<< HEAD
 import org.apache.commons.lang.math.RandomUtils
+=======
+import org.apache.commons.lang3.RandomUtils
+>>>>>>> upstream/master
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
@@ -36,14 +40,24 @@ import org.apache.hadoop.mapreduce.lib.input.{CombineFileInputFormat => NewCombi
 import org.apache.hadoop.mapreduce.lib.output.{TextOutputFormat => NewTextOutputFormat}
 import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit => NewInputSplit,
   RecordReader => NewRecordReader}
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 import org.apache.spark.SharedSparkContext
+=======
+import org.scalatest.BeforeAndAfter
+
+import org.apache.spark.{SharedSparkContext, SparkFunSuite}
+>>>>>>> upstream/master
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
 import org.apache.spark.util.Utils
 
+<<<<<<< HEAD
 class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
+=======
+class InputOutputMetricsSuite extends SparkFunSuite with SharedSparkContext
+>>>>>>> upstream/master
   with BeforeAndAfter {
 
   @transient var tmpDir: File = _
@@ -60,7 +74,11 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
     tmpFile = new File(testTempDir, getClass.getSimpleName + ".txt")
     val pw = new PrintWriter(new FileWriter(tmpFile))
     for (x <- 1 to numRecords) {
+<<<<<<< HEAD
       pw.println(RandomUtils.nextInt(numBuckets))
+=======
+      pw.println(RandomUtils.nextInt(0, numBuckets))
+>>>>>>> upstream/master
     }
     pw.close()
 
@@ -193,6 +211,7 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
     assert(records == numRecords)
   }
 
+<<<<<<< HEAD
   test("shuffle records read metrics") {
     val recordsRead = runAndReturnShuffleRecordsRead {
       sc.textFile(tmpFilePath, 4)
@@ -213,6 +232,8 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
     assert(recordsWritten == numRecords)
   }
 
+=======
+>>>>>>> upstream/master
   /**
    * Tests the metrics from end to end.
    * 1) reading a hadoop file
@@ -263,7 +284,11 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
 
     val tmpRdd = sc.textFile(tmpFilePath, numPartitions)
 
+<<<<<<< HEAD
     val firstSize= runAndReturnBytesRead {
+=======
+    val firstSize = runAndReturnBytesRead {
+>>>>>>> upstream/master
       aRdd.count()
     }
     val secondSize = runAndReturnBytesRead {
@@ -301,6 +326,7 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
     runAndReturnMetrics(job, _.taskMetrics.outputMetrics.map(_.recordsWritten))
   }
 
+<<<<<<< HEAD
   private def runAndReturnShuffleRecordsRead(job: => Unit): Long = {
     runAndReturnMetrics(job, _.taskMetrics.shuffleReadMetrics.map(_.recordsRead))
   }
@@ -309,6 +335,8 @@ class InputOutputMetricsSuite extends FunSuite with SharedSparkContext
     runAndReturnMetrics(job, _.taskMetrics.shuffleWriteMetrics.map(_.shuffleRecordsWritten))
   }
 
+=======
+>>>>>>> upstream/master
   private def runAndReturnMetrics(job: => Unit,
       collector: (SparkListenerTaskEnd) => Option[Long]): Long = {
     val taskMetrics = new ArrayBuffer[Long]()
@@ -433,10 +461,17 @@ class OldCombineTextRecordReaderWrapper(
 /**
  * Hadoop 2 has a version of this, but we can't use it for backwards compatibility
  */
+<<<<<<< HEAD
 class NewCombineTextInputFormat extends NewCombineFileInputFormat[LongWritable,Text] {
   def createRecordReader(split: NewInputSplit, context: TaskAttemptContext)
   : NewRecordReader[LongWritable, Text] = {
     new NewCombineFileRecordReader[LongWritable,Text](split.asInstanceOf[NewCombineFileSplit],
+=======
+class NewCombineTextInputFormat extends NewCombineFileInputFormat[LongWritable, Text] {
+  def createRecordReader(split: NewInputSplit, context: TaskAttemptContext)
+  : NewRecordReader[LongWritable, Text] = {
+    new NewCombineFileRecordReader[LongWritable, Text](split.asInstanceOf[NewCombineFileSplit],
+>>>>>>> upstream/master
       context, classOf[NewCombineTextRecordReaderWrapper])
   }
 }

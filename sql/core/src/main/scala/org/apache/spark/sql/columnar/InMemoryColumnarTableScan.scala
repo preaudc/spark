@@ -236,7 +236,7 @@ private[sql] case class InMemoryColumnarTableScan(
     case GreaterThanOrEqual(a: AttributeReference, l: Literal) => l <= statsFor(a).upperBound
     case GreaterThanOrEqual(l: Literal, a: AttributeReference) => statsFor(a).lowerBound <= l
 
-    case IsNull(a: Attribute)    => statsFor(a).nullCount > 0
+    case IsNull(a: Attribute) => statsFor(a).nullCount > 0
     case IsNotNull(a: Attribute) => statsFor(a).count - statsFor(a).nullCount > 0
   }
 
@@ -267,7 +267,11 @@ private[sql] case class InMemoryColumnarTableScan(
 
   private val inMemoryPartitionPruningEnabled = sqlContext.conf.inMemoryPartitionPruning
 
+<<<<<<< HEAD
   override def execute(): RDD[Row] = {
+=======
+  protected override def doExecute(): RDD[Row] = {
+>>>>>>> upstream/master
     if (enableAccumulators) {
       readPartitions.setValue(0)
       readBatches.setValue(0)
@@ -314,7 +318,7 @@ private[sql] case class InMemoryColumnarTableScan(
                 columnAccessors(i).extractTo(nextRow, i)
                 i += 1
               }
-              nextRow
+              if (attributes.isEmpty) Row.empty else nextRow
             }
 
             override def hasNext: Boolean = columnAccessors(0).hasNext

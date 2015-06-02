@@ -49,7 +49,11 @@ class ConvertToLocalRelationSuite extends PlanTest {
       UnresolvedAttribute("a").as("a1"),
       (UnresolvedAttribute("b") + 1).as("b1"))
 
+<<<<<<< HEAD
     val optimized = Optimize(projectOnLocal.analyze)
+=======
+    val optimized = Optimize.execute(projectOnLocal.analyze)
+>>>>>>> upstream/master
 
     comparePlans(optimized, correctAnswer)
   }

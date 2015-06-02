@@ -38,7 +38,11 @@ class UDFSuite extends QueryTest {
   }
 
   test("TwoArgument UDF") {
+<<<<<<< HEAD
     udf.register("strLenScala", (_: String).length + (_:Int))
+=======
+    udf.register("strLenScala", (_: String).length + (_: Int))
+>>>>>>> upstream/master
     assert(sql("SELECT strLenScala('test', 1)").head().getInt(0) === 5)
   }
 

@@ -20,9 +20,17 @@ package org.apache.spark.streaming.kafka
 import scala.util.Random
 
 import kafka.common.TopicAndPartition
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 class KafkaClusterSuite extends FunSuite with BeforeAndAfterAll {
+=======
+import org.scalatest.BeforeAndAfterAll
+
+import org.apache.spark.SparkFunSuite
+
+class KafkaClusterSuite extends SparkFunSuite with BeforeAndAfterAll {
+>>>>>>> upstream/master
   private val topic = "kcsuitetopic" + Random.nextInt(10000)
   private val topicAndPartition = TopicAndPartition(topic, 0)
   private var kc: KafkaCluster = null

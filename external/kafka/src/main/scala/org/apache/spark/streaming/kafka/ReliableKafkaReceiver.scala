@@ -33,7 +33,11 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.spark.{Logging, SparkEnv}
 import org.apache.spark.storage.{StorageLevel, StreamBlockId}
 import org.apache.spark.streaming.receiver.{BlockGenerator, BlockGeneratorListener, Receiver}
+<<<<<<< HEAD
 import org.apache.spark.util.Utils
+=======
+import org.apache.spark.util.ThreadUtils
+>>>>>>> upstream/master
 
 /**
  * ReliableKafkaReceiver offers the ability to reliably store data into BlockManager without loss.
@@ -121,7 +125,11 @@ class ReliableKafkaReceiver[
     zkClient = new ZkClient(consumerConfig.zkConnect, consumerConfig.zkSessionTimeoutMs,
       consumerConfig.zkConnectionTimeoutMs, ZKStringSerializer)
 
+<<<<<<< HEAD
     messageHandlerThreadPool = Utils.newDaemonFixedThreadPool(
+=======
+    messageHandlerThreadPool = ThreadUtils.newDaemonFixedThreadPool(
+>>>>>>> upstream/master
       topics.values.sum, "KafkaMessageHandler")
 
     blockGenerator.start()
@@ -267,7 +275,11 @@ class ReliableKafkaReceiver[
           }
         } catch {
           case e: Exception =>
+<<<<<<< HEAD
             logError("Error handling message", e)
+=======
+            reportError("Error handling message", e)
+>>>>>>> upstream/master
         }
       }
     }

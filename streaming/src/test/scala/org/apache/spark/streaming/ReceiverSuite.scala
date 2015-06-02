@@ -155,10 +155,14 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     assert(recordedData.toSet === generatedData.toSet)
   }
 
-  test("block generator throttling") {
+  ignore("block generator throttling") {
     val blockGeneratorListener = new FakeBlockGeneratorListener
     val blockIntervalMs = 100
+<<<<<<< HEAD
     val maxRate = 100
+=======
+    val maxRate = 1001
+>>>>>>> upstream/master
     val conf = new SparkConf().set("spark.streaming.blockInterval", s"${blockIntervalMs}ms").
       set("spark.streaming.receiver.maxRate", maxRate.toString)
     val blockGenerator = new BlockGenerator(blockGeneratorListener, 1, conf)
@@ -176,7 +180,6 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
       blockGenerator.addData(count)
       generatedData += count
       count += 1
-      Thread.sleep(1)
     }
     blockGenerator.stop()
 
@@ -185,25 +188,34 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     assert(blockGeneratorListener.arrayBuffers.size > 0, "No blocks received")
     assert(recordedData.toSet === generatedData.toSet, "Received data not same")
 
-    // recordedData size should be close to the expected rate
-    val minExpectedMessages = expectedMessages - 3
-    val maxExpectedMessages = expectedMessages + 1
+    // recordedData size should be close to the expected rate; use an error margin proportional to
+    // the value, so that rate changes don't cause a brittle test
+    val minExpectedMessages = expectedMessages - 0.05 * expectedMessages
+    val maxExpectedMessages = expectedMessages + 0.05 * expectedMessages
     val numMessages = recordedData.size
     assert(
       numMessages >= minExpectedMessages && numMessages <= maxExpectedMessages,
       s"#records received = $numMessages, not between $minExpectedMessages and $maxExpectedMessages"
     )
 
-    val minExpectedMessagesPerBlock = expectedMessagesPerBlock - 3
-    val maxExpectedMessagesPerBlock = expectedMessagesPerBlock + 1
+    // XXX Checking every block would require an even distribution of messages across blocks,
+    // which throttling code does not control. Therefore, test against the average.
+    val minExpectedMessagesPerBlock = expectedMessagesPerBlock - 0.05 * expectedMessagesPerBlock
+    val maxExpectedMessagesPerBlock = expectedMessagesPerBlock + 0.05 * expectedMessagesPerBlock
     val receivedBlockSizes = recordedBlocks.map { _.size }.mkString(",")
+<<<<<<< HEAD
+=======
+
+    // the first and last block may be incomplete, so we slice them out
+    val validBlocks = recordedBlocks.drop(1).dropRight(1)
+    val averageBlockSize = validBlocks.map(block => block.size).sum / validBlocks.size
+
+>>>>>>> upstream/master
     assert(
-      // the first and last block may be incomplete, so we slice them out
-      recordedBlocks.drop(1).dropRight(1).forall { block =>
-        block.size >= minExpectedMessagesPerBlock && block.size <= maxExpectedMessagesPerBlock
-      },
+      averageBlockSize >= minExpectedMessagesPerBlock &&
+        averageBlockSize <= maxExpectedMessagesPerBlock,
       s"# records in received blocks = [$receivedBlockSizes], not between " +
-        s"$minExpectedMessagesPerBlock and $maxExpectedMessagesPerBlock"
+        s"$minExpectedMessagesPerBlock and $maxExpectedMessagesPerBlock, on average"
     )
   }
 
@@ -220,7 +232,11 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
       .setAppName(framework)
       .set("spark.ui.enabled", "true")
       .set("spark.streaming.receiver.writeAheadLog.enable", "true")
+<<<<<<< HEAD
       .set("spark.streaming.receiver.writeAheadLog.rollingInterval", "1")
+=======
+      .set("spark.streaming.receiver.writeAheadLog.rollingIntervalSecs", "1")
+>>>>>>> upstream/master
     val batchDuration = Milliseconds(500)
     val tempDirectory = Utils.createTempDir()
     val logDirectory1 = new File(checkpointDirToLogDir(tempDirectory.getAbsolutePath, 0))
@@ -251,8 +267,13 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     }
 
     withStreamingContext(new StreamingContext(sparkConf, batchDuration)) { ssc =>
+<<<<<<< HEAD
       val receiver1 = ssc.sparkContext.clean(new FakeReceiver(sendData = true))
       val receiver2 = ssc.sparkContext.clean(new FakeReceiver(sendData = true))
+=======
+      val receiver1 = new FakeReceiver(sendData = true)
+      val receiver2 = new FakeReceiver(sendData = true)
+>>>>>>> upstream/master
       val receiverStream1 = ssc.receiverStream(receiver1)
       val receiverStream2 = ssc.receiverStream(receiver2)
       receiverStream1.register()

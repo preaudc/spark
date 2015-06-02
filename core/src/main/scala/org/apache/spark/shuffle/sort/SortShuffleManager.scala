@@ -25,7 +25,11 @@ import org.apache.spark.shuffle.hash.HashShuffleReader
 
 private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager {
 
+<<<<<<< HEAD
   private val indexShuffleBlockManager = new IndexShuffleBlockManager(conf)
+=======
+  private val indexShuffleBlockResolver = new IndexShuffleBlockResolver(conf)
+>>>>>>> upstream/master
   private val shuffleMapNumber = new ConcurrentHashMap[Int, Int]()
 
   /**
@@ -72,8 +76,13 @@ private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager 
     true
   }
 
+<<<<<<< HEAD
   override def shuffleBlockResolver: IndexShuffleBlockManager = {
     indexShuffleBlockManager
+=======
+  override val shuffleBlockResolver: IndexShuffleBlockResolver = {
+    indexShuffleBlockResolver
+>>>>>>> upstream/master
   }
 
   /** Shut down this ShuffleManager. */

@@ -17,23 +17,39 @@
 
 package org.apache.spark.sql.sources
 
+<<<<<<< HEAD
 import java.io.{IOException, File}
 
 import org.apache.spark.sql.AnalysisException
 import org.scalatest.BeforeAndAfterAll
 
+=======
+import java.io.{File, IOException}
+
+import org.scalatest.BeforeAndAfterAll
+
+import org.apache.spark.sql.AnalysisException
+>>>>>>> upstream/master
 import org.apache.spark.util.Utils
 
 class CreateTableAsSelectSuite extends DataSourceTest with BeforeAndAfterAll {
 
+<<<<<<< HEAD
   import caseInsensisitiveContext._
+=======
+  import caseInsensitiveContext._
+>>>>>>> upstream/master
 
   var path: File = null
 
   override def beforeAll(): Unit = {
     path = Utils.createTempDir()
     val rdd = sparkContext.parallelize((1 to 10).map(i => s"""{"a":$i, "b":"str${i}"}"""))
+<<<<<<< HEAD
     jsonRDD(rdd).registerTempTable("jt")
+=======
+    read.json(rdd).registerTempTable("jt")
+>>>>>>> upstream/master
   }
 
   override def afterAll(): Unit = {

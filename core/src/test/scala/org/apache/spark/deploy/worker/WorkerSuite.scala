@@ -17,6 +17,7 @@
 
 package org.apache.spark.deploy.worker
 
+<<<<<<< HEAD
 import org.apache.spark.SparkConf
 import org.apache.spark.deploy.Command
 
@@ -26,6 +27,17 @@ class WorkerSuite extends FunSuite with Matchers {
 
   def cmd(javaOpts: String*): Command = {
     Command("", Seq.empty, Map.empty, Seq.empty, Seq.empty, Seq(javaOpts:_*))
+=======
+import org.apache.spark.{SparkConf, SparkFunSuite}
+import org.apache.spark.deploy.Command
+
+import org.scalatest.Matchers
+
+class WorkerSuite extends SparkFunSuite with Matchers {
+
+  def cmd(javaOpts: String*): Command = {
+    Command("", Seq.empty, Map.empty, Seq.empty, Seq.empty, Seq(javaOpts : _*))
+>>>>>>> upstream/master
   }
   def conf(opts: (String, String)*): SparkConf = new SparkConf(loadDefaults = false).setAll(opts)
 

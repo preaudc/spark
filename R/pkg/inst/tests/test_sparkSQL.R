@@ -23,7 +23,11 @@ context("SparkSQL functions")
 
 sc <- sparkR.init()
 
+<<<<<<< HEAD
 sqlCtx <- sparkRSQL.init(sc)
+=======
+sqlContext <- sparkRSQL.init(sc)
+>>>>>>> upstream/master
 
 mockLines <- c("{\"name\":\"Michael\"}",
                "{\"name\":\"Andy\", \"age\":30}",
@@ -32,6 +36,18 @@ jsonPath <- tempfile(pattern="sparkr-test", fileext=".tmp")
 parquetPath <- tempfile(pattern="sparkr-test", fileext=".parquet")
 writeLines(mockLines, jsonPath)
 
+<<<<<<< HEAD
+=======
+# For test nafunctions, like dropna(), fillna(),...
+mockLinesNa <- c("{\"name\":\"Bob\",\"age\":16,\"height\":176.5}",
+                 "{\"name\":\"Alice\",\"age\":null,\"height\":164.3}",
+                 "{\"name\":\"David\",\"age\":60,\"height\":null}",
+                 "{\"name\":\"Amy\",\"age\":null,\"height\":null}",
+                 "{\"name\":null,\"age\":null,\"height\":null}")
+jsonPathNa <- tempfile(pattern="sparkr-test", fileext=".tmp")
+writeLines(mockLinesNa, jsonPathNa)
+
+>>>>>>> upstream/master
 test_that("infer types", {
   expect_equal(infer_type(1L), "integer")
   expect_equal(infer_type(1.0), "double")
@@ -44,9 +60,14 @@ test_that("infer types", {
   expect_equal(infer_type(list(1L, 2L)),
                list(type = 'array', elementType = "integer", containsNull = TRUE))
   expect_equal(infer_type(list(a = 1L, b = "2")),
+<<<<<<< HEAD
                list(type = "struct",
                     fields = list(list(name = "a", type = "integer", nullable = TRUE),
                                   list(name = "b", type = "string", nullable = TRUE))))
+=======
+               structType(structField(x = "a", type = "integer", nullable = TRUE),
+                          structField(x = "b", type = "string", nullable = TRUE)))
+>>>>>>> upstream/master
   e <- new.env()
   assign("a", 1L, envir = e)
   expect_equal(infer_type(e),
@@ -54,14 +75,33 @@ test_that("infer types", {
                     valueContainsNull = TRUE))
 })
 
+<<<<<<< HEAD
 test_that("create DataFrame from RDD", {
   rdd <- lapply(parallelize(sc, 1:10), function(x) { list(x, as.character(x)) })
   df <- createDataFrame(sqlCtx, rdd, list("a", "b"))
+=======
+test_that("structType and structField", {
+  testField <- structField("a", "string")
+  expect_true(inherits(testField, "structField"))
+  expect_true(testField$name() == "a")
+  expect_true(testField$nullable())
+  
+  testSchema <- structType(testField, structField("b", "integer"))
+  expect_true(inherits(testSchema, "structType"))
+  expect_true(inherits(testSchema$fields()[[2]], "structField"))
+  expect_true(testSchema$fields()[[1]]$dataType.toString() == "StringType")
+})
+
+test_that("create DataFrame from RDD", {
+  rdd <- lapply(parallelize(sc, 1:10), function(x) { list(x, as.character(x)) })
+  df <- createDataFrame(sqlContext, rdd, list("a", "b"))
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 10)
   expect_equal(columns(df), c("a", "b"))
   expect_equal(dtypes(df), list(c("a", "int"), c("b", "string")))
 
+<<<<<<< HEAD
   df <- createDataFrame(sqlCtx, rdd)
   expect_true(inherits(df, "DataFrame"))
   expect_equal(columns(df), c("_1", "_2"))
@@ -70,12 +110,25 @@ test_that("create DataFrame from RDD", {
                  list(name = "b", type = "string", nullable = TRUE))
   schema <- list(type = "struct", fields = fields)
   df <- createDataFrame(sqlCtx, rdd, schema)
+=======
+  df <- createDataFrame(sqlContext, rdd)
+  expect_true(inherits(df, "DataFrame"))
+  expect_equal(columns(df), c("_1", "_2"))
+
+  schema <- structType(structField(x = "a", type = "integer", nullable = TRUE),
+                        structField(x = "b", type = "string", nullable = TRUE))
+  df <- createDataFrame(sqlContext, rdd, schema)
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_equal(columns(df), c("a", "b"))
   expect_equal(dtypes(df), list(c("a", "int"), c("b", "string")))
 
   rdd <- lapply(parallelize(sc, 1:10), function(x) { list(a = x, b = as.character(x)) })
+<<<<<<< HEAD
   df <- createDataFrame(sqlCtx, rdd)
+=======
+  df <- createDataFrame(sqlContext, rdd)
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 10)
   expect_equal(columns(df), c("a", "b"))
@@ -94,9 +147,14 @@ test_that("toDF", {
   expect_true(inherits(df, "DataFrame"))
   expect_equal(columns(df), c("_1", "_2"))
 
+<<<<<<< HEAD
   fields <- list(list(name = "a", type = "integer", nullable = TRUE),
                  list(name = "b", type = "string", nullable = TRUE))
   schema <- list(type = "struct", fields = fields)
+=======
+  schema <- structType(structField(x = "a", type = "integer", nullable = TRUE),
+                        structField(x = "b", type = "string", nullable = TRUE))
+>>>>>>> upstream/master
   df <- toDF(rdd, schema)
   expect_true(inherits(df, "DataFrame"))
   expect_equal(columns(df), c("a", "b"))
@@ -112,17 +170,29 @@ test_that("toDF", {
 
 test_that("create DataFrame from list or data.frame", {
   l <- list(list(1, 2), list(3, 4))
+<<<<<<< HEAD
   df <- createDataFrame(sqlCtx, l, c("a", "b"))
   expect_equal(columns(df), c("a", "b"))
 
   l <- list(list(a=1, b=2), list(a=3, b=4))
   df <- createDataFrame(sqlCtx, l)
+=======
+  df <- createDataFrame(sqlContext, l, c("a", "b"))
+  expect_equal(columns(df), c("a", "b"))
+
+  l <- list(list(a=1, b=2), list(a=3, b=4))
+  df <- createDataFrame(sqlContext, l)
+>>>>>>> upstream/master
   expect_equal(columns(df), c("a", "b"))
 
   a <- 1:3
   b <- c("a", "b", "c")
   ldf <- data.frame(a, b)
+<<<<<<< HEAD
   df <- createDataFrame(sqlCtx, ldf)
+=======
+  df <- createDataFrame(sqlContext, ldf)
+>>>>>>> upstream/master
   expect_equal(columns(df), c("a", "b"))
   expect_equal(dtypes(df), list(c("a", "int"), c("b", "string")))
   expect_equal(count(df), 3)
@@ -133,7 +203,11 @@ test_that("create DataFrame from list or data.frame", {
 test_that("create DataFrame with different data types", {
   l <- list(a = 1L, b = 2, c = TRUE, d = "ss", e = as.Date("2012-12-13"),
             f = as.POSIXct("2015-03-15 12:13:14.056"))
+<<<<<<< HEAD
   df <- createDataFrame(sqlCtx, list(l))
+=======
+  df <- createDataFrame(sqlContext, list(l))
+>>>>>>> upstream/master
   expect_equal(dtypes(df), list(c("a", "int"), c("b", "double"), c("c", "boolean"),
                                 c("d", "string"), c("e", "date"), c("f", "timestamp")))
   expect_equal(count(df), 1)
@@ -145,7 +219,11 @@ test_that("create DataFrame with different data types", {
 #  e <- new.env()
 #  assign("n", 3L, envir = e)
 #  l <- list(1:10, list("a", "b"), e, list(a="aa", b=3L))
+<<<<<<< HEAD
 #  df <- createDataFrame(sqlCtx, list(l), c("a", "b", "c", "d"))
+=======
+#  df <- createDataFrame(sqlContext, list(l), c("a", "b", "c", "d"))
+>>>>>>> upstream/master
 #  expect_equal(dtypes(df), list(c("a", "array<int>"), c("b", "array<string>"),
 #                                c("c", "map<string,int>"), c("d", "struct<a:string,b:int>")))
 #  expect_equal(count(df), 1)
@@ -154,7 +232,11 @@ test_that("create DataFrame with different data types", {
 #})
 
 test_that("jsonFile() on a local file returns a DataFrame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 3)
 })
@@ -162,17 +244,26 @@ test_that("jsonFile() on a local file returns a DataFrame", {
 test_that("jsonRDD() on a RDD with json string", {
   rdd <- parallelize(sc, mockLines)
   expect_true(count(rdd) == 3)
+<<<<<<< HEAD
   df <- jsonRDD(sqlCtx, rdd)
+=======
+  df <- jsonRDD(sqlContext, rdd)
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 3)
 
   rdd2 <- flatMap(rdd, function(x) c(x, x))
+<<<<<<< HEAD
   df <- jsonRDD(sqlCtx, rdd2)
+=======
+  df <- jsonRDD(sqlContext, rdd2)
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 6)
 })
 
 test_that("test cache, uncache and clearCache", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
   registerTempTable(df, "table1")
   cacheTable(sqlCtx, "table1")
@@ -203,12 +294,45 @@ test_that("insertInto() on a registered table", {
   df <- loadDF(sqlCtx, jsonPath, "json")
   saveDF(df, parquetPath, "parquet", "overwrite")
   dfParquet <- loadDF(sqlCtx, parquetPath, "parquet")
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+  registerTempTable(df, "table1")
+  cacheTable(sqlContext, "table1")
+  uncacheTable(sqlContext, "table1")
+  clearCache(sqlContext)
+  dropTempTable(sqlContext, "table1")
+})
+
+test_that("test tableNames and tables", {
+  df <- jsonFile(sqlContext, jsonPath)
+  registerTempTable(df, "table1")
+  expect_true(length(tableNames(sqlContext)) == 1)
+  df <- tables(sqlContext)
+  expect_true(count(df) == 1)
+  dropTempTable(sqlContext, "table1")
+})
+
+test_that("registerTempTable() results in a queryable table and sql() results in a new DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+  registerTempTable(df, "table1")
+  newdf <- sql(sqlContext, "SELECT * FROM table1 where name = 'Michael'")
+  expect_true(inherits(newdf, "DataFrame"))
+  expect_true(count(newdf) == 1)
+  dropTempTable(sqlContext, "table1")
+})
+
+test_that("insertInto() on a registered table", {
+  df <- read.df(sqlContext, jsonPath, "json")
+  write.df(df, parquetPath, "parquet", "overwrite")
+  dfParquet <- read.df(sqlContext, parquetPath, "parquet")
+>>>>>>> upstream/master
 
   lines <- c("{\"name\":\"Bob\", \"age\":24}",
              "{\"name\":\"James\", \"age\":35}")
   jsonPath2 <- tempfile(pattern="jsonPath2", fileext=".tmp")
   parquetPath2 <- tempfile(pattern = "parquetPath2", fileext = ".parquet")
   writeLines(lines, jsonPath2)
+<<<<<<< HEAD
   df2 <- loadDF(sqlCtx, jsonPath2, "json")
   saveDF(df2, parquetPath2, "parquet", "overwrite")
   dfParquet2 <- loadDF(sqlCtx, parquetPath2, "parquet")
@@ -237,13 +361,47 @@ test_that("table() returns a new DataFrame", {
 
 test_that("toRDD() returns an RRDD", {
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df2 <- read.df(sqlContext, jsonPath2, "json")
+  write.df(df2, parquetPath2, "parquet", "overwrite")
+  dfParquet2 <- read.df(sqlContext, parquetPath2, "parquet")
+
+  registerTempTable(dfParquet, "table1")
+  insertInto(dfParquet2, "table1")
+  expect_true(count(sql(sqlContext, "select * from table1")) == 5)
+  expect_true(first(sql(sqlContext, "select * from table1 order by age"))$name == "Michael")
+  dropTempTable(sqlContext, "table1")
+
+  registerTempTable(dfParquet, "table1")
+  insertInto(dfParquet2, "table1", overwrite = TRUE)
+  expect_true(count(sql(sqlContext, "select * from table1")) == 2)
+  expect_true(first(sql(sqlContext, "select * from table1 order by age"))$name == "Bob")
+  dropTempTable(sqlContext, "table1")
+})
+
+test_that("table() returns a new DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+  registerTempTable(df, "table1")
+  tabledf <- table(sqlContext, "table1")
+  expect_true(inherits(tabledf, "DataFrame"))
+  expect_true(count(tabledf) == 3)
+  dropTempTable(sqlContext, "table1")
+})
+
+test_that("toRDD() returns an RRDD", {
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   testRDD <- toRDD(df)
   expect_true(inherits(testRDD, "RDD"))
   expect_true(count(testRDD) == 3)
 })
 
 test_that("union on two RDDs created from DataFrames returns an RRDD", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   RDD1 <- toRDD(df)
   RDD2 <- toRDD(df)
   unioned <- unionRDD(RDD1, RDD2)
@@ -265,7 +423,11 @@ test_that("union on mixed serialization types correctly returns a byte RRDD", {
   writeLines(textLines, textPath)
   textRDD <- textFile(sc, textPath)
 
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   dfRDD <- toRDD(df)
 
   unionByte <- unionRDD(rdd, dfRDD)
@@ -283,7 +445,11 @@ test_that("union on mixed serialization types correctly returns a byte RRDD", {
 
 test_that("objectFile() works with row serialization", {
   objectPath <- tempfile(pattern="spark-test", fileext=".tmp")
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   dfRDD <- toRDD(df)
   saveAsObjectFile(coalesce(dfRDD, 1L), objectPath)
   objectIn <- objectFile(sc, objectPath)
@@ -294,7 +460,11 @@ test_that("objectFile() works with row serialization", {
 })
 
 test_that("lapply() on a DataFrame returns an RDD with the correct columns", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   testRDD <- lapply(df, function(row) {
     row$newCol <- row$age + 5
     row
@@ -306,7 +476,11 @@ test_that("lapply() on a DataFrame returns an RDD with the correct columns", {
 })
 
 test_that("collect() returns a data.frame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   rdf <- collect(df)
   expect_true(is.data.frame(rdf))
   expect_true(names(rdf)[1] == "age")
@@ -315,20 +489,32 @@ test_that("collect() returns a data.frame", {
 })
 
 test_that("limit() returns DataFrame with the correct number of rows", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   dfLimited <- limit(df, 2)
   expect_true(inherits(dfLimited, "DataFrame"))
   expect_true(count(dfLimited) == 2)
 })
 
 test_that("collect() and take() on a DataFrame return the same number of rows and columns", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   expect_true(nrow(collect(df)) == nrow(take(df, 10)))
   expect_true(ncol(collect(df)) == ncol(take(df, 10)))
 })
 
 test_that("multiple pipeline transformations starting with a DataFrame result in an RDD with the correct values", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   first <- lapply(df, function(row) {
     row$age <- row$age + 5
     row
@@ -345,7 +531,11 @@ test_that("multiple pipeline transformations starting with a DataFrame result in
 })
 
 test_that("cache(), persist(), and unpersist() on a DataFrame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   expect_false(df@env$isCached)
   cache(df)
   expect_true(df@env$isCached)
@@ -364,7 +554,11 @@ test_that("cache(), persist(), and unpersist() on a DataFrame", {
 })
 
 test_that("schema(), dtypes(), columns(), names() return the correct values/format", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   testSchema <- schema(df)
   expect_true(length(testSchema$fields()) == 2)
   expect_true(testSchema$fields()[[1]]$dataType.toString() == "LongType")
@@ -385,7 +579,11 @@ test_that("schema(), dtypes(), columns(), names() return the correct values/form
 })
 
 test_that("head() and first() return the correct data", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   testHead <- head(df)
   expect_true(nrow(testHead) == 3)
   expect_true(ncol(testHead) == 2)
@@ -406,12 +604,17 @@ test_that("distinct() on DataFrames", {
   jsonPathWithDup <- tempfile(pattern="sparkr-test", fileext=".tmp")
   writeLines(lines, jsonPathWithDup)
 
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPathWithDup)
+=======
+  df <- jsonFile(sqlContext, jsonPathWithDup)
+>>>>>>> upstream/master
   uniques <- distinct(df)
   expect_true(inherits(uniques, "DataFrame"))
   expect_true(count(uniques) == 3)
 })
 
+<<<<<<< HEAD
 test_that("sampleDF on a DataFrame", {
   df <- jsonFile(sqlCtx, jsonPath)
   sampled <- sampleDF(df, FALSE, 1.0)
@@ -423,6 +626,23 @@ test_that("sampleDF on a DataFrame", {
 
 test_that("select operators", {
   df <- select(jsonFile(sqlCtx, jsonPath), "name", "age")
+=======
+test_that("sample on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+  sampled <- sample(df, FALSE, 1.0)
+  expect_equal(nrow(collect(sampled)), count(df))
+  expect_true(inherits(sampled, "DataFrame"))
+  sampled2 <- sample(df, FALSE, 0.1)
+  expect_true(count(sampled2) < 3)
+
+  # Also test sample_frac
+  sampled3 <- sample_frac(df, FALSE, 0.1)
+  expect_true(count(sampled3) < 3)
+})
+
+test_that("select operators", {
+  df <- select(jsonFile(sqlContext, jsonPath), "name", "age")
+>>>>>>> upstream/master
   expect_true(inherits(df$name, "Column"))
   expect_true(inherits(df[[2]], "Column"))
   expect_true(inherits(df[["age"]], "Column"))
@@ -440,10 +660,22 @@ test_that("select operators", {
   df$age2 <- df$age * 2
   expect_equal(columns(df), c("name", "age", "age2"))
   expect_equal(count(where(df, df$age2 == df$age * 2)), 2)
+<<<<<<< HEAD
 })
 
 test_that("select with column", {
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+
+  df$age2 <- NULL
+  expect_equal(columns(df), c("name", "age"))
+  df$age3 <- NULL
+  expect_equal(columns(df), c("name", "age"))
+})
+
+test_that("select with column", {
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   df1 <- select(df, "name")
   expect_true(columns(df1) == c("name"))
   expect_true(count(df1) == 3)
@@ -454,7 +686,11 @@ test_that("select with column", {
 })
 
 test_that("selectExpr() on a DataFrame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   selected <- selectExpr(df, "age * 2")
   expect_true(names(selected) == "(age * 2)")
   expect_equal(collect(selected), collect(select(df, df$age * 2L)))
@@ -465,7 +701,11 @@ test_that("selectExpr() on a DataFrame", {
 })
 
 test_that("column calculation", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   d <- collect(select(df, alias(df$age + 1, "age2")))
   expect_true(names(d) == c("age2"))
   df2 <- select(df, lower(df$name), abs(df$age))
@@ -473,16 +713,28 @@ test_that("column calculation", {
   expect_true(count(df2) == 3)
 })
 
+<<<<<<< HEAD
 test_that("load() from json file", {
   df <- loadDF(sqlCtx, jsonPath, "json")
+=======
+test_that("read.df() from json file", {
+  df <- read.df(sqlContext, jsonPath, "json")
+>>>>>>> upstream/master
   expect_true(inherits(df, "DataFrame"))
   expect_true(count(df) == 3)
 })
 
+<<<<<<< HEAD
 test_that("save() as parquet file", {
   df <- loadDF(sqlCtx, jsonPath, "json")
   saveDF(df, parquetPath, "parquet", mode="overwrite")
   df2 <- loadDF(sqlCtx, parquetPath, "parquet")
+=======
+test_that("write.df() as parquet file", {
+  df <- read.df(sqlContext, jsonPath, "json")
+  write.df(df, parquetPath, "parquet", mode="overwrite")
+  df2 <- read.df(sqlContext, parquetPath, "parquet")
+>>>>>>> upstream/master
   expect_true(inherits(df2, "DataFrame"))
   expect_true(count(df2) == 3)
 })
@@ -512,6 +764,10 @@ test_that("column operators", {
   c2 <- (- c + 1 - 2) * 3 / 4.0
   c3 <- (c + c2 - c2) * c2 %% c2
   c4 <- (c > c2) & (c2 <= c3) | (c == c2) & (c2 != c3)
+<<<<<<< HEAD
+=======
+  c5 <- c2 ^ c3 ^ c4
+>>>>>>> upstream/master
 })
 
 test_that("column functions", {
@@ -519,10 +775,41 @@ test_that("column functions", {
   c2 <- min(c) + max(c) + sum(c) + avg(c) + count(c) + abs(c) + sqrt(c)
   c3 <- lower(c) + upper(c) + first(c) + last(c)
   c4 <- approxCountDistinct(c) + countDistinct(c) + cast(c, "string")
+<<<<<<< HEAD
 })
 
 test_that("string operators", {
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  c5 <- n(c) + n_distinct(c)
+  c5 <- acos(c) + asin(c) + atan(c) + cbrt(c) 
+  c6 <- ceiling(c) + cos(c) + cosh(c) + exp(c) + expm1(c)
+  c7 <- floor(c) + log(c) + log10(c) + log1p(c) + rint(c)
+  c8 <- sign(c) + sin(c) + sinh(c) + tan(c) + tanh(c)
+  c9 <- toDegrees(c) + toRadians(c)
+})
+
+test_that("column binary mathfunctions", {
+  lines <- c("{\"a\":1, \"b\":5}",
+             "{\"a\":2, \"b\":6}",
+             "{\"a\":3, \"b\":7}",
+             "{\"a\":4, \"b\":8}")
+  jsonPathWithDup <- tempfile(pattern="sparkr-test", fileext=".tmp")
+  writeLines(lines, jsonPathWithDup)
+  df <- jsonFile(sqlContext, jsonPathWithDup)
+  expect_equal(collect(select(df, atan2(df$a, df$b)))[1, "ATAN2(a, b)"], atan2(1, 5))
+  expect_equal(collect(select(df, atan2(df$a, df$b)))[2, "ATAN2(a, b)"], atan2(2, 6))
+  expect_equal(collect(select(df, atan2(df$a, df$b)))[3, "ATAN2(a, b)"], atan2(3, 7))
+  expect_equal(collect(select(df, atan2(df$a, df$b)))[4, "ATAN2(a, b)"], atan2(4, 8))
+  expect_equal(collect(select(df, hypot(df$a, df$b)))[1, "HYPOT(a, b)"], sqrt(1^2 + 5^2))
+  expect_equal(collect(select(df, hypot(df$a, df$b)))[2, "HYPOT(a, b)"], sqrt(2^2 + 6^2))
+  expect_equal(collect(select(df, hypot(df$a, df$b)))[3, "HYPOT(a, b)"], sqrt(3^2 + 7^2))
+  expect_equal(collect(select(df, hypot(df$a, df$b)))[4, "HYPOT(a, b)"], sqrt(4^2 + 8^2))
+})
+
+test_that("string operators", {
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   expect_equal(count(where(df, like(df$name, "A%"))), 1)
   expect_equal(count(where(df, startsWith(df$name, "A"))), 1)
   expect_equal(first(select(df, substr(df$name, 1, 2)))[[1]], "Mi")
@@ -530,7 +817,11 @@ test_that("string operators", {
 })
 
 test_that("group by", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   df1 <- agg(df, name = "max", age = "sum")
   expect_true(1 == count(df1))
   df1 <- agg(df, age2 = max(df$age))
@@ -543,6 +834,16 @@ test_that("group by", {
   expect_true(inherits(df2, "DataFrame"))
   expect_true(3 == count(df2))
 
+<<<<<<< HEAD
+=======
+  # Also test group_by, summarize, mean
+  gd1 <- group_by(df, "name")
+  expect_true(inherits(gd1, "GroupedData"))
+  df_summarized <- summarize(gd, mean_age = mean(df$age))
+  expect_true(inherits(df_summarized, "DataFrame"))
+  expect_true(3 == count(df_summarized))
+
+>>>>>>> upstream/master
   df3 <- agg(gd, age = "sum")
   expect_true(inherits(df3, "DataFrame"))
   expect_true(3 == count(df3))
@@ -559,12 +860,21 @@ test_that("group by", {
   expect_true(3 == count(max(gd, "age")))
 })
 
+<<<<<<< HEAD
 test_that("sortDF() and orderBy() on a DataFrame", {
   df <- jsonFile(sqlCtx, jsonPath)
   sorted <- sortDF(df, df$age)
   expect_true(collect(sorted)[1,2] == "Michael")
 
   sorted2 <- sortDF(df, "name")
+=======
+test_that("arrange() and orderBy() on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+  sorted <- arrange(df, df$age)
+  expect_true(collect(sorted)[1,2] == "Michael")
+
+  sorted2 <- arrange(df, "name")
+>>>>>>> upstream/master
   expect_true(collect(sorted2)[2,"age"] == 19)
 
   sorted3 <- orderBy(df, asc(df$age))
@@ -577,7 +887,11 @@ test_that("sortDF() and orderBy() on a DataFrame", {
 })
 
 test_that("filter() on a DataFrame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   filtered <- filter(df, "age > 20")
   expect_true(count(filtered) == 1)
   expect_true(collect(filtered)$name == "Andy")
@@ -587,7 +901,11 @@ test_that("filter() on a DataFrame", {
 })
 
 test_that("join() on a DataFrame", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
 
   mockLines2 <- c("{\"name\":\"Michael\", \"test\": \"yes\"}",
                   "{\"name\":\"Andy\",  \"test\": \"no\"}",
@@ -595,7 +913,11 @@ test_that("join() on a DataFrame", {
                   "{\"name\":\"Bob\", \"test\": \"yes\"}")
   jsonPath2 <- tempfile(pattern="sparkr-test", fileext=".tmp")
   writeLines(mockLines2, jsonPath2)
+<<<<<<< HEAD
   df2 <- jsonFile(sqlCtx, jsonPath2)
+=======
+  df2 <- jsonFile(sqlContext, jsonPath2)
+>>>>>>> upstream/master
 
   joined <- join(df, df2)
   expect_equal(names(joined), c("age", "name", "name", "test"))
@@ -618,7 +940,11 @@ test_that("join() on a DataFrame", {
 })
 
 test_that("toJSON() returns an RDD of the correct values", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   testRDD <- toJSON(df)
   expect_true(inherits(testRDD, "RDD"))
   expect_true(SparkR:::getSerializedMode(testRDD) == "string")
@@ -626,6 +952,7 @@ test_that("toJSON() returns an RDD of the correct values", {
 })
 
 test_that("showDF()", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
   expect_output(showDF(df), "age  name   \nnull Michael\n30   Andy   \n19   Justin ")
 })
@@ -637,32 +964,65 @@ test_that("isLocal()", {
 
 test_that("unionAll(), subtract(), and intersect() on a DataFrame", {
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+  s <- capture.output(showDF(df))
+  expect_output(s , "+----+-------+\n| age|   name|\n+----+-------+\n|null|Michael|\n|  30|   Andy|\n|  19| Justin|\n+----+-------+\n")
+})
+
+test_that("isLocal()", {
+  df <- jsonFile(sqlContext, jsonPath)
+  expect_false(isLocal(df))
+})
+
+test_that("unionAll(), except(), and intersect() on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
 
   lines <- c("{\"name\":\"Bob\", \"age\":24}",
              "{\"name\":\"Andy\", \"age\":30}",
              "{\"name\":\"James\", \"age\":35}")
   jsonPath2 <- tempfile(pattern="sparkr-test", fileext=".tmp")
   writeLines(lines, jsonPath2)
+<<<<<<< HEAD
   df2 <- loadDF(sqlCtx, jsonPath2, "json")
 
   unioned <- sortDF(unionAll(df, df2), df$age)
+=======
+  df2 <- read.df(sqlContext, jsonPath2, "json")
+
+  unioned <- arrange(unionAll(df, df2), df$age)
+>>>>>>> upstream/master
   expect_true(inherits(unioned, "DataFrame"))
   expect_true(count(unioned) == 6)
   expect_true(first(unioned)$name == "Michael")
 
+<<<<<<< HEAD
   subtracted <- sortDF(subtract(df, df2), desc(df$age))
   expect_true(inherits(unioned, "DataFrame"))
   expect_true(count(subtracted) == 2)
   expect_true(first(subtracted)$name == "Justin")
 
   intersected <- sortDF(intersect(df, df2), df$age)
+=======
+  excepted <- arrange(except(df, df2), desc(df$age))
+  expect_true(inherits(unioned, "DataFrame"))
+  expect_true(count(excepted) == 2)
+  expect_true(first(excepted)$name == "Justin")
+
+  intersected <- arrange(intersect(df, df2), df$age)
+>>>>>>> upstream/master
   expect_true(inherits(unioned, "DataFrame"))
   expect_true(count(intersected) == 1)
   expect_true(first(intersected)$name == "Andy")
 })
 
 test_that("withColumn() and withColumnRenamed()", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+>>>>>>> upstream/master
   newDF <- withColumn(df, "newAge", df$age + 2)
   expect_true(length(columns(newDF)) == 3)
   expect_true(columns(newDF)[3] == "newAge")
@@ -673,23 +1033,166 @@ test_that("withColumn() and withColumnRenamed()", {
   expect_true(columns(newDF2)[1] == "newerAge")
 })
 
+<<<<<<< HEAD
 test_that("saveDF() on DataFrame and works with parquetFile", {
   df <- jsonFile(sqlCtx, jsonPath)
   saveDF(df, parquetPath, "parquet", mode="overwrite")
   parquetDF <- parquetFile(sqlCtx, parquetPath)
+=======
+test_that("mutate() and rename()", {
+  df <- jsonFile(sqlContext, jsonPath)
+  newDF <- mutate(df, newAge = df$age + 2)
+  expect_true(length(columns(newDF)) == 3)
+  expect_true(columns(newDF)[3] == "newAge")
+  expect_true(first(filter(newDF, df$name != "Michael"))$newAge == 32)
+
+  newDF2 <- rename(df, newerAge = df$age)
+  expect_true(length(columns(newDF2)) == 2)
+  expect_true(columns(newDF2)[1] == "newerAge")
+})
+
+test_that("write.df() on DataFrame and works with parquetFile", {
+  df <- jsonFile(sqlContext, jsonPath)
+  write.df(df, parquetPath, "parquet", mode="overwrite")
+  parquetDF <- parquetFile(sqlContext, parquetPath)
+>>>>>>> upstream/master
   expect_true(inherits(parquetDF, "DataFrame"))
   expect_equal(count(df), count(parquetDF))
 })
 
 test_that("parquetFile works with multiple input paths", {
+<<<<<<< HEAD
   df <- jsonFile(sqlCtx, jsonPath)
   saveDF(df, parquetPath, "parquet", mode="overwrite")
   parquetPath2 <- tempfile(pattern = "parquetPath2", fileext = ".parquet")
   saveDF(df, parquetPath2, "parquet", mode="overwrite")
   parquetDF <- parquetFile(sqlCtx, parquetPath, parquetPath2)
+=======
+  df <- jsonFile(sqlContext, jsonPath)
+  write.df(df, parquetPath, "parquet", mode="overwrite")
+  parquetPath2 <- tempfile(pattern = "parquetPath2", fileext = ".parquet")
+  write.df(df, parquetPath2, "parquet", mode="overwrite")
+  parquetDF <- parquetFile(sqlContext, parquetPath, parquetPath2)
+>>>>>>> upstream/master
   expect_true(inherits(parquetDF, "DataFrame"))
   expect_true(count(parquetDF) == count(df)*2)
 })
 
+<<<<<<< HEAD
 unlink(parquetPath)
 unlink(jsonPath)
+=======
+test_that("describe() on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPath)
+  stats <- describe(df, "age")
+  expect_equal(collect(stats)[1, "summary"], "count")
+  expect_equal(collect(stats)[2, "age"], "24.5")
+  expect_equal(collect(stats)[3, "age"], "5.5")
+  stats <- describe(df)
+  expect_equal(collect(stats)[4, "name"], "Andy")
+  expect_equal(collect(stats)[5, "age"], "30")
+})
+
+test_that("dropna() on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPathNa)
+  rows <- collect(df)
+
+  # drop with columns
+  
+  expected <- rows[!is.na(rows$name),]
+  actual <- collect(dropna(df, cols = "name"))
+  expect_true(identical(expected, actual))
+
+  expected <- rows[!is.na(rows$age),]
+  actual <- collect(dropna(df, cols = "age"))
+  row.names(expected) <- row.names(actual)
+  # identical on two dataframes does not work here. Don't know why.
+  # use identical on all columns as a workaround.
+  expect_true(identical(expected$age, actual$age))
+  expect_true(identical(expected$height, actual$height))
+  expect_true(identical(expected$name, actual$name))
+  
+  expected <- rows[!is.na(rows$age) & !is.na(rows$height),]
+  actual <- collect(dropna(df, cols = c("age", "height")))
+  expect_true(identical(expected, actual))
+
+  expected <- rows[!is.na(rows$age) & !is.na(rows$height) & !is.na(rows$name),]
+  actual <- collect(dropna(df))
+  expect_true(identical(expected, actual))
+  
+  # drop with how
+
+  expected <- rows[!is.na(rows$age) & !is.na(rows$height) & !is.na(rows$name),]
+  actual <- collect(dropna(df))
+  expect_true(identical(expected, actual))
+
+  expected <- rows[!is.na(rows$age) | !is.na(rows$height) | !is.na(rows$name),]
+  actual <- collect(dropna(df, "all"))
+  expect_true(identical(expected, actual))
+  
+  expected <- rows[!is.na(rows$age) & !is.na(rows$height) & !is.na(rows$name),]
+  actual <- collect(dropna(df, "any"))
+  expect_true(identical(expected, actual))
+
+  expected <- rows[!is.na(rows$age) & !is.na(rows$height),]
+  actual <- collect(dropna(df, "any", cols = c("age", "height")))
+  expect_true(identical(expected, actual))
+
+  expected <- rows[!is.na(rows$age) | !is.na(rows$height),]
+  actual <- collect(dropna(df, "all", cols = c("age", "height")))
+  expect_true(identical(expected, actual))
+  
+  # drop with threshold
+  
+  expected <- rows[as.integer(!is.na(rows$age)) + as.integer(!is.na(rows$height)) >= 2,]
+  actual <- collect(dropna(df, minNonNulls = 2, cols = c("age", "height")))
+  expect_true(identical(expected, actual))  
+
+  expected <- rows[as.integer(!is.na(rows$age)) + 
+                   as.integer(!is.na(rows$height)) +
+                   as.integer(!is.na(rows$name)) >= 3,]
+  actual <- collect(dropna(df, minNonNulls = 3, cols = c("name", "age", "height")))
+  expect_true(identical(expected, actual))
+})
+
+test_that("fillna() on a DataFrame", {
+  df <- jsonFile(sqlContext, jsonPathNa)
+  rows <- collect(df)
+  
+  # fill with value
+  
+  expected <- rows
+  expected$age[is.na(expected$age)] <- 50
+  expected$height[is.na(expected$height)] <- 50.6
+  actual <- collect(fillna(df, 50.6))
+  expect_true(identical(expected, actual))
+
+  expected <- rows
+  expected$name[is.na(expected$name)] <- "unknown"
+  actual <- collect(fillna(df, "unknown"))
+  expect_true(identical(expected, actual))
+
+  expected <- rows
+  expected$age[is.na(expected$age)] <- 50
+  actual <- collect(fillna(df, 50.6, "age"))
+  expect_true(identical(expected, actual))
+
+  expected <- rows
+  expected$name[is.na(expected$name)] <- "unknown"
+  actual <- collect(fillna(df, "unknown", c("age", "name")))
+  expect_true(identical(expected, actual))
+  
+  # fill with named list
+
+  expected <- rows
+  expected$age[is.na(expected$age)] <- 50
+  expected$height[is.na(expected$height)] <- 50.6
+  expected$name[is.na(expected$name)] <- "unknown"
+  actual <- collect(fillna(df, list("age" = 50, "height" = 50.6, "name" = "unknown")))
+  expect_true(identical(expected, actual))  
+})
+
+unlink(parquetPath)
+unlink(jsonPath)
+unlink(jsonPathNa)
+>>>>>>> upstream/master

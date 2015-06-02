@@ -29,7 +29,11 @@ import org.apache.commons.lang3.RandomUtils
 import org.eclipse.paho.client.mqttv3._
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence
 
+<<<<<<< HEAD
 import org.scalatest.{BeforeAndAfter, FunSuite}
+=======
+import org.scalatest.BeforeAndAfter
+>>>>>>> upstream/master
 import org.scalatest.concurrent.Eventually
 
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
@@ -37,10 +41,17 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.dstream.ReceiverInputDStream
 import org.apache.spark.streaming.scheduler.StreamingListener
 import org.apache.spark.streaming.scheduler.StreamingListenerReceiverStarted
+<<<<<<< HEAD
 import org.apache.spark.SparkConf
 import org.apache.spark.util.Utils
 
 class MQTTStreamSuite extends FunSuite with Eventually with BeforeAndAfter {
+=======
+import org.apache.spark.{SparkConf, SparkFunSuite}
+import org.apache.spark.util.Utils
+
+class MQTTStreamSuite extends SparkFunSuite with Eventually with BeforeAndAfter {
+>>>>>>> upstream/master
 
   private val batchDuration = Milliseconds(500)
   private val master = "local[2]"

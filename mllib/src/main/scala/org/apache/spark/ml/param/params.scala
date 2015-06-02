@@ -22,22 +22,68 @@ import java.util.NoSuchElementException
 
 import scala.annotation.varargs
 import scala.collection.mutable
+<<<<<<< HEAD
 
 import org.apache.spark.annotation.{AlphaComponent, DeveloperApi}
 import org.apache.spark.ml.Identifiable
 
 /**
  * :: AlphaComponent ::
+=======
+import scala.collection.JavaConverters._
+
+import org.apache.spark.annotation.{DeveloperApi, Experimental}
+import org.apache.spark.ml.util.Identifiable
+
+/**
+ * :: DeveloperApi ::
+>>>>>>> upstream/master
  * A param with self-contained documentation and optionally default value. Primitive-typed param
  * should use the specialized versions, which are more friendly to Java users.
  *
  * @param parent parent object
  * @param name param name
  * @param doc documentation
+<<<<<<< HEAD
  * @tparam T param value type
  */
 @AlphaComponent
 class Param[T] (val parent: Params, val name: String, val doc: String) extends Serializable {
+=======
+ * @param isValid optional validation method which indicates if a value is valid.
+ *                See [[ParamValidators]] for factory methods for common validation functions.
+ * @tparam T param value type
+ */
+@DeveloperApi
+class Param[T](val parent: String, val name: String, val doc: String, val isValid: T => Boolean)
+  extends Serializable {
+
+  def this(parent: Identifiable, name: String, doc: String, isValid: T => Boolean) =
+    this(parent.uid, name, doc, isValid)
+
+  def this(parent: String, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue[T])
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+
+  /**
+   * Assert that the given value is valid for this parameter.
+   *
+   * Note: Parameter checks involving interactions between multiple parameters should be
+   *       implemented in [[Params.validateParams()]].  Checks for input/output columns should be
+   *       implemented in [[org.apache.spark.ml.PipelineStage.transformSchema()]].
+   *
+   * DEVELOPERS: This method is only called by [[ParamPair]], which means that all parameters
+   *             should be specified via [[ParamPair]].
+   *
+   * @throws IllegalArgumentException if the value is invalid
+   */
+  private[param] def validate(value: T): Unit = {
+    if (!isValid(value)) {
+      throw new IllegalArgumentException(s"$parent parameter $name given invalid value $value.")
+    }
+  }
+>>>>>>> upstream/master
 
   /**
    * Creates a param pair with the given value (for Java).
@@ -49,6 +95,7 @@ class Param[T] (val parent: Params, val name: String, val doc: String) extends S
    */
   def ->(value: T): ParamPair[T] = ParamPair(this, value)
 
+<<<<<<< HEAD
   /**
    * Converts this param's name, doc, and optionally its default value and the user-supplied
    * value in its parent to string.
@@ -62,47 +109,225 @@ class Param[T] (val parent: Params, val name: String, val doc: String) extends S
       "(undefined)"
     }
     s"$name: $doc $valueStr"
+=======
+  override final def toString: String = s"${parent}__$name"
+
+  override final def hashCode: Int = toString.##
+
+  override final def equals(obj: Any): Boolean = {
+    obj match {
+      case p: Param[_] => (p.parent == parent) && (p.name == name)
+      case _ => false
+    }
+  }
+}
+
+/**
+ * :: DeveloperApi ::
+ * Factory methods for common validation functions for [[Param.isValid]].
+ * The numerical methods only support Int, Long, Float, and Double.
+ */
+@DeveloperApi
+object ParamValidators {
+
+  /** (private[param]) Default validation always return true */
+  private[param] def alwaysTrue[T]: T => Boolean = (_: T) => true
+
+  /**
+   * Private method for checking numerical types and converting to Double.
+   * This is mainly for the sake of compilation; type checks are really handled
+   * by [[Params]] setters and the [[ParamPair]] constructor.
+   */
+  private def getDouble[T](value: T): Double = value match {
+    case x: Int => x.toDouble
+    case x: Long => x.toDouble
+    case x: Float => x.toDouble
+    case x: Double => x.toDouble
+    case _ =>
+      // The type should be checked before this is ever called.
+      throw new IllegalArgumentException("Numerical Param validation failed because" +
+        s" of unexpected input type: ${value.getClass}")
+  }
+
+  /** Check if value > lowerBound */
+  def gt[T](lowerBound: Double): T => Boolean = { (value: T) =>
+    getDouble(value) > lowerBound
+  }
+
+  /** Check if value >= lowerBound */
+  def gtEq[T](lowerBound: Double): T => Boolean = { (value: T) =>
+    getDouble(value) >= lowerBound
+  }
+
+  /** Check if value < upperBound */
+  def lt[T](upperBound: Double): T => Boolean = { (value: T) =>
+    getDouble(value) < upperBound
+  }
+
+  /** Check if value <= upperBound */
+  def ltEq[T](upperBound: Double): T => Boolean = { (value: T) =>
+    getDouble(value) <= upperBound
+  }
+
+  /**
+   * Check for value in range lowerBound to upperBound.
+   * @param lowerInclusive  If true, check for value >= lowerBound.
+   *                        If false, check for value > lowerBound.
+   * @param upperInclusive  If true, check for value <= upperBound.
+   *                        If false, check for value < upperBound.
+   */
+  def inRange[T](
+      lowerBound: Double,
+      upperBound: Double,
+      lowerInclusive: Boolean,
+      upperInclusive: Boolean): T => Boolean = { (value: T) =>
+    val x: Double = getDouble(value)
+    val lowerValid = if (lowerInclusive) x >= lowerBound else x > lowerBound
+    val upperValid = if (upperInclusive) x <= upperBound else x < upperBound
+    lowerValid && upperValid
+  }
+
+  /** Version of [[inRange()]] which uses inclusive be default: [lowerBound, upperBound] */
+  def inRange[T](lowerBound: Double, upperBound: Double): T => Boolean = {
+    inRange[T](lowerBound, upperBound, lowerInclusive = true, upperInclusive = true)
+  }
+
+  /** Check for value in an allowed set of values. */
+  def inArray[T](allowed: Array[T]): T => Boolean = { (value: T) =>
+    allowed.contains(value)
+  }
+
+  /** Check for value in an allowed set of values. */
+  def inArray[T](allowed: java.util.List[T]): T => Boolean = { (value: T) =>
+    allowed.contains(value)
+>>>>>>> upstream/master
   }
 }
 
 // specialize primitive-typed params because Java doesn't recognize scala.Double, scala.Int, ...
 
+<<<<<<< HEAD
 /** Specialized version of [[Param[Double]]] for Java. */
 class DoubleParam(parent: Params, name: String, doc: String)
   extends Param[Double](parent, name, doc) {
+=======
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Double]]] for Java.
+ */
+@DeveloperApi
+class DoubleParam(parent: String, name: String, doc: String, isValid: Double => Boolean)
+  extends Param[Double](parent, name, doc, isValid) {
+
+  def this(parent: String, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  def this(parent: Identifiable, name: String, doc: String, isValid: Double => Boolean) =
+    this(parent.uid, name, doc, isValid)
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+>>>>>>> upstream/master
 
   override def w(value: Double): ParamPair[Double] = super.w(value)
 }
 
+<<<<<<< HEAD
 /** Specialized version of [[Param[Int]]] for Java. */
 class IntParam(parent: Params, name: String, doc: String)
   extends Param[Int](parent, name, doc) {
+=======
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Int]]] for Java.
+ */
+@DeveloperApi
+class IntParam(parent: String, name: String, doc: String, isValid: Int => Boolean)
+  extends Param[Int](parent, name, doc, isValid) {
+
+  def this(parent: String, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  def this(parent: Identifiable, name: String, doc: String, isValid: Int => Boolean) =
+    this(parent.uid, name, doc, isValid)
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+>>>>>>> upstream/master
 
   override def w(value: Int): ParamPair[Int] = super.w(value)
 }
 
+<<<<<<< HEAD
 /** Specialized version of [[Param[Float]]] for Java. */
 class FloatParam(parent: Params, name: String, doc: String)
   extends Param[Float](parent, name, doc) {
+=======
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Float]]] for Java.
+ */
+@DeveloperApi
+class FloatParam(parent: String, name: String, doc: String, isValid: Float => Boolean)
+  extends Param[Float](parent, name, doc, isValid) {
+
+  def this(parent: String, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  def this(parent: Identifiable, name: String, doc: String, isValid: Float => Boolean) =
+    this(parent.uid, name, doc, isValid)
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+>>>>>>> upstream/master
 
   override def w(value: Float): ParamPair[Float] = super.w(value)
 }
 
+<<<<<<< HEAD
 /** Specialized version of [[Param[Long]]] for Java. */
 class LongParam(parent: Params, name: String, doc: String)
   extends Param[Long](parent, name, doc) {
+=======
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Long]]] for Java.
+ */
+@DeveloperApi
+class LongParam(parent: String, name: String, doc: String, isValid: Long => Boolean)
+  extends Param[Long](parent, name, doc, isValid) {
+
+  def this(parent: String, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  def this(parent: Identifiable, name: String, doc: String, isValid: Long => Boolean) =
+    this(parent.uid, name, doc, isValid)
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+>>>>>>> upstream/master
 
   override def w(value: Long): ParamPair[Long] = super.w(value)
 }
 
+<<<<<<< HEAD
 /** Specialized version of [[Param[Boolean]]] for Java. */
 class BooleanParam(parent: Params, name: String, doc: String)
   extends Param[Boolean](parent, name, doc) {
 
+=======
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Boolean]]] for Java.
+ */
+@DeveloperApi
+class BooleanParam(parent: String, name: String, doc: String) // No need for isValid
+  extends Param[Boolean](parent, name, doc) {
+
+  def this(parent: Identifiable, name: String, doc: String) = this(parent.uid, name, doc)
+
+>>>>>>> upstream/master
   override def w(value: Boolean): ParamPair[Boolean] = super.w(value)
 }
 
 /**
+<<<<<<< HEAD
  * A param amd its value.
  */
 case class ParamPair[T](param: Param[T], value: T)
@@ -113,11 +338,69 @@ case class ParamPair[T](param: Param[T], value: T)
  * parameter values attached to the instance.
  */
 @AlphaComponent
+=======
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Array[String]]]] for Java.
+ */
+@DeveloperApi
+class StringArrayParam(parent: Params, name: String, doc: String, isValid: Array[String] => Boolean)
+  extends Param[Array[String]](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  override def w(value: Array[String]): ParamPair[Array[String]] = super.w(value)
+
+  /** Creates a param pair with a [[java.util.List]] of values (for Java and Python). */
+  def w(value: java.util.List[String]): ParamPair[Array[String]] = w(value.asScala.toArray)
+}
+
+/**
+ * :: DeveloperApi ::
+ * Specialized version of [[Param[Array[Double]]]] for Java.
+ */
+@DeveloperApi
+class DoubleArrayParam(parent: Params, name: String, doc: String, isValid: Array[Double] => Boolean)
+  extends Param[Array[Double]](parent, name, doc, isValid) {
+
+  def this(parent: Params, name: String, doc: String) =
+    this(parent, name, doc, ParamValidators.alwaysTrue)
+
+  override def w(value: Array[Double]): ParamPair[Array[Double]] = super.w(value)
+
+  /** Creates a param pair with a [[java.util.List]] of values (for Java and Python). */
+  def w(value: java.util.List[Double]): ParamPair[Array[Double]] = w(value.asScala.toArray)
+}
+
+/**
+ * :: Experimental ::
+ * A param amd its value.
+ */
+@Experimental
+case class ParamPair[T](param: Param[T], value: T) {
+  // This is *the* place Param.validate is called.  Whenever a parameter is specified, we should
+  // always construct a ParamPair so that validate is called.
+  param.validate(value)
+}
+
+/**
+ * :: DeveloperApi ::
+ * Trait for components that take parameters. This also provides an internal param map to store
+ * parameter values attached to the instance.
+ */
+@DeveloperApi
+>>>>>>> upstream/master
 trait Params extends Identifiable with Serializable {
 
   /**
    * Returns all params sorted by their names. The default implementation uses Java reflection to
    * list all public methods that have no arguments and return [[Param]].
+<<<<<<< HEAD
+=======
+   *
+   * Note: Developer should not use this method in constructor because we cannot guarantee that
+   * this variable gets initialized before other params.
+>>>>>>> upstream/master
    */
   lazy val params: Array[Param[_]] = {
     val methods = this.getClass.getMethods
@@ -130,6 +413,7 @@ trait Params extends Identifiable with Serializable {
   }
 
   /**
+<<<<<<< HEAD
    * Validates parameter values stored internally plus the input parameter map.
    * Raises an exception if any parameter is invalid.
    */
@@ -145,6 +429,47 @@ trait Params extends Identifiable with Serializable {
    * Returns the documentation of all params.
    */
   def explainParams(): String = params.mkString("\n")
+=======
+   * Validates parameter values stored internally.
+   * Raise an exception if any parameter value is invalid.
+   *
+   * This only needs to check for interactions between parameters.
+   * Parameter value checks which do not depend on other parameters are handled by
+   * [[Param.validate()]].  This method does not handle input/output column parameters;
+   * those are checked during schema validation.
+   */
+  def validateParams(): Unit = {
+    params.filter(isDefined).foreach { param =>
+      param.asInstanceOf[Param[Any]].validate($(param))
+    }
+  }
+
+  /**
+   * Explains a param.
+   * @param param input param, must belong to this instance.
+   * @return a string that contains the input param name, doc, and optionally its default value and
+   *         the user-supplied value
+   */
+  def explainParam(param: Param[_]): String = {
+    shouldOwn(param)
+    val valueStr = if (isDefined(param)) {
+      val defaultValueStr = getDefault(param).map("default: " + _)
+      val currentValueStr = get(param).map("current: " + _)
+      (defaultValueStr ++ currentValueStr).mkString("(", ", ", ")")
+    } else {
+      "(undefined)"
+    }
+    s"${param.name}: ${param.doc} $valueStr"
+  }
+
+  /**
+   * Explains all params of this instance.
+   * @see [[explainParam()]]
+   */
+  def explainParams(): String = {
+    params.map(explainParam).mkString("\n")
+  }
+>>>>>>> upstream/master
 
   /** Checks whether a param is explicitly set. */
   final def isSet(param: Param[_]): Boolean = {
@@ -158,6 +483,14 @@ trait Params extends Identifiable with Serializable {
     defaultParamMap.contains(param) || paramMap.contains(param)
   }
 
+<<<<<<< HEAD
+=======
+  /** Tests whether this instance contains a param with a given name. */
+  def hasParam(paramName: String): Boolean = {
+    params.exists(_.name == paramName)
+  }
+
+>>>>>>> upstream/master
   /** Gets a param by its name. */
   def getParam(paramName: String): Param[Any] = {
     params.find(_.name == paramName).getOrElse {
@@ -169,9 +502,13 @@ trait Params extends Identifiable with Serializable {
    * Sets a parameter in the embedded param map.
    */
   protected final def set[T](param: Param[T], value: T): this.type = {
+<<<<<<< HEAD
     shouldOwn(param)
     paramMap.put(param.asInstanceOf[Param[Any]], value)
     this
+=======
+    set(param -> value)
+>>>>>>> upstream/master
   }
 
   /**
@@ -182,6 +519,18 @@ trait Params extends Identifiable with Serializable {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Sets a parameter in the embedded param map.
+   */
+  protected final def set(paramPair: ParamPair[_]): this.type = {
+    shouldOwn(paramPair.param)
+    paramMap.put(paramPair)
+    this
+  }
+
+  /**
+>>>>>>> upstream/master
    * Optionally returns the user-supplied value of a param.
    */
   final def get[T](param: Param[T]): Option[T] = {
@@ -207,6 +556,12 @@ trait Params extends Identifiable with Serializable {
     get(param).orElse(getDefault(param)).get
   }
 
+<<<<<<< HEAD
+=======
+  /** An alias for [[getOrDefault()]]. */
+  protected final def $[T](param: Param[T]): T = getOrDefault(param)
+
+>>>>>>> upstream/master
   /**
    * Sets a default value for a param.
    * @param param  param to set the default value. Make sure that this param is initialized before
@@ -214,17 +569,29 @@ trait Params extends Identifiable with Serializable {
    * @param value  the default value
    */
   protected final def setDefault[T](param: Param[T], value: T): this.type = {
+<<<<<<< HEAD
     shouldOwn(param)
     defaultParamMap.put(param, value)
+=======
+    defaultParamMap.put(param -> value)
+>>>>>>> upstream/master
     this
   }
 
   /**
    * Sets default values for a list of params.
+<<<<<<< HEAD
+=======
+   *
+>>>>>>> upstream/master
    * @param paramPairs  a list of param pairs that specify params and their default values to set
    *                    respectively. Make sure that the params are initialized before this method
    *                    gets called.
    */
+<<<<<<< HEAD
+=======
+  @varargs
+>>>>>>> upstream/master
   protected final def setDefault(paramPairs: ParamPair[_]*): this.type = {
     paramPairs.foreach { p =>
       setDefault(p.param.asInstanceOf[Param[Any]], p.value)
@@ -249,18 +616,42 @@ trait Params extends Identifiable with Serializable {
   }
 
   /**
+<<<<<<< HEAD
    * Extracts the embedded default param values and user-supplied values, and then merges them with
    * extra values from input into a flat param map, where the latter value is used if there exist
    * conflicts, i.e., with ordering: default param values < user-supplied values < extraParamMap.
    */
   protected final def extractParamMap(extraParamMap: ParamMap): ParamMap = {
     defaultParamMap ++ paramMap ++ extraParamMap
+=======
+   * Creates a copy of this instance with the same UID and some extra params.
+   * The default implementation tries to create a new instance with the same UID.
+   * Then it copies the embedded and extra parameters over and returns the new instance.
+   * Subclasses should override this method if the default approach is not sufficient.
+   */
+  def copy(extra: ParamMap): Params = {
+    val that = this.getClass.getConstructor(classOf[String]).newInstance(uid)
+    copyValues(that, extra)
+  }
+
+  /**
+   * Extracts the embedded default param values and user-supplied values, and then merges them with
+   * extra values from input into a flat param map, where the latter value is used if there exist
+   * conflicts, i.e., with ordering: default param values < user-supplied values < extra.
+   */
+  final def extractParamMap(extra: ParamMap): ParamMap = {
+    defaultParamMap ++ paramMap ++ extra
+>>>>>>> upstream/master
   }
 
   /**
    * [[extractParamMap]] with no extra values.
    */
+<<<<<<< HEAD
   protected final def extractParamMap(): ParamMap = {
+=======
+  final def extractParamMap(): ParamMap = {
+>>>>>>> upstream/master
     extractParamMap(ParamMap.empty)
   }
 
@@ -272,6 +663,7 @@ trait Params extends Identifiable with Serializable {
 
   /** Validates that the input param belongs to this instance. */
   private def shouldOwn(param: Param[_]): Unit = {
+<<<<<<< HEAD
     require(param.parent.eq(this), s"Param $param does not belong to $this.")
   }
 }
@@ -301,10 +693,30 @@ private[spark] object Params {
         child.set(child.getParam(param.name), paramMap(param))
       }
     }
+=======
+    require(param.parent == uid && hasParam(param.name), s"Param $param does not belong to $this.")
+  }
+
+  /**
+   * Copies param values from this instance to another instance for params shared by them.
+   * @param to the target instance
+   * @param extra extra params to be copied
+   * @return the target instance with param values copied
+   */
+  protected def copyValues[T <: Params](to: T, extra: ParamMap = ParamMap.empty): T = {
+    val map = extractParamMap(extra)
+    params.foreach { param =>
+      if (map.contains(param) && to.hasParam(param.name)) {
+        to.set(param.name, map(param))
+      }
+    }
+    to
+>>>>>>> upstream/master
   }
 }
 
 /**
+<<<<<<< HEAD
  * :: AlphaComponent ::
  * A param to value map.
  */
@@ -312,6 +724,31 @@ private[spark] object Params {
 final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
   extends Serializable {
 
+=======
+ * :: DeveloperApi ::
+ * Java-friendly wrapper for [[Params]].
+ * Java developers who need to extend [[Params]] should use this class instead.
+ * If you need to extend a abstract class which already extends [[Params]], then that abstract
+ * class should be Java-friendly as well.
+ */
+@DeveloperApi
+abstract class JavaParams extends Params
+
+/**
+ * :: Experimental ::
+ * A param to value map.
+ */
+@Experimental
+final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
+  extends Serializable {
+
+  /* DEVELOPERS: About validating parameter values
+   *   This and ParamPair are the only two collections of parameters.
+   *   This class should always create ParamPairs when
+   *   specifying new parameter values.  ParamPair will then call Param.validate().
+   */
+
+>>>>>>> upstream/master
   /**
    * Creates an empty param map.
    */
@@ -320,10 +757,14 @@ final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
   /**
    * Puts a (param, value) pair (overwrites if the input param exists).
    */
+<<<<<<< HEAD
   def put[T](param: Param[T], value: T): this.type = {
     map(param.asInstanceOf[Param[Any]]) = value
     this
   }
+=======
+  def put[T](param: Param[T], value: T): this.type = put(param -> value)
+>>>>>>> upstream/master
 
   /**
    * Puts a list of param pairs (overwrites if the input params exists).
@@ -331,7 +772,11 @@ final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
   @varargs
   def put(paramPairs: ParamPair[_]*): this.type = {
     paramPairs.foreach { p =>
+<<<<<<< HEAD
       put(p.param.asInstanceOf[Param[Any]], p.value)
+=======
+      map(p.param.asInstanceOf[Param[Any]]) = p.value
+>>>>>>> upstream/master
     }
     this
   }
@@ -389,7 +834,11 @@ final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
 
   override def toString: String = {
     map.toSeq.sortBy(_._1.name).map { case (param, value) =>
+<<<<<<< HEAD
       s"\t${param.parent.uid}-${param.name}: $value"
+=======
+      s"\t${param.parent}-${param.name}: $value"
+>>>>>>> upstream/master
     }.mkString("{\n", ",\n", "\n}")
   }
 
@@ -426,6 +875,10 @@ final class ParamMap private[ml] (private val map: mutable.Map[Param[Any], Any])
   def size: Int = map.size
 }
 
+<<<<<<< HEAD
+=======
+@Experimental
+>>>>>>> upstream/master
 object ParamMap {
 
   /**

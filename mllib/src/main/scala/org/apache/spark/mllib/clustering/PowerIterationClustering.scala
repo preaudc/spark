@@ -74,7 +74,11 @@ object PowerIterationClusteringModel extends Loader[PowerIterationClusteringMode
       sc.parallelize(Seq(metadata), 1).saveAsTextFile(Loader.metadataPath(path))
 
       val dataRDD = model.assignments.toDF()
+<<<<<<< HEAD
       dataRDD.saveAsParquetFile(Loader.dataPath(path))
+=======
+      dataRDD.write.parquet(Loader.dataPath(path))
+>>>>>>> upstream/master
     }
 
     def load(sc: SparkContext, path: String): PowerIterationClusteringModel = {
@@ -86,7 +90,11 @@ object PowerIterationClusteringModel extends Loader[PowerIterationClusteringMode
       assert(formatVersion == thisFormatVersion)
 
       val k = (metadata \ "k").extract[Int]
+<<<<<<< HEAD
       val assignments = sqlContext.parquetFile(Loader.dataPath(path))
+=======
+      val assignments = sqlContext.read.parquet(Loader.dataPath(path))
+>>>>>>> upstream/master
       Loader.checkSchema[PowerIterationClustering.Assignment](assignments.schema)
 
       val assignmentsRDD = assignments.map {
@@ -121,7 +129,11 @@ class PowerIterationClustering private[clustering] (
   import org.apache.spark.mllib.clustering.PowerIterationClustering._
 
   /** Constructs a PIC instance with default parameters: {k: 2, maxIterations: 100,
+<<<<<<< HEAD
    *  initMode: "random"}. 
+=======
+   *  initMode: "random"}.
+>>>>>>> upstream/master
    */
   def this() = this(k = 2, maxIterations = 100, initMode = "random")
 
@@ -243,7 +255,11 @@ object PowerIterationClustering extends Logging {
 
   /**
    * Generates random vertex properties (v0) to start power iteration.
+<<<<<<< HEAD
    * 
+=======
+   *
+>>>>>>> upstream/master
    * @param g a graph representing the normalized affinity matrix (W)
    * @return a graph with edges representing W and vertices representing a random vector
    *         with unit 1-norm
@@ -266,7 +282,11 @@ object PowerIterationClustering extends Logging {
    * Generates the degree vector as the vertex properties (v0) to start power iteration.
    * It is not exactly the node degrees but just the normalized sum similarities. Call it
    * as degree vector because it is used in the PIC paper.
+<<<<<<< HEAD
    * 
+=======
+   *
+>>>>>>> upstream/master
    * @param g a graph representing the normalized affinity matrix (W)
    * @return a graph with edges representing W and vertices representing the degree vector
    */
@@ -276,7 +296,11 @@ object PowerIterationClustering extends Logging {
     val v0 = g.vertices.mapValues(_ / sum)
     GraphImpl.fromExistingRDDs(VertexRDD(v0), g.edges)
   }
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> upstream/master
   /**
    * Runs power iteration.
    * @param g input graph with edges representing the normalized affinity matrix (W) and vertices

@@ -18,9 +18,13 @@
 package org.apache.spark.sql.columnar.compression
 
 import org.apache.spark.sql.columnar._
+<<<<<<< HEAD
 import org.apache.spark.sql.types.NativeType
+=======
+import org.apache.spark.sql.types.AtomicType
+>>>>>>> upstream/master
 
-class TestCompressibleColumnBuilder[T <: NativeType](
+class TestCompressibleColumnBuilder[T <: AtomicType](
     override val columnStats: ColumnStats,
     override val columnType: NativeColumnType[T],
     override val schemes: Seq[CompressionScheme])
@@ -32,7 +36,7 @@ class TestCompressibleColumnBuilder[T <: NativeType](
 }
 
 object TestCompressibleColumnBuilder {
-  def apply[T <: NativeType](
+  def apply[T <: AtomicType](
       columnStats: ColumnStats,
       columnType: NativeColumnType[T],
       scheme: CompressionScheme): TestCompressibleColumnBuilder[T] = {

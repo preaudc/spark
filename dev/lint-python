@@ -32,6 +32,7 @@ compile_status="${PIPESTATUS[0]}"
 #+ See: https://github.com/apache/spark/pull/1744#issuecomment-50982162
 #+ TODOs:
 #+  - Download pep8 from PyPI. It's more "official".
+<<<<<<< HEAD
 PEP8_SCRIPT_PATH="$SPARK_ROOT_DIR/dev/pep8.py"
 PEP8_SCRIPT_REMOTE_PATH="https://raw.githubusercontent.com/jcrocholl/pep8/1.6.2/pep8.py"
 
@@ -44,6 +45,21 @@ if [ "$curl_status" -ne 0 ]; then
     exit "$curl_status"
 fi
 # fi
+=======
+PEP8_VERSION="1.6.2"
+PEP8_SCRIPT_PATH="$SPARK_ROOT_DIR/dev/pep8-$PEP8_VERSION.py"
+PEP8_SCRIPT_REMOTE_PATH="https://raw.githubusercontent.com/jcrocholl/pep8/$PEP8_VERSION/pep8.py"
+
+if [ ! -e "$PEP8_SCRIPT_PATH" ]; then
+    curl --silent -o "$PEP8_SCRIPT_PATH" "$PEP8_SCRIPT_REMOTE_PATH"    
+    curl_status="$?"
+
+    if [ "$curl_status" -ne 0 ]; then
+        echo "Failed to download pep8.py from \"$PEP8_SCRIPT_REMOTE_PATH\"."
+        exit "$curl_status"
+    fi
+fi
+>>>>>>> upstream/master
 
 # There is no need to write this output to a file
 #+ first, but we do so so that the check status can
@@ -65,7 +81,11 @@ else
     echo "Python lint checks passed."
 fi
 
+<<<<<<< HEAD
 rm "$PEP8_SCRIPT_PATH"
+=======
+# rm "$PEP8_SCRIPT_PATH"
+>>>>>>> upstream/master
 rm "$PYTHON_LINT_REPORT_PATH"
 
 exit "$lint_status"

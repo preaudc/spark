@@ -36,19 +36,31 @@ object DefaultOptimizer extends Optimizer {
     // SubQueries are only needed for analysis and can be removed before execution.
     Batch("Remove SubQueries", FixedPoint(100),
       EliminateSubQueries) ::
+<<<<<<< HEAD
     Batch("Combine Limits", FixedPoint(100),
+=======
+    Batch("Operator Reordering", FixedPoint(100),
+      UnionPushdown,
+      CombineFilters,
+      PushPredicateThroughProject,
+      PushPredicateThroughJoin,
+      PushPredicateThroughGenerate,
+      ColumnPruning,
+      ProjectCollapsing,
+>>>>>>> upstream/master
       CombineLimits) ::
     Batch("ConstantFolding", FixedPoint(100),
       NullPropagation,
+      OptimizeIn,
       ConstantFolding,
       LikeSimplification,
       BooleanSimplification,
       SimplifyFilters,
       SimplifyCasts,
-      SimplifyCaseConversionExpressions,
-      OptimizeIn) ::
+      SimplifyCaseConversionExpressions) ::
     Batch("Decimal Optimizations", FixedPoint(100),
       DecimalAggregates) ::
+<<<<<<< HEAD
     Batch("Filter Pushdown", FixedPoint(100),
       UnionPushdown,
       CombineFilters,
@@ -56,6 +68,8 @@ object DefaultOptimizer extends Optimizer {
       PushPredicateThroughJoin,
       PushPredicateThroughGenerate,
       ColumnPruning) ::
+=======
+>>>>>>> upstream/master
     Batch("LocalRelation", FixedPoint(100),
       ConvertToLocalRelation) :: Nil
 }
@@ -115,7 +129,7 @@ object UnionPushdown extends Rule[LogicalPlan] {
  *   - Aggregate
  *   - Project <- Join
  *   - LeftSemiJoin
- *  - Collapse adjacent projections, performing alias substitution.
+ *  - Performing alias substitution.
  */
 object ColumnPruning extends Rule[LogicalPlan] {
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
@@ -153,6 +167,7 @@ object ColumnPruning extends Rule[LogicalPlan] {
 
       Join(left, prunedChild(right, allReferences), LeftSemi, condition)
 
+<<<<<<< HEAD
     // Combine adjacent Projects.
     case Project(projectList1, Project(projectList2, child)) =>
       // Create a map of Aliases to their values from the child projection.
@@ -168,8 +183,15 @@ object ColumnPruning extends Rule[LogicalPlan] {
       val substitutedProjection = projectList1.map(_.transform {
         case a: Attribute if aliasMap.contains(a) => aliasMap(a)
       }).asInstanceOf[Seq[NamedExpression]]
+=======
+    case Project(projectList, Limit(exp, child)) =>
+      Limit(exp, Project(projectList, child))
+>>>>>>> upstream/master
 
-      Project(substitutedProjection, child)
+    // push down project if possible when the child is sort
+    case p @ Project(projectList, s @ Sort(_, _, grandChild))
+      if s.references.subsetOf(p.outputSet) =>
+      s.copy(child = Project(projectList, grandChild))
 
     // Eliminate no-op Projects
     case Project(projectList, child) if child.output == projectList => child
@@ -182,6 +204,40 @@ object ColumnPruning extends Rule[LogicalPlan] {
     } else {
       c
     }
+}
+
+/**
+ * Combines two adjacent [[Project]] operators into one, merging the
+ * expressions into one single expression.
+ */
+object ProjectCollapsing extends Rule[LogicalPlan] {
+
+  /** Returns true if any expression in projectList is non-deterministic. */
+  private def hasNondeterministic(projectList: Seq[NamedExpression]): Boolean = {
+    projectList.exists(expr => expr.find(!_.deterministic).isDefined)
+  }
+
+  def apply(plan: LogicalPlan): LogicalPlan = plan transformUp {
+    // We only collapse these two Projects if the child Project's expressions are all
+    // deterministic.
+    case Project(projectList1, Project(projectList2, child))
+         if !hasNondeterministic(projectList2) =>
+      // Create a map of Aliases to their values from the child projection.
+      // e.g., 'SELECT ... FROM (SELECT a + b AS c, d ...)' produces Map(c -> Alias(a + b, c)).
+      val aliasMap = AttributeMap(projectList2.collect {
+        case a @ Alias(e, _) => (a.toAttribute, a)
+      })
+
+      // Substitute any attributes that are produced by the child projection, so that we safely
+      // eliminate it.
+      // e.g., 'SELECT c + 1 FROM (SELECT a + b AS C ...' produces 'SELECT a + b + 1 ...'
+      // TODO: Fix TransformBase to avoid the cast below.
+      val substitutedProjection = projectList1.map(_.transform {
+        case a: Attribute if aliasMap.contains(a) => aliasMap(a)
+      }).asInstanceOf[Seq[NamedExpression]]
+
+      Project(substitutedProjection, child)
+  }
 }
 
 /**
@@ -225,10 +281,15 @@ object NullPropagation extends Rule[LogicalPlan] {
       case e @ Count(Literal(null, _)) => Cast(Literal(0L), e.dataType)
       case e @ IsNull(c) if !c.nullable => Literal.create(false, BooleanType)
       case e @ IsNotNull(c) if !c.nullable => Literal.create(true, BooleanType)
+<<<<<<< HEAD
       case e @ GetItem(Literal(null, _), _) => Literal.create(null, e.dataType)
       case e @ GetItem(_, Literal(null, _)) => Literal.create(null, e.dataType)
       case e @ StructGetField(Literal(null, _), _, _) => Literal.create(null, e.dataType)
       case e @ ArrayGetField(Literal(null, _), _, _, _) => Literal.create(null, e.dataType)
+=======
+      case e @ ExtractValue(Literal(null, _), _) => Literal.create(null, e.dataType)
+      case e @ ExtractValue(_, Literal(null, _)) => Literal.create(null, e.dataType)
+>>>>>>> upstream/master
       case e @ EqualNullSafe(Literal(null, _), r) => IsNull(r)
       case e @ EqualNullSafe(l, Literal(null, _)) => IsNull(l)
       case e @ Count(expr) if !expr.nullable => Count(Literal(1))
@@ -308,8 +369,13 @@ object OptimizeIn extends Rule[LogicalPlan] {
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
     case q: LogicalPlan => q transformExpressionsDown {
       case In(v, list) if !list.exists(!_.isInstanceOf[Literal]) =>
+<<<<<<< HEAD
           val hSet = list.map(e => e.eval(null))
           InSet(v, HashSet() ++ hSet)
+=======
+        val hSet = list.map(e => e.eval(null))
+        InSet(v, HashSet() ++ hSet)
+>>>>>>> upstream/master
     }
   }
 }
@@ -482,6 +548,7 @@ object PushPredicateThroughProject extends Rule[LogicalPlan] {
 object PushPredicateThroughGenerate extends Rule[LogicalPlan] with PredicateHelper {
 
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+<<<<<<< HEAD
     case filter @ Filter(condition,
     generate @ Generate(generator, join, outer, alias, grandChild)) =>
       // Predicates that reference attributes produced by the `Generate` operator cannot
@@ -492,6 +559,18 @@ object PushPredicateThroughGenerate extends Rule[LogicalPlan] with PredicateHelp
       if (pushDown.nonEmpty) {
         val pushDownPredicate = pushDown.reduce(And)
         val withPushdown = generate.copy(child = Filter(pushDownPredicate, grandChild))
+=======
+    case filter @ Filter(condition, g: Generate) =>
+      // Predicates that reference attributes produced by the `Generate` operator cannot
+      // be pushed below the operator.
+      val (pushDown, stayUp) = splitConjunctivePredicates(condition).partition {
+        conjunct => conjunct.references subsetOf g.child.outputSet
+      }
+      if (pushDown.nonEmpty) {
+        val pushDownPredicate = pushDown.reduce(And)
+        val withPushdown = Generate(g.generator, join = g.join, outer = g.outer,
+          g.qualifier, g.generatorOutput, Filter(pushDownPredicate, g.child))
+>>>>>>> upstream/master
         stayUp.reduceOption(And).map(Filter(_, withPushdown)).getOrElse(withPushdown)
       } else {
         filter
@@ -569,7 +648,7 @@ object PushPredicateThroughJoin extends Rule[LogicalPlan] with PredicateHelper {
         split(joinCondition.map(splitConjunctivePredicates).getOrElse(Nil), left, right)
 
       joinType match {
-        case Inner =>
+        case _ @ (Inner | LeftSemi) =>
           // push down the single side only join filter for both sides sub queries
           val newLeft = leftJoinConditions.
             reduceLeftOption(And).map(Filter(_, left)).getOrElse(left)
@@ -577,7 +656,7 @@ object PushPredicateThroughJoin extends Rule[LogicalPlan] with PredicateHelper {
             reduceLeftOption(And).map(Filter(_, right)).getOrElse(right)
           val newJoinCond = commonJoinCondition.reduceLeftOption(And)
 
-          Join(newLeft, newRight, Inner, newJoinCond)
+          Join(newLeft, newRight, joinType, newJoinCond)
         case RightOuter =>
           // push down the left side only join filter for left side sub query
           val newLeft = leftJoinConditions.
@@ -586,14 +665,14 @@ object PushPredicateThroughJoin extends Rule[LogicalPlan] with PredicateHelper {
           val newJoinCond = (rightJoinConditions ++ commonJoinCondition).reduceLeftOption(And)
 
           Join(newLeft, newRight, RightOuter, newJoinCond)
-        case _ @ (LeftOuter | LeftSemi) =>
+        case LeftOuter =>
           // push down the right side only join filter for right sub query
           val newLeft = left
           val newRight = rightJoinConditions.
             reduceLeftOption(And).map(Filter(_, right)).getOrElse(right)
           val newJoinCond = (leftJoinConditions ++ commonJoinCondition).reduceLeftOption(And)
 
-          Join(newLeft, newRight, joinType, newJoinCond)
+          Join(newLeft, newRight, LeftOuter, newJoinCond)
         case FullOuter => f
       }
   }

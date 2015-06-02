@@ -17,13 +17,21 @@
 
 package org.apache.spark.mllib.feature
 
+<<<<<<< HEAD
 import org.scalatest.FunSuite
 
+=======
+import org.apache.spark.SparkFunSuite
+>>>>>>> upstream/master
 import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vectors, Vector}
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 import org.apache.spark.mllib.util.TestingUtils._
 
+<<<<<<< HEAD
 class IDFSuite extends FunSuite with MLlibTestSparkContext {
+=======
+class IDFSuite extends SparkFunSuite with MLlibTestSparkContext {
+>>>>>>> upstream/master
 
   test("idf") {
     val n = 4
