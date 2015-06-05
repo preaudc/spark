@@ -362,9 +362,8 @@ class Analyzer(
   }
 
   /**
-   * Replaces [[UnresolvedAttribute]]s with concrete
-   * [[catalyst.expressions.AttributeReference AttributeReferences]] from a logical plan node's
-   * children.
+   * Replaces [[UnresolvedAttribute]]s with concrete [[AttributeReference]]s from
+   * a logical plan node's children.
    */
   object ResolveReferences extends Rule[LogicalPlan] {
     def apply(plan: LogicalPlan): LogicalPlan = plan transformUp {
@@ -590,7 +589,7 @@ class Analyzer(
   }
 
   /**
-   * Replaces [[UnresolvedFunction]]s with concrete [[catalyst.expressions.Expression Expressions]].
+   * Replaces [[UnresolvedFunction]]s with concrete [[Expression]]s.
    */
   object ResolveFunctions extends Rule[LogicalPlan] {
     def apply(plan: LogicalPlan): LogicalPlan = plan transform {
@@ -984,9 +983,8 @@ class Analyzer(
 }
 
 /**
- * Removes [[catalyst.plans.logical.Subquery Subquery]] operators from the plan.  Subqueries are
- * only required to provide scoping information for attributes and can be removed once analysis is
- * complete.
+ * Removes [[Subquery]] operators from the plan. Subqueries are only required to provide
+ * scoping information for attributes and can be removed once analysis is complete.
  */
 object EliminateSubQueries extends Rule[LogicalPlan] {
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {

@@ -26,11 +26,12 @@ import org.apache.spark.sql.execution.SparkSqlSerializer
 >>>>>>> upstream/master
 
 import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, SpecificMutableRow}
-import org.apache.spark.sql.test.TestSQLContext
-import org.apache.spark.sql.test.TestSQLContext.implicits._
 import org.apache.spark.sql.types._
 
 class RowSuite extends SparkFunSuite {
+
+  private lazy val ctx = org.apache.spark.sql.test.TestSQLContext
+  import ctx.implicits._
 
   test("create row") {
     val expected = new GenericMutableRow(4)
@@ -61,7 +62,7 @@ class RowSuite extends SparkFunSuite {
 
   test("serialize w/ kryo") {
     val row = Seq((1, Seq(1), Map(1 -> 1), BigDecimal(1))).toDF().first()
-    val serializer = new SparkSqlSerializer(TestSQLContext.sparkContext.getConf)
+    val serializer = new SparkSqlSerializer(ctx.sparkContext.getConf)
     val instance = serializer.newInstance()
     val ser = instance.serialize(row)
     val de = instance.deserialize(ser).asInstanceOf[Row]

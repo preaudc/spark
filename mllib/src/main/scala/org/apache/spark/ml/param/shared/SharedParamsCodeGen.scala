@@ -37,7 +37,7 @@ private[shared] object SharedParamsCodeGen {
 =======
       ParamDesc[Double]("regParam", "regularization parameter (>= 0)",
         isValid = "ParamValidators.gtEq(0)"),
-      ParamDesc[Int]("maxIter", "max number of iterations (>= 0)",
+      ParamDesc[Int]("maxIter", "maximum number of iterations (>= 0)",
         isValid = "ParamValidators.gtEq(0)"),
 >>>>>>> upstream/master
       ParamDesc[String]("featuresCol", "features column name", Some("\"features\"")),

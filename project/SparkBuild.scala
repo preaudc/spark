@@ -201,9 +201,6 @@ object SparkBuild extends PomBuild {
   /* Enable unidoc only for the root spark project */
   enable(Unidoc.settings)(spark)
 
-  /* Catalyst macro settings */
-  enable(Catalyst.settings)(catalyst)
-
   /* Spark SQL Core console settings */
   enable(SQL.settings)(sql)
 
@@ -302,14 +299,6 @@ object OldDeps {
       "spark-streaming", "spark-mllib", "spark-bagel", "spark-graphx",
       "spark-core").map(versionArtifact(_).get intransitive())
   )
-}
-
-object Catalyst {
-  lazy val settings = Seq(
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-    // Quasiquotes break compiling scala doc...
-    // TODO: Investigate fixing this.
-    sources in (Compile, doc) ~= (_ filter (_.getName contains "codegen")))
 }
 
 object SQL {
@@ -611,6 +600,7 @@ object TestSettings {
     javaOptions in Test += "-Dspark.unsafe.exceptionOnMemoryLeak=true",
 >>>>>>> upstream/master
     javaOptions in Test += "-Dsun.io.serialization.extendedDebugInfo=true",
+    javaOptions in Test += "-Dderby.system.durability=test",
     javaOptions in Test ++= System.getProperties.filter(_._1 startsWith "spark")
       .map { case (k,v) => s"-D$k=$v" }.toSeq,
     javaOptions in Test += "-ea",

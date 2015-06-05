@@ -25,14 +25,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities
 import org.apache.hadoop.hive.ql.metadata.{Partition => HivePartition, Table => HiveTable}
 import org.apache.hadoop.hive.ql.plan.{PlanUtils, TableDesc}
 import org.apache.hadoop.hive.serde2.Deserializer
-import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspectorConverters, StructObjectInspector}
 import org.apache.hadoop.hive.serde2.objectinspector.primitive._
+import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspectorConverters, StructObjectInspector}
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf}
 
-import org.apache.spark.SerializableWritable
+import org.apache.spark.{Logging, SerializableWritable}
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.Logging
 import org.apache.spark.rdd.{EmptyRDD, HadoopRDD, RDD, UnionRDD}
 import org.apache.spark.sql.catalyst.expressions._
 <<<<<<< HEAD
@@ -188,7 +187,7 @@ class HadoopTableReader(
               path.toString + tails
             }
 
-            val partPath = HiveShim.getDataLocationPath(partition)
+            val partPath = partition.getDataLocation
             val partNum = Utilities.getPartitionDesc(partition).getPartSpec.size();
             var pathPatternStr = getPathPatternByPath(partNum, partPath)
             if (!pathPatternSet.contains(pathPatternStr)) {
@@ -203,7 +202,7 @@ class HadoopTableReader(
     val hivePartitionRDDs = verifyPartitionPath(partitionToDeserializer)
       .map { case (partition, partDeserializer) =>
       val partDesc = Utilities.getPartitionDesc(partition)
-      val partPath = HiveShim.getDataLocationPath(partition)
+      val partPath = partition.getDataLocation
       val inputPathStr = applyFilterIfNeeded(partPath, filterOpt)
       val ifc = partDesc.getInputFileFormatClass
         .asInstanceOf[java.lang.Class[InputFormat[Writable, Writable]]]
@@ -341,7 +340,7 @@ private[hive] object HadoopTableReader extends HiveInspectors with Logging {
     val soi = if (rawDeser.getObjectInspector.equals(tableDeser.getObjectInspector)) {
       rawDeser.getObjectInspector.asInstanceOf[StructObjectInspector]
     } else {
-      HiveShim.getConvertedOI(
+      ObjectInspectorConverters.getConvertedOI(
         rawDeser.getObjectInspector,
         tableDeser.getObjectInspector).asInstanceOf[StructObjectInspector]
     }
