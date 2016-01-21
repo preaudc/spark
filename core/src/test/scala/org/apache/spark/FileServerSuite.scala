@@ -27,9 +27,9 @@ import org.apache.commons.lang3.RandomUtils
 
 import org.apache.spark.util.Utils
 
-import SSLSampleConfigs._
-
 class FileServerSuite extends SparkFunSuite with LocalSparkContext {
+
+  import SSLSampleConfigs._
 
   @transient var tmpDir: File = _
   @transient var tmpFile: File = _
@@ -75,8 +75,11 @@ class FileServerSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   override def afterAll() {
-    super.afterAll()
-    Utils.deleteRecursively(tmpDir)
+    try {
+      Utils.deleteRecursively(tmpDir)
+    } finally {
+      super.afterAll()
+    }
   }
 
   test("Distributing files locally") {
@@ -139,7 +142,7 @@ class FileServerSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   test("Distributing files on a standalone cluster") {
-    sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
+    sc = new SparkContext("local-cluster[1,1,1024]", "test", newConf)
     sc.addFile(tmpFile.toString)
     val testData = Array((1, 1), (1, 1), (2, 1), (3, 5), (2, 2), (3, 0))
     val result = sc.parallelize(testData).reduceByKey {
@@ -153,7 +156,7 @@ class FileServerSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   test ("Dynamically adding JARS on a standalone cluster") {
-    sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
+    sc = new SparkContext("local-cluster[1,1,1024]", "test", newConf)
     sc.addJar(tmpJarUrl)
     val testData = Array((1, 1))
     sc.parallelize(testData).foreach { x =>
@@ -164,7 +167,7 @@ class FileServerSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   test ("Dynamically adding JARS on a standalone cluster using local: URL") {
-    sc = new SparkContext("local-cluster[1,1,512]", "test", newConf)
+    sc = new SparkContext("local-cluster[1,1,1024]", "test", newConf)
     sc.addJar(tmpJarUrl.replace("file", "local"))
     val testData = Array((1, 1))
     sc.parallelize(testData).foreach { x =>

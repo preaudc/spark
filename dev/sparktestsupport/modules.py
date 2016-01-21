@@ -29,9 +29,9 @@ class Module(object):
     changed.
     """
 
-    def __init__(self, name, dependencies, source_file_regexes, build_profile_flags=(),
+    def __init__(self, name, dependencies, source_file_regexes, build_profile_flags=(), environ={},
                  sbt_test_goals=(), python_test_goals=(), blacklisted_python_implementations=(),
-                 should_run_r_tests=False):
+                 test_tags=(), should_run_r_tests=False, should_run_build_tests=False):
         """
         Define a new module.
 
@@ -43,21 +43,29 @@ class Module(object):
             filename strings.
         :param build_profile_flags: A set of profile flags that should be passed to Maven or SBT in
             order to build and test this module (e.g. '-PprofileName').
+        :param environ: A dict of environment variables that should be set when files in this
+            module are changed.
         :param sbt_test_goals: A set of SBT test goals for testing this module.
         :param python_test_goals: A set of Python test goals for testing this module.
         :param blacklisted_python_implementations: A set of Python implementations that are not
             supported by this module's Python components. The values in this set should match
             strings returned by Python's `platform.python_implementation()`.
+        :param test_tags A set of tags that will be excluded when running unit tests if the module
+            is not explicitly changed.
         :param should_run_r_tests: If true, changes in this module will trigger all R tests.
+        :param should_run_build_tests: If true, changes in this module will trigger build tests.
         """
         self.name = name
         self.dependencies = dependencies
         self.source_file_prefixes = source_file_regexes
         self.sbt_test_goals = sbt_test_goals
         self.build_profile_flags = build_profile_flags
+        self.environ = environ
         self.python_test_goals = python_test_goals
         self.blacklisted_python_implementations = blacklisted_python_implementations
+        self.test_tags = test_tags
         self.should_run_r_tests = should_run_r_tests
+        self.should_run_build_tests = should_run_build_tests
 
         self.dependent_modules = set()
         for dep in dependencies:
@@ -82,6 +90,9 @@ sql = Module(
         "catalyst/test",
         "sql/test",
         "hive/test",
+    ],
+    test_tags=[
+        "org.apache.spark.tags.ExtendedHiveTest"
     ]
 )
 
@@ -126,17 +137,25 @@ streaming = Module(
 )
 
 
+# Don't set the dependencies because changes in other modules should not trigger Kinesis tests.
+# Kinesis tests depends on external Amazon kinesis service. We should run these tests only when
+# files in streaming_kinesis_asl are changed, so that if Kinesis experiences an outage, we don't
+# fail other PRs.
 streaming_kinesis_asl = Module(
-    name="kinesis-asl",
-    dependencies=[streaming],
+    name="streaming-kinesis-asl",
+    dependencies=[],
     source_file_regexes=[
         "extras/kinesis-asl/",
+        "extras/kinesis-asl-assembly/",
     ],
     build_profile_flags=[
         "-Pkinesis-asl",
     ],
+    environ={
+        "ENABLE_KINESIS_TESTS": "1"
+    },
     sbt_test_goals=[
-        "kinesis-asl/test",
+        "streaming-kinesis-asl/test",
     ]
 )
 
@@ -170,6 +189,7 @@ streaming_mqtt = Module(
     dependencies=[streaming],
     source_file_regexes=[
         "external/mqtt",
+        "external/mqtt-assembly",
     ],
     sbt_test_goals=[
         "streaming-mqtt/test",
@@ -198,6 +218,18 @@ streaming_flume_sink = Module(
     ],
     sbt_test_goals=[
         "streaming-flume-sink/test",
+    ]
+)
+
+
+streaming_akka = Module(
+    name="streaming-akka",
+    dependencies=[streaming],
+    source_file_regexes=[
+        "external/akka",
+    ],
+    sbt_test_goals=[
+        "streaming-akka/test",
     ]
 )
 
@@ -290,7 +322,14 @@ pyspark_sql = Module(
 
 pyspark_streaming = Module(
     name="pyspark-streaming",
-    dependencies=[pyspark_core, streaming, streaming_kafka, streaming_flume_assembly],
+    dependencies=[
+        pyspark_core,
+        streaming,
+        streaming_kafka,
+        streaming_flume_assembly,
+        streaming_mqtt,
+        streaming_kinesis_asl
+    ],
     source_file_regexes=[
         "python/pyspark/streaming"
     ],
@@ -313,7 +352,8 @@ pyspark_mllib = Module(
         "pyspark.mllib.evaluation",
         "pyspark.mllib.feature",
         "pyspark.mllib.fpm",
-        "pyspark.mllib.linalg",
+        "pyspark.mllib.linalg.__init__",
+        "pyspark.mllib.linalg.distributed",
         "pyspark.mllib.random",
         "pyspark.mllib.recommendation",
         "pyspark.mllib.regression",
@@ -338,6 +378,7 @@ pyspark_ml = Module(
     python_test_goals=[
         "pyspark.ml.feature",
         "pyspark.ml.classification",
+        "pyspark.ml.clustering",
         "pyspark.ml.recommendation",
         "pyspark.ml.regression",
         "pyspark.ml.tuning",
@@ -367,21 +408,37 @@ docs = Module(
     ]
 )
 
-
-ec2 = Module(
-    name="ec2",
+build = Module(
+    name="build",
     dependencies=[],
     source_file_regexes=[
-        "ec2/",
-    ]
+        ".*pom.xml",
+        "dev/test-dependencies.sh",
+    ],
+    should_run_build_tests=True
 )
 
+yarn = Module(
+    name="yarn",
+    dependencies=[],
+    source_file_regexes=[
+        "yarn/",
+        "network/yarn/",
+    ],
+    sbt_test_goals=[
+        "yarn/test",
+        "network-yarn/test",
+    ],
+    test_tags=[
+        "org.apache.spark.tags.ExtendedYarnTest"
+    ]
+)
 
 # The root module is a dummy module which is used to run all of the tests.
 # No other modules should directly depend on this module.
 root = Module(
     name="root",
-    dependencies=[],
+    dependencies=[build],  # Changes to build should trigger all tests.
     source_file_regexes=[],
     # In order to run all of the tests, enable every test profile:
     build_profile_flags=list(set(
@@ -390,5 +447,6 @@ root = Module(
         "test",
     ],
     python_test_goals=list(itertools.chain.from_iterable(m.python_test_goals for m in all_modules)),
-    should_run_r_tests=True
+    should_run_r_tests=True,
+    should_run_build_tests=True
 )

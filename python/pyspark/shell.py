@@ -40,7 +40,7 @@ if os.environ.get("ADD_FILES") is not None:
 if os.environ.get("SPARK_EXECUTOR_URI"):
     SparkContext.setSystemProperty("spark.executor.uri", os.environ["SPARK_EXECUTOR_URI"])
 
-sc = SparkContext(appName="PySparkShell", pyFiles=add_files)
+sc = SparkContext(pyFiles=add_files)
 atexit.register(lambda: sc.stop())
 
 try:
@@ -76,4 +76,6 @@ if add_files is not None:
 # which allows us to execute the user's PYTHONSTARTUP file:
 _pythonstartup = os.environ.get('OLD_PYTHONSTARTUP')
 if _pythonstartup and os.path.isfile(_pythonstartup):
-    execfile(_pythonstartup)
+    with open(_pythonstartup) as f:
+        code = compile(f.read(), _pythonstartup, 'exec')
+        exec(code)

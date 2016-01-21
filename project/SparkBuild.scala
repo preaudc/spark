@@ -16,15 +16,16 @@
  */
 
 import java.io._
+import java.nio.file.Files
 
 import scala.util.Properties
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import sbt._
 import sbt.Classpaths.publishTask
 import sbt.Keys._
 import sbtunidoc.Plugin.UnidocKeys.unidocGenjavadocVersion
-import com.typesafe.sbt.pom.{loadEffectivePom, PomBuild, SbtPomKeys}
+import com.typesafe.sbt.pom.{PomBuild, SbtPomKeys}
 import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 import spray.revolver.RevolverPlugin._
@@ -33,20 +34,21 @@ object BuildCommons {
 
   private val buildLocation = file(".").getAbsoluteFile.getParentFile
 
-  val allProjects@Seq(bagel, catalyst, core, graphx, hive, hiveThriftServer, mllib, repl,
-    sql, networkCommon, networkShuffle, streaming, streamingFlumeSink, streamingFlume, streamingKafka,
-    streamingMqtt, streamingTwitter, streamingZeromq, launcher, unsafe) =
-    Seq("bagel", "catalyst", "core", "graphx", "hive", "hive-thriftserver", "mllib", "repl",
+  val allProjects@Seq(catalyst, core, graphx, hive, hiveThriftServer, mllib, repl,
+    sql, networkCommon, networkShuffle, streaming, streamingFlumeSink, streamingFlume, streamingAkka, streamingKafka,
+    streamingMqtt, streamingTwitter, streamingZeromq, launcher, unsafe, testTags) =
+    Seq("catalyst", "core", "graphx", "hive", "hive-thriftserver", "mllib", "repl",
       "sql", "network-common", "network-shuffle", "streaming", "streaming-flume-sink",
-      "streaming-flume", "streaming-kafka", "streaming-mqtt", "streaming-twitter",
-      "streaming-zeromq", "launcher", "unsafe").map(ProjectRef(buildLocation, _))
+      "streaming-flume", "streaming-akka", "streaming-kafka", "streaming-mqtt", "streaming-twitter",
+      "streaming-zeromq", "launcher", "unsafe", "test-tags").map(ProjectRef(buildLocation, _))
 
-  val optionallyEnabledProjects@Seq(yarn, yarnStable, java8Tests, sparkGangliaLgpl,
-    sparkKinesisAsl) = Seq("yarn", "yarn-stable", "java8-tests", "ganglia-lgpl",
-    "kinesis-asl").map(ProjectRef(buildLocation, _))
+  val optionallyEnabledProjects@Seq(yarn, java8Tests, sparkGangliaLgpl,
+    streamingKinesisAsl, dockerIntegrationTests) =
+    Seq("yarn", "java8-tests", "ganglia-lgpl", "streaming-kinesis-asl",
+      "docker-integration-tests").map(ProjectRef(buildLocation, _))
 
-  val assemblyProjects@Seq(assembly, examples, networkYarn, streamingFlumeAssembly, streamingKafkaAssembly) =
-    Seq("assembly", "examples", "network-yarn", "streaming-flume-assembly", "streaming-kafka-assembly")
+  val assemblyProjects@Seq(assembly, examples, networkYarn, streamingFlumeAssembly, streamingKafkaAssembly, streamingMqttAssembly, streamingKinesisAslAssembly) =
+    Seq("assembly", "examples", "network-yarn", "streaming-flume-assembly", "streaming-kafka-assembly", "streaming-mqtt-assembly", "streaming-kinesis-asl-assembly")
       .map(ProjectRef(buildLocation, _))
 
   val tools = ProjectRef(buildLocation, "tools")
@@ -55,6 +57,9 @@ object BuildCommons {
   val sparkHome = buildLocation
 
   val testTempDir = s"$sparkHome/target/tmp"
+
+  val javacJVMVersion = settingKey[String]("source and target JVM version for javac")
+  val scalacJVMVersion = settingKey[String]("source and target JVM version for scalac")
 }
 
 object SparkBuild extends PomBuild {
@@ -67,7 +72,6 @@ object SparkBuild extends PomBuild {
   // Provides compatibility for older versions of the Spark build
   def backwardCompatibility = {
     import scala.collection.mutable
-    var isAlphaYarn = false
     var profiles: mutable.Seq[String] = mutable.Seq("sbt")
     // scalastyle:off println
     if (Properties.envOrNone("SPARK_GANGLIA_LGPL").isDefined) {
@@ -80,7 +84,6 @@ object SparkBuild extends PomBuild {
     }
     Properties.envOrNone("SPARK_HADOOP_VERSION") match {
       case Some(v) =>
-        if (v.matches("0.23.*")) isAlphaYarn = true
         println("NOTE: SPARK_HADOOP_VERSION is deprecated, please use -Dhadoop.version=" + v)
         System.setProperty("hadoop.version", v)
       case None =>
@@ -120,7 +123,7 @@ object SparkBuild extends PomBuild {
     case _ =>
   }
 
-  override val userPropertiesMap = System.getProperties.toMap
+  override val userPropertiesMap = System.getProperties.asScala.toMap
 
   lazy val MavenCompile = config("m2r") extend(Compile)
   lazy val publishLocalBoth = TaskKey[Unit]("publish-local", "publish local for m2 and ivy")
@@ -135,12 +138,15 @@ object SparkBuild extends PomBuild {
       .orElse(sys.props.get("java.home").map { p => new File(p).getParentFile().getAbsolutePath() })
       .map(file),
     incOptions := incOptions.value.withNameHashing(true),
-    retrieveManaged := true,
-    retrievePattern := "[type]s/[artifact](-[revision])(-[classifier]).[ext]",
     publishMavenStyle := true,
     unidocGenjavadocVersion := "0.9-spark0",
 
-    resolvers += Resolver.mavenLocal,
+    // Override SBT's default resolvers:
+    resolvers := Seq(
+      DefaultMavenRepository,
+      Resolver.mavenLocal
+    ),
+    externalResolvers := resolvers.value,
     otherResolvers <<= SbtPomKeys.mvnLocalRepository(dotM2 => Seq(Resolver.file("dotM2", dotM2))),
     publishLocalConfiguration in MavenCompile <<= (packagedArtifacts, deliverLocal, ivyLoggingLevel) map {
       (arts, _, level) => new PublishConfiguration(None, "dotM2", arts, Seq(), level)
@@ -154,7 +160,62 @@ object SparkBuild extends PomBuild {
       if (major.toInt >= 1 && minor.toInt >= 8) Seq("-Xdoclint:all", "-Xdoclint:-missing") else Seq.empty
     },
 
-    javacOptions in Compile ++= Seq("-encoding", "UTF-8")
+    javacJVMVersion := "1.7",
+    scalacJVMVersion := "1.7",
+
+    javacOptions in Compile ++= Seq(
+      "-encoding", "UTF-8",
+      "-source", javacJVMVersion.value
+    ),
+    // This -target option cannot be set in the Compile configuration scope since `javadoc` doesn't
+    // play nicely with it; see https://github.com/sbt/sbt/issues/355#issuecomment-3817629 for
+    // additional discussion and explanation.
+    javacOptions in (Compile, compile) ++= Seq(
+      "-target", javacJVMVersion.value
+    ),
+
+    scalacOptions in Compile ++= Seq(
+      s"-target:jvm-${scalacJVMVersion.value}",
+      "-sourcepath", (baseDirectory in ThisBuild).value.getAbsolutePath  // Required for relative source links in scaladoc
+    ),
+
+    // Implements -Xfatal-warnings, ignoring deprecation warnings.
+    // Code snippet taken from https://issues.scala-lang.org/browse/SI-8410.
+    compile in Compile := {
+      val analysis = (compile in Compile).value
+      val out = streams.value
+
+      def logProblem(l: (=> String) => Unit, f: File, p: xsbti.Problem) = {
+        l(f.toString + ":" + p.position.line.fold("")(_ + ":") + " " + p.message)
+        l(p.position.lineContent)
+        l("")
+      }
+
+      var failed = 0
+      analysis.infos.allInfos.foreach { case (k, i) =>
+        i.reportedProblems foreach { p =>
+          val deprecation = p.message.contains("is deprecated")
+
+          if (!deprecation) {
+            failed = failed + 1
+          }
+
+          val printer: (=> String) => Unit = s => if (deprecation) {
+            out.log.warn(s)
+          } else {
+            out.log.error("[warn] " + s)
+          }
+
+          logProblem(printer, k, p)
+
+        }
+      }
+
+      if (failed > 0) {
+        sys.error(s"$failed fatal warnings")
+      }
+      analysis
+    }
   )
 
   def enable(settings: Seq[Setting[_]])(projectRef: ProjectRef) = {
@@ -165,13 +226,15 @@ object SparkBuild extends PomBuild {
   // Note ordering of these settings matter.
   /* Enable shared settings on all projects */
   (allProjects ++ optionallyEnabledProjects ++ assemblyProjects ++ Seq(spark, tools))
-    .foreach(enable(sharedSettings ++ ExcludedDependencies.settings ++ Revolver.settings))
+    .foreach(enable(sharedSettings ++ DependencyOverrides.settings ++
+      ExcludedDependencies.settings ++ Revolver.settings))
 
   /* Enable tests settings for all projects except examples, assembly and tools */
   (allProjects ++ optionallyEnabledProjects).foreach(enable(TestSettings.settings))
 
+  // TODO: remove streamingAkka from this list after 2.0.0
   allProjects.filterNot(x => Seq(spark, hive, hiveThriftServer, catalyst, repl,
-    networkCommon, networkShuffle, networkYarn, unsafe).contains(x)).foreach {
+    networkCommon, networkShuffle, networkYarn, unsafe, streamingAkka, testTags).contains(x)).foreach {
       x => enable(MimaBuild.mimaSettings(sparkHome, x))(x)
     }
 
@@ -181,11 +244,17 @@ object SparkBuild extends PomBuild {
   /* Enable Assembly for all assembly projects */
   assemblyProjects.foreach(enable(Assembly.settings))
 
+  /* Enable Assembly for streamingMqtt test */
+  enable(inConfig(Test)(Assembly.settings))(streamingMqtt)
+
   /* Package pyspark artifacts in a separate zip file for YARN. */
   enable(PySparkAssembly.settings)(assembly)
 
   /* Enable unidoc only for the root spark project */
   enable(Unidoc.settings)(spark)
+
+  /* Catalyst ANTLR generation settings */
+  enable(Catalyst.settings)(catalyst)
 
   /* Spark SQL Core console settings */
   enable(SQL.settings)(sql)
@@ -195,6 +264,9 @@ object SparkBuild extends PomBuild {
 
   enable(Flume.settings)(streamingFlumeSink)
 
+  enable(Java8TestSettings.settings)(java8Tests)
+
+  enable(DockerIntegrationTests.settings)(dockerIntegrationTests)
 
   /**
    * Adds the ability to run the spark shell directly from SBT without building an assembly
@@ -203,6 +275,11 @@ object SparkBuild extends PomBuild {
    * Usage: `build/sbt sparkShell`
    */
   val sparkShell = taskKey[Unit]("start a spark-shell.")
+  val sparkPackage = inputKey[Unit](
+    s"""
+       |Download and run a spark package.
+       |Usage `builds/sbt "sparkPackage <group:artifact:version> <MainClass> [args]
+     """.stripMargin)
   val sparkSql = taskKey[Unit]("starts the spark sql CLI.")
 
   enable(Seq(
@@ -214,6 +291,16 @@ object SparkBuild extends PomBuild {
 
     sparkShell := {
       (runMain in Compile).toTask(" org.apache.spark.repl.Main -usejavacp").value
+    },
+
+    sparkPackage := {
+      import complete.DefaultParsers._
+      val packages :: className :: otherArgs = spaceDelimited("<group:artifact:version> <MainClass> [args]").parsed.toList
+      val scalaRun = (runner in run).value
+      val classpath = (fullClasspath in Runtime).value
+      val args = Seq("--packages", packages, "--class", className, (Keys.`package` in Compile in "core").value.getCanonicalPath) ++ otherArgs
+      println(args)
+      scalaRun.run("org.apache.spark.deploy.SparkSubmit", classpath.map(_.data), args, streams.value.log)
     },
 
     javaOptions in Compile += "-Dspark.master=local",
@@ -246,6 +333,21 @@ object Flume {
   lazy val settings = sbtavro.SbtAvro.avroSettings
 }
 
+object DockerIntegrationTests {
+  // This serves to override the override specified in DependencyOverrides:
+  lazy val settings = Seq(
+    dependencyOverrides += "com.google.guava" % "guava" % "18.0"
+  )
+}
+
+/**
+ * Overrides to work around sbt's dependency resolution being different from Maven's.
+ */
+object DependencyOverrides {
+  lazy val settings = Seq(
+    dependencyOverrides += "com.google.guava" % "guava" % "14.0.1")
+}
+
 /**
   This excludes library dependencies in sbt, which are specified in maven but are
   not needed by sbt build.
@@ -271,13 +373,63 @@ object OldDeps {
 
   def oldDepsSettings() = Defaults.coreDefaultSettings ++ Seq(
     name := "old-deps",
-    scalaVersion := "2.10.4",
-    retrieveManaged := true,
-    retrievePattern := "[type]s/[artifact](-[revision])(-[classifier]).[ext]",
+    scalaVersion := "2.10.5",
     libraryDependencies := Seq("spark-streaming-mqtt", "spark-streaming-zeromq",
       "spark-streaming-flume", "spark-streaming-kafka", "spark-streaming-twitter",
-      "spark-streaming", "spark-mllib", "spark-bagel", "spark-graphx",
+      "spark-streaming", "spark-mllib", "spark-graphx",
       "spark-core").map(versionArtifact(_).get intransitive())
+  )
+}
+
+object Catalyst {
+  lazy val settings = Seq(
+    // ANTLR code-generation step.
+    //
+    // This has been heavily inspired by com.github.stefri.sbt-antlr (0.5.3). It fixes a number of
+    // build errors in the current plugin.
+    // Create Parser from ANTLR grammar files.
+    sourceGenerators in Compile += Def.task {
+      val log = streams.value.log
+
+      val grammarFileNames = Seq(
+        "SparkSqlLexer.g",
+        "SparkSqlParser.g")
+      val sourceDir = (sourceDirectory in Compile).value / "antlr3"
+      val targetDir = (sourceManaged in Compile).value
+
+      // Create default ANTLR Tool.
+      val antlr = new org.antlr.Tool
+
+      // Setup input and output directories.
+      antlr.setInputDirectory(sourceDir.getPath)
+      antlr.setOutputDirectory(targetDir.getPath)
+      antlr.setForceRelativeOutput(true)
+      antlr.setMake(true)
+
+      // Add grammar files.
+      grammarFileNames.flatMap(gFileName => (sourceDir ** gFileName).get).foreach { gFilePath =>
+        val relGFilePath = (gFilePath relativeTo sourceDir).get.getPath
+        log.info("ANTLR: Grammar file '%s' detected.".format(relGFilePath))
+        antlr.addGrammarFile(relGFilePath)
+        // We will set library directory multiple times here. However, only the
+        // last one has effect. Because the grammar files are located under the same directory,
+        // We assume there is only one library directory.
+        antlr.setLibDirectory(gFilePath.getParent)
+      }
+
+      // Generate the parser.
+      antlr.process
+      if (antlr.getNumErrors > 0) {
+        log.error("ANTLR: Caught %d build errors.".format(antlr.getNumErrors))
+      }
+
+      // Return all generated java files.
+      (targetDir ** "*.java").get.toSeq
+    }.taskValue,
+    // Include ANTLR tokens files.
+    resourceGenerators in Compile += Def.task {
+      ((sourceManaged in Compile).value ** "*.tokens").get.toSeq
+    }.taskValue
   )
 }
 
@@ -285,6 +437,8 @@ object SQL {
   lazy val settings = Seq(
     initialCommands in console :=
       """
+        |import org.apache.spark.SparkContext
+        |import org.apache.spark.sql.SQLContext
         |import org.apache.spark.sql.catalyst.analysis._
         |import org.apache.spark.sql.catalyst.dsl._
         |import org.apache.spark.sql.catalyst.errors._
@@ -294,9 +448,14 @@ object SQL {
         |import org.apache.spark.sql.catalyst.util._
         |import org.apache.spark.sql.execution
         |import org.apache.spark.sql.functions._
-        |import org.apache.spark.sql.test.TestSQLContext._
-        |import org.apache.spark.sql.types._""".stripMargin,
-    cleanupCommands in console := "sparkContext.stop()"
+        |import org.apache.spark.sql.types._
+        |
+        |val sc = new SparkContext("local[*]", "dev-shell")
+        |val sqlContext = new SQLContext(sc)
+        |import sqlContext.implicits._
+        |import sqlContext._
+      """.stripMargin,
+    cleanupCommands in console := "sc.stop()"
   )
 }
 
@@ -306,8 +465,6 @@ object Hive {
     javaOptions += "-XX:MaxPermSize=256m",
     // Specially disable assertions since some Hive tests fail them
     javaOptions in Test := (javaOptions in Test).value.filterNot(_ == "-ea"),
-    // Multiple queries rely on the TestHive singleton. See comments there for more details.
-    parallelExecution in Test := false,
     // Supporting all SerDes requires us to depend on deprecated APIs, so we turn off the warnings
     // only for this subproject.
     scalacOptions <<= scalacOptions map { currentOpts: Seq[String] =>
@@ -315,6 +472,7 @@ object Hive {
     },
     initialCommands in console :=
       """
+        |import org.apache.spark.SparkContext
         |import org.apache.spark.sql.catalyst.analysis._
         |import org.apache.spark.sql.catalyst.dsl._
         |import org.apache.spark.sql.catalyst.errors._
@@ -334,7 +492,6 @@ object Hive {
     // new query tests.
     fullClasspath in Test := (fullClasspath in Test).value.filterNot { f => f.toString.contains("jcl-over") }
   )
-
 }
 
 object Assembly {
@@ -344,6 +501,8 @@ object Assembly {
 
   val hadoopVersion = taskKey[String]("The version of hadoop that spark is compiled against.")
 
+  val deployDatanucleusJars = taskKey[Unit]("Deploy datanucleus jars to the spark/lib_managed/jars directory")
+
   lazy val settings = assemblySettings ++ Seq(
     test in assembly := {},
     hadoopVersion := {
@@ -351,12 +510,15 @@ object Assembly {
         .getOrElse(SbtPomKeys.effectivePom.value.getProperties.get("hadoop.version").asInstanceOf[String])
     },
     jarName in assembly <<= (version, moduleName, hadoopVersion) map { (v, mName, hv) =>
-      if (mName.contains("streaming-flume-assembly") || mName.contains("streaming-kafka-assembly")) {
+      if (mName.contains("streaming-flume-assembly") || mName.contains("streaming-kafka-assembly") || mName.contains("streaming-mqtt-assembly") || mName.contains("streaming-kinesis-asl-assembly")) {
         // This must match the same name used in maven (see external/kafka-assembly/pom.xml)
         s"${mName}-${v}.jar"
       } else {
         s"${mName}-${v}-hadoop${hv}.jar"
       }
+    },
+    jarName in (Test, assembly) <<= (version, moduleName, hadoopVersion) map { (v, mName, hv) =>
+      s"${mName}-test-${v}.jar"
     },
     mergeStrategy in assembly := {
       case PathList("org", "datanucleus", xs @ _*)             => MergeStrategy.discard
@@ -366,7 +528,20 @@ object Assembly {
       case m if m.toLowerCase.startsWith("meta-inf/services/") => MergeStrategy.filterDistinctLines
       case "reference.conf"                                    => MergeStrategy.concat
       case _                                                   => MergeStrategy.first
-    }
+    },
+    deployDatanucleusJars := {
+      val jars: Seq[File] = (fullClasspath in assembly).value.map(_.data)
+        .filter(_.getPath.contains("org.datanucleus"))
+      var libManagedJars = new File(BuildCommons.sparkHome, "lib_managed/jars")
+      libManagedJars.mkdirs()
+      jars.foreach { jar =>
+        val dest = new File(libManagedJars, jar.getName)
+        if (!dest.exists()) {
+          Files.copy(jar.toPath, dest.toPath)
+        }
+      }
+    },
+    assembly <<= assembly.dependsOn(deployDatanucleusJars)
   )
 }
 
@@ -435,6 +610,8 @@ object Unidoc {
       .map(_.filterNot(_.getName.contains("$")))
       .map(_.filterNot(_.getCanonicalPath.contains("akka")))
       .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/deploy")))
+      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/examples")))
+      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/memory")))
       .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/network")))
       .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/shuffle")))
       .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/executor")))
@@ -446,13 +623,15 @@ object Unidoc {
       .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/hive/test")))
   }
 
+  val unidocSourceBase = settingKey[String]("Base URL of source links in Scaladoc.")
+
   lazy val settings = scalaJavaUnidocSettings ++ Seq (
     publish := {},
 
     unidocProjectFilter in(ScalaUnidoc, unidoc) :=
-      inAnyProject -- inProjects(OldDeps.project, repl, examples, tools, streamingFlumeSink, yarn),
+      inAnyProject -- inProjects(OldDeps.project, repl, examples, tools, streamingFlumeSink, yarn, testTags),
     unidocProjectFilter in(JavaUnidoc, unidoc) :=
-      inAnyProject -- inProjects(OldDeps.project, repl, bagel, examples, tools, streamingFlumeSink, yarn),
+      inAnyProject -- inProjects(OldDeps.project, repl, examples, tools, streamingFlumeSink, yarn, testTags),
 
     // Skip actual catalyst, but include the subproject.
     // Catalyst is not public API and contains quasiquotes which break scaladoc.
@@ -471,7 +650,7 @@ object Unidoc {
       "-public",
       "-group", "Core Java API", packageList("api.java", "api.java.function"),
       "-group", "Spark Streaming", packageList(
-        "streaming.api.java", "streaming.flume", "streaming.kafka",
+        "streaming.api.java", "streaming.flume", "streaming.akka", "streaming.kafka",
         "streaming.mqtt", "streaming.twitter", "streaming.zeromq", "streaming.kinesis"
       ),
       "-group", "MLlib", packageList(
@@ -481,15 +660,36 @@ object Unidoc {
         "mllib.tree.impurity", "mllib.tree.model", "mllib.util",
         "mllib.evaluation", "mllib.feature", "mllib.random", "mllib.stat.correlation",
         "mllib.stat.test", "mllib.tree.impl", "mllib.tree.loss",
-        "ml", "ml.attribute", "ml.classification", "ml.evaluation", "ml.feature", "ml.param",
-        "ml.recommendation", "ml.regression", "ml.tuning"
+        "ml", "ml.attribute", "ml.classification", "ml.clustering", "ml.evaluation", "ml.feature",
+        "ml.param", "ml.recommendation", "ml.regression", "ml.tuning"
       ),
       "-group", "Spark SQL", packageList("sql.api.java", "sql.api.java.types", "sql.hive.api.java"),
       "-noqualifier", "java.lang"
     ),
 
-    // Group similar methods together based on the @group annotation.
-    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq("-groups")
+    // Use GitHub repository for Scaladoc source linke
+    unidocSourceBase := s"https://github.com/apache/spark/tree/v${version.value}",
+
+    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
+      "-groups" // Group similar methods together based on the @group annotation.
+    ) ++ (
+      // Add links to sources when generating Scaladoc for a non-snapshot release
+      if (!isSnapshot.value) {
+        Opts.doc.sourceUrl(unidocSourceBase.value + "€{FILE_PATH}.scala")
+      } else {
+        Seq()
+      }
+    )
+  )
+}
+
+object Java8TestSettings {
+  import BuildCommons._
+
+  lazy val settings = Seq(
+    javacJVMVersion := "1.8",
+    // Targeting Java 8 bytecode is only supported in Scala 2.11.4 and higher:
+    scalacJVMVersion := (if (System.getProperty("scala-2.11") == "true") "1.8" else "1.7")
   )
 }
 
@@ -504,28 +704,39 @@ object TestSettings {
     envVars in Test ++= Map(
       "SPARK_DIST_CLASSPATH" ->
         (fullClasspath in Test).value.files.map(_.getAbsolutePath).mkString(":").stripSuffix(":"),
+      "SPARK_PREPEND_CLASSES" -> "1",
+      "SPARK_TESTING" -> "1",
       "JAVA_HOME" -> sys.env.get("JAVA_HOME").getOrElse(sys.props("java.home"))),
     javaOptions in Test += s"-Djava.io.tmpdir=$testTempDir",
     javaOptions in Test += "-Dspark.test.home=" + sparkHome,
     javaOptions in Test += "-Dspark.testing=1",
     javaOptions in Test += "-Dspark.port.maxRetries=100",
+    javaOptions in Test += "-Dspark.master.rest.enabled=false",
     javaOptions in Test += "-Dspark.ui.enabled=false",
     javaOptions in Test += "-Dspark.ui.showConsoleProgress=false",
-    javaOptions in Test += "-Dspark.driver.allowMultipleContexts=true",
     javaOptions in Test += "-Dspark.unsafe.exceptionOnMemoryLeak=true",
     javaOptions in Test += "-Dsun.io.serialization.extendedDebugInfo=true",
     javaOptions in Test += "-Dderby.system.durability=test",
-    javaOptions in Test ++= System.getProperties.filter(_._1 startsWith "spark")
+    javaOptions in Test ++= System.getProperties.asScala.filter(_._1.startsWith("spark"))
       .map { case (k,v) => s"-D$k=$v" }.toSeq,
     javaOptions in Test += "-ea",
     javaOptions in Test ++= "-Xmx3g -Xss4096k -XX:PermSize=128M -XX:MaxNewSize=256m -XX:MaxPermSize=1g"
       .split(" ").toSeq,
     javaOptions += "-Xmx3g",
+    // Exclude tags defined in a system property
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest,
+      sys.props.get("test.exclude.tags").map { tags =>
+        tags.split(",").flatMap { tag => Seq("-l", tag) }.toSeq
+      }.getOrElse(Nil): _*),
+    testOptions in Test += Tests.Argument(TestFrameworks.JUnit,
+      sys.props.get("test.exclude.tags").map { tags =>
+        Seq("--exclude-categories=" + tags)
+      }.getOrElse(Nil): _*),
     // Show full stack trace and duration in test cases.
     testOptions in Test += Tests.Argument("-oDF"),
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
+    testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
     // Enable Junit testing.
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.9" % "test",
+    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
     // Only allow one test at a time, even across projects, since they run in the same JVM
     parallelExecution in Test := false,
     // Make sure the test temp directory exists.

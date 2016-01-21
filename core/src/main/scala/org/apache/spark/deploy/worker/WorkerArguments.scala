@@ -149,6 +149,7 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
     val ibmVendor = System.getProperty("java.vendor").contains("IBM")
     var totalMb = 0
     try {
+      // scalastyle:off classforname
       val bean = ManagementFactory.getOperatingSystemMXBean()
       if (ibmVendor) {
         val beanClass = Class.forName("com.ibm.lang.management.OperatingSystemMXBean")
@@ -159,6 +160,7 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
         val method = beanClass.getDeclaredMethod("getTotalPhysicalMemorySize")
         totalMb = (method.invoke(bean).asInstanceOf[Long] / 1024 / 1024).toInt
       }
+      // scalastyle:on classforname
     } catch {
       case e: Exception => {
         totalMb = 2*1024
@@ -173,7 +175,7 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
 
   def checkWorkerMemory(): Unit = {
     if (memory <= 0) {
-      val message = "Memory can't be 0, missing a M or G on the end of the memory specification?"
+      val message = "Memory is below 1MB, or missing a M/G at the end of the memory specification?"
       throw new IllegalStateException(message)
     }
   }
